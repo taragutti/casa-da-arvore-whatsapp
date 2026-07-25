@@ -49,3 +49,36 @@ export async function registrarEnvioMidia(leadId: string, etapa: number): Promis
     [leadId, etapa]
   );
 }
+
+export interface EstadoHandoff {
+  emAtendimentoHumano: boolean;
+  tentativasSemClassificacao: number;
+}
+
+/** Estado de handoff ANTES da mensagem atual — usado pra decidir se um novo gatilho dispara ou se o lead já está em atendimento humano (Seção 5). */
+export async function getEstadoHandoff(leadId: string): Promise<EstadoHandoff> {
+  const result = await pool.query<{ em_atendimento_humano: boolean; tentativas_sem_classificacao: number }>(
+    `SELECT em_atendimento_humano, tentativas_sem_classificacao FROM conversation_state WHERE lead_id = $1`,
+    [leadId]
+  );
+  const row = result.rows[0];
+  return {
+    emAtendimentoHumano: row?.em_atendimento_humano ?? false,
+    tentativasSemClassificacao: row?.tentativas_sem_classificacao ?? 0,
+  };
+}
+
+export async function atualizarTentativasSemClassificacao(leadId: string, valor: number): Promise<void> {
+  await pool.query(
+    `UPDATE conversation_state SET tentativas_sem_classificacao = $2, updated_at = now() WHERE lead_id = $1`,
+    [leadId, valor]
+  );
+}
+
+/** Marca a conversa como em atendimento humano — o bot para de responder automaticamente até isso ser revertido manualmente (Seção 5). */
+export async function marcarEmAtendimentoHumano(leadId: string): Promise<void> {
+  await pool.query(
+    `UPDATE conversation_state SET em_atendimento_humano = true, updated_at = now() WHERE lead_id = $1`,
+    [leadId]
+  );
+}

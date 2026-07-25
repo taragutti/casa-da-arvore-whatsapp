@@ -110,6 +110,12 @@ CREATE TABLE IF NOT EXISTS conversation_state (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Contador de mensagens seguidas sem classificação útil (ramo e tipo_evento
+-- nulos) — usado pelo gatilho de handoff "IA não entende 2x seguidas"
+-- (Seção 5). Não existe na especificação original; adicionado aqui porque
+-- a regra exige memória entre mensagens.
+ALTER TABLE conversation_state ADD COLUMN IF NOT EXISTS tentativas_sem_classificacao INTEGER NOT NULL DEFAULT 0;
+
 -- 6. media_library: catálogo de mídias por unidade e perfil de lead, usado
 --    pelo motor de mídia progressiva (Seção 2.4 e 4 do fluxo detalhado).
 CREATE TABLE IF NOT EXISTS media_library (

@@ -23,29 +23,36 @@ export function startMessageWorker() {
       const result = await processIncomingMessage(whatsappNumber, mensagem, payloadBruto);
 
       if (origem === "whatsapp_teste" && result.status === "processado") {
-        const confirmacao = montarMensagemConfirmacao(
-          result.dadosExtraidos.nome_cliente,
-          result.dadosExtraidos.tipo_evento
-        );
-        try {
-          await sendWhatsAppMessage(whatsappNumber, confirmacao);
-          log.debug("confirmação automática enviada ao WhatsApp de teste");
-        } catch (error) {
-          log.error({ err: error }, "falha ao enviar confirmação automática");
-        }
-
-        try {
-          await processarMidiaProgressiva(
-            whatsappNumber,
-            result.leadId,
-            result.dadosExtraidos.ramo,
-            result.unidadeRecomendada,
-            result.dadosExtraidos.dados_ramo,
-            result.dadosExtraidos.numero_convidados,
-            result.dadosExtraidos.sinal_engajamento
+        if (result.handoff.emAtendimentoHumano) {
+          // Lead em atendimento humano (Seção 5): o bot não reinicia o fluxo
+          // nem responde automaticamente — só o e-mail de notificação (já
+          // disparado em processIncomingMessage) avisa o consultor.
+          log.debug("lead em atendimento humano — bot não responde automaticamente");
+        } else {
+          const confirmacao = montarMensagemConfirmacao(
+            result.dadosExtraidos.nome_cliente,
+            result.dadosExtraidos.tipo_evento
           );
-        } catch (error) {
-          log.error({ err: error }, "falha no motor de mídia progressiva");
+          try {
+            await sendWhatsAppMessage(whatsappNumber, confirmacao);
+            log.debug("confirmação automática enviada ao WhatsApp de teste");
+          } catch (error) {
+            log.error({ err: error }, "falha ao enviar confirmação automática");
+          }
+
+          try {
+            await processarMidiaProgressiva(
+              whatsappNumber,
+              result.leadId,
+              result.dadosExtraidos.ramo,
+              result.unidadeRecomendada,
+              result.dadosExtraidos.dados_ramo,
+              result.dadosExtraidos.numero_convidados,
+              result.dadosExtraidos.sinal_engajamento
+            );
+          } catch (error) {
+            log.error({ err: error }, "falha no motor de mídia progressiva");
+          }
         }
       }
 

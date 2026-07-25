@@ -47,3 +47,16 @@ export async function upsertLead(
 
   return result.rows[0].id;
 }
+
+/** Adiciona uma tag ao lead sem duplicar (ex.: "precisa_qualificacao_humana", Seção 5). */
+export async function adicionarTag(leadId: string, tag: string): Promise<void> {
+  await pool.query(
+    `UPDATE leads
+     SET tags = CASE
+       WHEN $2 = ANY(COALESCE(tags, ARRAY[]::text[])) THEN tags
+       ELSE array_append(COALESCE(tags, ARRAY[]::text[]), $2)
+     END
+     WHERE id = $1`,
+    [leadId, tag]
+  );
+}

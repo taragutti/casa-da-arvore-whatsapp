@@ -25,6 +25,7 @@ vivem em dois lugares possíveis:
 | `ANTHROPIC_MODEL` | Railway | ✅ ok | tem default no código se ausente |
 | `RESEND_API_KEY` | Railway | ⚠️ a confirmar | vazio no `.env` local em 25/07/2026 |
 | `BRIEFING_RECIPIENT_EMAIL` | Railway | ✅ ok | financeiro@casadaarvoreadventure.com.br |
+| `HANDOFF_NOTIFICATION_EMAIL` | não configurada ainda | ⚠️ pendente | opcional — cai pra `BRIEFING_RECIPIENT_EMAIL` se ausente; definir quando houver e-mail de consultor/gerente dedicado (Seção 5) |
 | `WHATSAPP_VERIFY_TOKEN` | Railway + painel Meta for Developers (webhook) | ✅ ok | precisa ser idêntico nos dois lados |
 | `WHATSAPP_APP_SECRET` | Railway (?) — **confirmar local exato** | ✅ funcionando (testado 25/07/2026, round-trip real) | vazio no `.env` local — token está configurado em outro ambiente |
 | `WHATSAPP_ACCESS_TOKEN` | Railway (?) — **confirmar local exato** | ✅ funcionando — token **definitivo** (não expira em 24h) | vazio no `.env` local — mesma observação acima |

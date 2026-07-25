@@ -22,5 +22,6 @@
   "20": "extraction-spec.md",
   "21": "vitest.config.ts",
   "22": "vitest.setup.ts",
-  "23": "messageProcessing.service.ts"
+  "23": "messageProcessing.service.ts",
+  "24": "email.service.ts"
 }

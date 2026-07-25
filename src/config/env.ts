@@ -11,6 +11,11 @@ const envSchema = z.object({
   ANTHROPIC_MODEL: z.string().default("claude-sonnet-5"),
   RESEND_API_KEY: z.string().optional(),
   BRIEFING_RECIPIENT_EMAIL: z.string().optional(),
+  // Destinatário das notificações de handoff (Seção 5) — "dia 1" da
+  // especificação: um único e-mail pra todos os handoffs, ainda sem
+  // diretório de consultor por unidade. Cai pra BRIEFING_RECIPIENT_EMAIL
+  // se não configurado.
+  HANDOFF_NOTIFICATION_EMAIL: z.string().optional(),
 
   // WhatsApp Business Cloud API (Meta) — usado só pelo webhook de teste em
   // /webhooks/whatsapp. O endpoint genérico /api/leads/ingest não depende disso.

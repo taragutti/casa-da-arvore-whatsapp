@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "src/config/env.ts": {
-    "mtime": 1784408272.2015905,
-    "ast_hash": "c91c0307e933cc6e28bb9baf6eea7988",
+    "mtime": 1784993314.811749,
+    "ast_hash": "ff29dc9ab8ac3a5d2e3369de078aca43",
     "semantic_hash": ""
   },
   "src/config/logger.ts": {
@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "src/db/schema.sql": {
-    "mtime": 1784989267.6276598,
-    "ast_hash": "c17e474f6e3610b787e8ebd82dd562f5",
+    "mtime": 1784993321.0600348,
+    "ast_hash": "d34bdd9e9cd12c329b9579f3cfaf3fcc",
     "semantic_hash": ""
   },
   "src/jobs/monthlyBriefing.cron.ts": {
@@ -60,8 +60,8 @@
     "semantic_hash": ""
   },
   "src/queue/processMessage.job.ts": {
-    "mtime": 1784992193.7423196,
-    "ast_hash": "77736cd9a874957dbbe70ea1009d6331",
+    "mtime": 1784993437.5275173,
+    "ast_hash": "76520b87b39c6f293fd044aebe303513",
     "semantic_hash": ""
   },
   "src/repositories/briefings.repo.ts": {
@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "src/repositories/leads.repo.ts": {
-    "mtime": 1784990956.177344,
-    "ast_hash": "b83e79caee3ea91888b4987891bc1711",
+    "mtime": 1784993363.0471013,
+    "ast_hash": "17e7530b486266eda1164af5f768ecea",
     "semantic_hash": ""
   },
   "src/routes/ingest.ts": {
@@ -110,13 +110,13 @@
     "semantic_hash": ""
   },
   "src/services/email.service.ts": {
-    "mtime": 1784411724.3400528,
-    "ast_hash": "e27d110d5430fc7909b1c115948c34fc",
+    "mtime": 1784993392.2349882,
+    "ast_hash": "b8b21619f6efff1c3ccdd5ca33f301d8",
     "semantic_hash": ""
   },
   "src/services/messageProcessing.service.ts": {
-    "mtime": 1784992123.7702088,
-    "ast_hash": "2ef2f092d7b9270e9906fca053a39629",
+    "mtime": 1784993802.1827035,
+    "ast_hash": "3471eab7b4c4b3f20c7e94e3cc90e90b",
     "semantic_hash": ""
   },
   "src/services/whatsapp.service.ts": {
@@ -210,18 +210,18 @@
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
-    "mtime": 1784992261.8300447,
-    "ast_hash": "4adc18d317d8395b79e162b2f1f4aedd",
+    "mtime": 1784993807.725228,
+    "ast_hash": "f883878b01878f136ed40e1580ddd611",
     "semantic_hash": ""
   },
   "ENVIRONMENT.md": {
-    "mtime": 1784985346.516245,
-    "ast_hash": "8b3f581aa7e392e2c7ec108978919b29",
+    "mtime": 1784993907.457789,
+    "ast_hash": "c6d28364a5694bf1f1b1bfee91b0edd4",
     "semantic_hash": ""
   },
   "src/repositories/conversationState.repo.ts": {
-    "mtime": 1784992134.431363,
-    "ast_hash": "a074226798ea6f5058564a1f0396953d",
+    "mtime": 1784993352.420551,
+    "ast_hash": "4e5ad9cf7585006ea9996d52364fc605",
     "semantic_hash": ""
   },
   "src/services/routing.service.test.ts": {
@@ -247,6 +247,16 @@
   "src/services/mediaEngine.service.ts": {
     "mtime": 1784992176.872106,
     "ast_hash": "18dc26bd33ba67d1a29cb6195f3d80f0",
+    "semantic_hash": ""
+  },
+  "src/services/handoff.service.test.ts": {
+    "mtime": 1784993778.4697187,
+    "ast_hash": "cadd70062704dcb159007f86765ae435",
+    "semantic_hash": ""
+  },
+  "src/services/handoff.service.ts": {
+    "mtime": 1784993837.2174938,
+    "ast_hash": "eba828f10f7834ad024f171a0b9b5d2b",
     "semantic_hash": ""
   }
 }
