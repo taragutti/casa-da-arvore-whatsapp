@@ -1,0 +1,70 @@
+import express from "express";
+import { env } from "./config/env";
+import { logger } from "./config/logger";
+import { checkDbConnection } from "./db/client";
+import { connection as redisConnection } from "./queue/connection";
+import { startMessageWorker } from "./queue/processMessage.job";
+import { scheduleMonthlyBriefingJob } from "./jobs/monthlyBriefing.cron";
+import { ingestRouter } from "./routes/ingest";
+import { whatsappRouter } from "./routes/whatsapp";
+
+const app = express();
+// Guarda o corpo bruto da requisição (necessário para validar a assinatura
+// X-Hub-Signature-256 do webhook do WhatsApp em routes/whatsapp.ts).
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      (req as express.Request & { rawBody?: Buffer }).rawBody = buf;
+    },
+  })
+);
+
+// Log de toda requisição HTTP (Etapa 8) — primeiro evento no rastro de
+// qualquer mensagem que chega pelo endpoint genérico ou pelo webhook.
+app.use((req, res, next) => {
+  const inicio = Date.now();
+  res.on("finish", () => {
+    logger.info(
+      { method: req.method, path: req.path, status: res.statusCode, duracaoMs: Date.now() - inicio },
+      "requisição HTTP concluída"
+    );
+  });
+  next();
+});
+
+app.get("/health", async (_req, res) => {
+  try {
+    await checkDbConnection();
+    const redisOk = redisConnection.status === "ready";
+    res.status(redisOk ? 200 : 503).json({ status: "ok", db: "conectado", redis: redisConnection.status });
+  } catch (error) {
+    res.status(503).json({ status: "erro", db: "desconectado", detalhe: String(error) });
+  }
+});
+
+app.use(ingestRouter);
+app.use(whatsappRouter);
+
+async function start() {
+  try {
+    await checkDbConnection();
+    logger.info("conectado ao Postgres com sucesso");
+  } catch (error) {
+    logger.error({ err: error }, "falha ao conectar no Postgres");
+    process.exit(1);
+  }
+
+  // Sobe o worker da fila (Etapa 5) no mesmo processo do servidor — simples
+  // o bastante pra este estágio do projeto; pode virar um processo separado
+  // depois, se o volume de mensagens justificar.
+  startMessageWorker();
+  logger.info("worker da fila de mensagens iniciado");
+
+  scheduleMonthlyBriefingJob();
+
+  app.listen(env.PORT, () => {
+    logger.info({ port: env.PORT }, `servidor rodando em http://localhost:${env.PORT}`);
+  });
+}
+
+start();

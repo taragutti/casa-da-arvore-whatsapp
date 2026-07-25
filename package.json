@@ -1,0 +1,38 @@
+{
+  "name": "casa-da-arvore-automacao",
+  "version": "0.1.0",
+  "description": "Automação comercial e inteligência de demanda — Casa da Árvore",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test:extract": "tsx scripts/test-extract.ts",
+    "briefing": "tsx scripts/run-briefing.ts",
+    "migrate": "node scripts/migrate.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "bullmq": "^5.34.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "ioredis": "^5.4.1",
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.1",
+    "pino": "^9.5.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.9.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.11.10",
+    "pino-pretty": "^13.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.10"
+  }
+}
