@@ -4,6 +4,7 @@ import { UnidadeRecomendada } from "./routing.service";
 import { sendWhatsAppImage, sendWhatsAppVideo, sendWhatsAppDocument } from "./whatsapp.service";
 import { buscarMidias } from "../repositories/mediaLibrary.repo";
 import { getEtapaMidiaAtual, registrarEnvioMidia } from "../repositories/conversationState.repo";
+import { agendarFollowUp } from "./followUp.service";
 
 export type EtapaMidia = 1 | 2 | 3 | 4;
 
@@ -130,7 +131,11 @@ export async function processarMidiaProgressiva(
   const acao = decidirProximaAcaoMidia(ramo, etapaAtual, sinal);
 
   if (acao.tipo === "aguardar_handoff") {
-    log.info({ etapaAtual }, "régua de mídia esgotada — aguardando handoff humano (Seção 5, a implementar)");
+    // Régua de mídia esgotada não dispara handoff automaticamente aqui — só
+    // os gatilhos explícitos da Seção 5 (handoff.service.ts) fazem isso.
+    // Ver nota na Seção 4 sobre a sobreposição entre "handoff em 1-3 min
+    // após etapa 4" e os gatilhos da Seção 5.
+    log.info({ etapaAtual }, "régua de mídia esgotada — aguardando gatilho de handoff (Seção 5)");
     return;
   }
 
@@ -151,4 +156,7 @@ export async function processarMidiaProgressiva(
 
   await registrarEnvioMidia(leadId, acao.etapa);
   log.info({ unidadeRecomendada, etapa: acao.etapa }, "mídia da régua progressiva enviada");
+
+  // Régua de silêncio (Seção 6): agenda o follow-up de 2h a partir daqui.
+  await agendarFollowUp(leadId, whatsappNumber);
 }

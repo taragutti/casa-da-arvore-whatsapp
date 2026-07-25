@@ -4,7 +4,9 @@ import { logger } from "./config/logger";
 import { checkDbConnection } from "./db/client";
 import { connection as redisConnection } from "./queue/connection";
 import { startMessageWorker } from "./queue/processMessage.job";
+import { startFollowUpWorker } from "./queue/followUp.job";
 import { scheduleMonthlyBriefingJob } from "./jobs/monthlyBriefing.cron";
+import { scheduleLifecycleFollowUpJob } from "./jobs/lifecycleFollowUp.cron";
 import { ingestRouter } from "./routes/ingest";
 import { whatsappRouter } from "./routes/whatsapp";
 
@@ -60,7 +62,11 @@ async function start() {
   startMessageWorker();
   logger.info("worker da fila de mensagens iniciado");
 
+  startFollowUpWorker();
+  logger.info("worker da fila de follow-up iniciado");
+
   scheduleMonthlyBriefingJob();
+  scheduleLifecycleFollowUpJob();
 
   app.listen(env.PORT, () => {
     logger.info({ port: env.PORT }, `servidor rodando em http://localhost:${env.PORT}`);

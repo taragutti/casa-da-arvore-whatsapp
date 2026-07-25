@@ -60,3 +60,65 @@ export async function adicionarTag(leadId: string, tag: string): Promise<void> {
     [leadId, tag]
   );
 }
+
+/** Usado pela régua de silêncio (Seção 6) pra detectar se o lead respondeu depois de uma régua ser agendada. */
+export async function getUltimaInteracao(leadId: string): Promise<Date | null> {
+  const result = await pool.query<{ ultima_interacao: Date }>(`SELECT ultima_interacao FROM leads WHERE id = $1`, [
+    leadId,
+  ]);
+  return result.rows[0]?.ultima_interacao ?? null;
+}
+
+export interface LeadParaCicloDeVida {
+  id: string;
+  whatsapp_number: string;
+  nome_cliente: string | null;
+}
+
+/**
+ * Leads de casamento cujo 1º aniversário (data_evento + 1 ano) caiu nos
+ * últimos 3 dias e ainda não foram notificados — a janela de 3 dias é uma
+ * margem de segurança caso o job diário não rode exatamente no dia certo
+ * (Seção 6, régua de ciclo de vida).
+ */
+export async function buscarAniversariosCasamento(): Promise<LeadParaCicloDeVida[]> {
+  const result = await pool.query<LeadParaCicloDeVida>(
+    `SELECT id, whatsapp_number, nome_cliente
+     FROM leads
+     WHERE tipo_evento = 'casamento'
+       AND data_evento IS NOT NULL
+       AND (data_evento + INTERVAL '1 year')::date BETWEEN CURRENT_DATE - INTERVAL '3 days' AND CURRENT_DATE
+       AND NOT ('aniversario_casamento_enviado' = ANY(COALESCE(tags, ARRAY[]::text[])))`
+  );
+  return result.rows;
+}
+
+/** Leads corporativos 1 ano após o evento, mesma lógica de janela/idempotência do aniversário de casamento. */
+export async function buscarProspeccaoCorporativa(): Promise<LeadParaCicloDeVida[]> {
+  const result = await pool.query<LeadParaCicloDeVida>(
+    `SELECT id, whatsapp_number, nome_cliente
+     FROM leads
+     WHERE tipo_evento = 'corporativo'
+       AND data_evento IS NOT NULL
+       AND (data_evento + INTERVAL '1 year')::date BETWEEN CURRENT_DATE - INTERVAL '3 days' AND CURRENT_DATE
+       AND NOT ('prospeccao_corporativa_enviada' = ANY(COALESCE(tags, ARRAY[]::text[])))`
+  );
+  return result.rows;
+}
+
+/** Leads sem interação há 12 meses, ainda não arquivados — candidatos à última campanha antes do arquivamento (Seção 6). */
+export async function buscarLeadsFriosParaArquivar(): Promise<LeadParaCicloDeVida[]> {
+  const result = await pool.query<LeadParaCicloDeVida>(
+    `SELECT id, whatsapp_number, nome_cliente
+     FROM leads
+     WHERE status NOT IN ('fechado', 'perdido')
+       AND ultima_interacao <= now() - INTERVAL '12 months'
+       AND ultima_interacao > now() - INTERVAL '12 months 1 day'`
+  );
+  return result.rows;
+}
+
+/** Arquiva o lead (status 'perdido') após a última campanha de reengajamento (Seção 6). */
+export async function arquivarLeadFrio(leadId: string): Promise<void> {
+  await pool.query(`UPDATE leads SET status = 'perdido' WHERE id = $1`, [leadId]);
+}
