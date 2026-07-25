@@ -30,7 +30,7 @@ vivem em dois lugares possíveis:
 | `WHATSAPP_APP_SECRET` | Railway (?) — **confirmar local exato** | ✅ funcionando (testado 25/07/2026, round-trip real) | vazio no `.env` local — token está configurado em outro ambiente |
 | `WHATSAPP_ACCESS_TOKEN` | Railway (?) — **confirmar local exato** | ✅ funcionando — token **definitivo** (não expira em 24h) | vazio no `.env` local — mesma observação acima |
 | `WHATSAPP_PHONE_NUMBER_ID` | Railway (?) — **confirmar local exato** | ✅ funcionando | vazio no `.env` local — mesma observação acima |
-| `PAINEL_USERNAME` / `PAINEL_PASSWORD` | não configuradas ainda | ⚠️ pendente | painel (`GET /painel`, Seção 7) fica desativado (503) até essas duas serem definidas |
+| `PAINEL_USERNAME` / `PAINEL_PASSWORD` | Railway | ✅ ok | definidas em 25/07/2026; painel acessível em `/painel` com HTTP Basic Auth |
 
 ## Pendência aberta
 
