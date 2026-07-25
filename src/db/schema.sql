@@ -17,13 +17,34 @@ CREATE TABLE IF NOT EXISTS raw_messages (
 );
 
 -- 2. leads: funil comercial
-CREATE TYPE tipo_evento_enum AS ENUM (
-  'aniversario_infantil', 'casamento', 'debutante', 'corporativo', 'cha_de_bebe', 'outro'
-);
+--    Tipos ficam em blocos DO/EXCEPTION porque este arquivo é reaplicado por
+--    inteiro a cada deploy (scripts/migrate.js) — sem isso, o CREATE TYPE de
+--    um tipo já existente aborta a transação e nada abaixo dele é aplicado.
+DO $$ BEGIN
+  CREATE TYPE tipo_evento_enum AS ENUM (
+    'aniversario_infantil', 'casamento', 'debutante', 'corporativo', 'cha_de_bebe', 'outro'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
-CREATE TYPE status_lead_enum AS ENUM (
-  'novo', 'qualificando', 'proposta_enviada', 'negociacao', 'fechado', 'perdido'
-);
+DO $$ BEGIN
+  CREATE TYPE status_lead_enum AS ENUM (
+    'novo', 'qualificando', 'proposta_enviada', 'negociacao', 'fechado', 'perdido'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+-- unidade_enum: as 5 unidades físicas, usadas no roteamento do fluxo de bot
+-- (ver Fluxo_Detalhado_Bot_CRM_CasaDaArvore.docx, Seção 2.1)
+DO $$ BEGIN
+  CREATE TYPE unidade_enum AS ENUM (
+    'casa_da_arvore', 'park_lagos', 'shopping_park_lagos', 'casarao', 'casa_por_do_sol'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 CREATE TABLE IF NOT EXISTS leads (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -40,10 +61,20 @@ CREATE TABLE IF NOT EXISTS leads (
   resumo_pedido TEXT
 );
 
+-- Roteamento e qualificação (Seção 2.1 e 2.3 do fluxo detalhado)
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS unidade_recomendada unidade_enum;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS unidade_confirmada unidade_enum;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS tags TEXT[];
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS origem_lead TEXT;
+
 -- 3. demand_signals: sinais qualitativos por interação
-CREATE TYPE gatilho_emocional_enum AS ENUM (
-  'economia', 'exclusividade', 'tranquilidade', 'status', 'praticidade', 'outro'
-);
+DO $$ BEGIN
+  CREATE TYPE gatilho_emocional_enum AS ENUM (
+    'economia', 'exclusividade', 'tranquilidade', 'status', 'praticidade', 'outro'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 CREATE TABLE IF NOT EXISTS demand_signals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -65,7 +96,34 @@ CREATE TABLE IF NOT EXISTS monthly_briefings (
   enviado BOOLEAN NOT NULL DEFAULT false
 );
 
+-- 5. conversation_state: estado atual do fluxo de bot por lead (1 linha por lead),
+--    para o worker saber em que ponto da conversa está sem reprocessar o
+--    histórico inteiro a cada mensagem (Seção 2.2 do fluxo detalhado).
+CREATE TABLE IF NOT EXISTS conversation_state (
+  lead_id UUID PRIMARY KEY REFERENCES leads(id) ON DELETE CASCADE,
+  ramo TEXT, -- 'infantil' | '15_anos' | 'casamento' | 'corporativo' | 'recreacao_avulsa' | 'outro'
+  etapa_atual TEXT NOT NULL DEFAULT 'triagem',
+  dados_coletados JSONB NOT NULL DEFAULT '{}',
+  aguardando_engajamento_etapa_midia INTEGER, -- 1 a 4, ou null
+  ultimo_envio_midia_em TIMESTAMPTZ,
+  em_atendimento_humano BOOLEAN NOT NULL DEFAULT false,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 6. media_library: catálogo de mídias por unidade e perfil de lead, usado
+--    pelo motor de mídia progressiva (Seção 2.4 e 4 do fluxo detalhado).
+CREATE TABLE IF NOT EXISTS media_library (
+  codigo TEXT PRIMARY KEY, -- ex.: 'ARV-FOT-EVT-INF-G-01'
+  unidade unidade_enum NOT NULL,
+  tipo TEXT NOT NULL, -- 'foto' | 'video' | 'catalogo' | 'cupom'
+  categoria TEXT NOT NULL, -- 'externa' | 'evento' | 'tour' | 'catalogo'
+  perfil_lead TEXT, -- ex.: 'infantil_grande', 'destination'
+  url TEXT NOT NULL,
+  ativo BOOLEAN NOT NULL DEFAULT true
+);
+
 CREATE INDEX IF NOT EXISTS idx_demand_signals_lead_id ON demand_signals(lead_id);
 CREATE INDEX IF NOT EXISTS idx_demand_signals_created_at ON demand_signals(created_at);
 CREATE INDEX IF NOT EXISTS idx_leads_whatsapp_number ON leads(whatsapp_number);
 CREATE INDEX IF NOT EXISTS idx_raw_messages_processado ON raw_messages(processado);
+CREATE INDEX IF NOT EXISTS idx_media_library_unidade ON media_library(unidade);

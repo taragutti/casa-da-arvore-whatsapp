@@ -1,8 +1,10 @@
 import { pool } from "../db/client";
 import { logger } from "../config/logger";
 import { extractFromMessage, ExtractedLeadData } from "./anthropic.service";
+import { determinarUnidadeRecomendada } from "./routing.service";
 import { upsertLead } from "../repositories/leads.repo";
 import { insertDemandSignal } from "../repositories/demandSignals.repo";
+import { upsertConversationState } from "../repositories/conversationState.repo";
 
 const PALAVRAS_RELEVANTES = [
   "orçamento",
@@ -66,13 +68,21 @@ export async function processIncomingMessage(
 
   try {
     const extracted = await extractFromMessage(mensagem);
-    log.debug({ tipo_evento: extracted.tipo_evento }, "extração concluída");
+    log.debug({ tipo_evento: extracted.tipo_evento, ramo: extracted.ramo }, "extração concluída");
 
-    const leadId = await upsertLead(whatsappNumber, extracted);
+    const unidadeRecomendada = determinarUnidadeRecomendada(
+      extracted.ramo,
+      extracted.dados_ramo,
+      extracted.numero_convidados,
+      extracted.orcamento_mencionado
+    );
+
+    const leadId = await upsertLead(whatsappNumber, extracted, unidadeRecomendada);
     await insertDemandSignal(leadId, mensagem, extracted);
+    await upsertConversationState(leadId, extracted.ramo, extracted.dados_ramo);
     await pool.query(`UPDATE raw_messages SET processado = true WHERE id = $1`, [rawMessageId]);
 
-    log.info({ leadId }, "lead e sinal de demanda gravados com sucesso");
+    log.info({ leadId, ramo: extracted.ramo, unidadeRecomendada }, "lead e sinal de demanda gravados com sucesso");
     return { status: "processado", leadId, dadosExtraidos: extracted };
   } catch (error) {
     // Em caso de erro, NÃO marca processado = true (permite reprocessamento manual — seção 6.1.h).

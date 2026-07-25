@@ -188,4 +188,113 @@ describe("extractFromMessage", () => {
     // Confirma que houve retry (2 tentativas), não só uma chamada solta.
     expect(mockCreate).toHaveBeenCalledTimes(2);
   });
+
+  it("mensagem antiga (sem ramo/dados_ramo/sinal_engajamento na resposta da IA) continua funcionando com defaults seguros", async () => {
+    respostaIA({
+      nome_cliente: "Sofia",
+      tipo_evento: "aniversario_infantil",
+      data_evento: null,
+      numero_convidados: null,
+      orcamento_mencionado: null,
+      resumo_pedido: "Festa da Sofia",
+      palavras_chave: ["festa"],
+      objecao_ou_duvida: null,
+      gatilho_emocional: null,
+    });
+
+    const resultado = await extractFromMessage("Oi, quero saber sobre festa da Sofia");
+
+    expect(resultado.ramo).toBeNull();
+    expect(resultado.sinal_engajamento).toBe("neutro");
+    expect(resultado.dados_ramo.nome_aniversariante).toBeNull();
+    expect(resultado.dados_ramo.necessidades_tecnicas).toEqual([]);
+  });
+
+  it("classifica ramo infantil e extrai só os campos desse ramo, com sinal positivo", async () => {
+    respostaIA({
+      nome_cliente: "Marcia",
+      tipo_evento: "aniversario_infantil",
+      data_evento: null,
+      numero_convidados: 60,
+      orcamento_mencionado: null,
+      resumo_pedido: "Festa de 5 anos do Miguel, tema dinossauros",
+      palavras_chave: ["festa infantil", "dinossauros"],
+      objecao_ou_duvida: null,
+      gatilho_emocional: null,
+      ramo: "infantil",
+      dados_ramo: {
+        nome_aniversariante: "Miguel",
+        idade_aniversariante: 5,
+        tema_festa: "dinossauros",
+      },
+      sinal_engajamento: "positivo",
+    });
+
+    const resultado = await extractFromMessage(
+      "Adorei as fotos! Quero uma festa tema dinossauros pro Miguel, 5 aninhos, uns 60 convidados"
+    );
+
+    expect(resultado.ramo).toBe("infantil");
+    expect(resultado.dados_ramo.nome_aniversariante).toBe("Miguel");
+    expect(resultado.dados_ramo.idade_aniversariante).toBe(5);
+    expect(resultado.dados_ramo.tema_festa).toBe("dinossauros");
+    expect(resultado.dados_ramo.nomes_noivos).toBeNull();
+    expect(resultado.sinal_engajamento).toBe("positivo");
+  });
+
+  it("classifica ramo casamento com preferência de espaço e sinal de pergunta_valor", async () => {
+    respostaIA({
+      nome_cliente: null,
+      tipo_evento: "casamento",
+      data_evento: null,
+      numero_convidados: 150,
+      orcamento_mencionado: null,
+      resumo_pedido: "Casamento com vista para o mar, quer saber o valor",
+      palavras_chave: ["vista para o mar", "quanto custa"],
+      objecao_ou_duvida: null,
+      gatilho_emocional: null,
+      ramo: "casamento",
+      dados_ramo: {
+        preferencia_espaco: "vista_mar",
+        origem_casal: "exterior",
+        interesse_hospedagem: true,
+      },
+      sinal_engajamento: "pergunta_valor",
+    });
+
+    const resultado = await extractFromMessage(
+      "Somos de fora do país, queremos um espaço com vista para o mar. Quanto custa pra 150 pessoas?"
+    );
+
+    expect(resultado.ramo).toBe("casamento");
+    expect(resultado.dados_ramo.preferencia_espaco).toBe("vista_mar");
+    expect(resultado.dados_ramo.origem_casal).toBe("exterior");
+    expect(resultado.dados_ramo.interesse_hospedagem).toBe(true);
+    expect(resultado.sinal_engajamento).toBe("pergunta_valor");
+  });
+
+  it("corrige ramo fora do enum para 'outro' e valor inválido em sub-campo enum de dados_ramo para null", async () => {
+    respostaIA({
+      nome_cliente: null,
+      tipo_evento: "outro",
+      data_evento: null,
+      numero_convidados: null,
+      orcamento_mencionado: null,
+      resumo_pedido: "Chá de bebê",
+      palavras_chave: ["chá de bebê"],
+      objecao_ou_duvida: null,
+      gatilho_emocional: null,
+      ramo: "cha_de_bebe", // não existe no enum de ramo do sistema
+      dados_ramo: {
+        formato_festa: "gigante", // valor inventado, fora do enum
+      },
+      sinal_engajamento: "empolgado", // valor inventado, fora do enum
+    });
+
+    const resultado = await extractFromMessage("Fazem chá de bebê?");
+
+    expect(resultado.ramo).toBe("outro");
+    expect(resultado.dados_ramo.formato_festa).toBeNull();
+    expect(resultado.sinal_engajamento).toBe("neutro");
+  });
 });
