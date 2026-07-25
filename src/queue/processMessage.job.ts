@@ -4,6 +4,7 @@ import { logger } from "../config/logger";
 import { MESSAGE_QUEUE_NAME, MessageJobData } from "./messageQueue";
 import { processIncomingMessage } from "../services/messageProcessing.service";
 import { sendWhatsAppMessage, montarMensagemConfirmacao } from "../services/whatsapp.service";
+import { processarMidiaProgressiva } from "../services/mediaEngine.service";
 
 /**
  * Worker que roda fora do caminho da requisição HTTP (Etapa 5): toda a parte
@@ -31,6 +32,20 @@ export function startMessageWorker() {
           log.debug("confirmação automática enviada ao WhatsApp de teste");
         } catch (error) {
           log.error({ err: error }, "falha ao enviar confirmação automática");
+        }
+
+        try {
+          await processarMidiaProgressiva(
+            whatsappNumber,
+            result.leadId,
+            result.dadosExtraidos.ramo,
+            result.unidadeRecomendada,
+            result.dadosExtraidos.dados_ramo,
+            result.dadosExtraidos.numero_convidados,
+            result.dadosExtraidos.sinal_engajamento
+          );
+        } catch (error) {
+          log.error({ err: error }, "falha no motor de mídia progressiva");
         }
       }
 

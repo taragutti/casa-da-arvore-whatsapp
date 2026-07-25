@@ -35,6 +35,59 @@ export async function sendWhatsAppMessage(to: string, body: string): Promise<voi
   }
 }
 
+type TipoMidiaWhatsApp = "image" | "video" | "document";
+
+/** Envia mídia por link (foto/vídeo/documento) — motor de mídia progressiva (Seção 4). */
+async function sendWhatsAppMedia(
+  to: string,
+  tipo: TipoMidiaWhatsApp,
+  url: string,
+  opts: { caption?: string; filename?: string } = {}
+): Promise<void> {
+  if (!env.WHATSAPP_ACCESS_TOKEN || !env.WHATSAPP_PHONE_NUMBER_ID) {
+    logger.warn("WHATSAPP_ACCESS_TOKEN/WHATSAPP_PHONE_NUMBER_ID não configurados — pulando envio de mídia.");
+    return;
+  }
+
+  const url_ = `https://graph.facebook.com/v20.0/${env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+  const numeroLimpo = to.replace(/^\+/, "");
+
+  const mediaPayload: Record<string, string> = { link: url };
+  if (opts.caption) mediaPayload.caption = opts.caption;
+  if (tipo === "document" && opts.filename) mediaPayload.filename = opts.filename;
+
+  const response = await fetch(url_, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.WHATSAPP_ACCESS_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: numeroLimpo,
+      type: tipo,
+      [tipo]: mediaPayload,
+    }),
+  });
+
+  if (!response.ok) {
+    const detalhe = await response.text();
+    throw new Error(`Falha ao enviar ${tipo} via WhatsApp (${response.status}): ${detalhe}`);
+  }
+}
+
+export async function sendWhatsAppImage(to: string, url: string, caption?: string): Promise<void> {
+  return sendWhatsAppMedia(to, "image", url, { caption });
+}
+
+export async function sendWhatsAppVideo(to: string, url: string, caption?: string): Promise<void> {
+  return sendWhatsAppMedia(to, "video", url, { caption });
+}
+
+export async function sendWhatsAppDocument(to: string, url: string, filename: string, caption?: string): Promise<void> {
+  return sendWhatsAppMedia(to, "document", url, { caption, filename });
+}
+
 /**
  * Monta a mensagem de confirmação (seção 7 da especificação), com fallback
  * genérico quando nome_cliente ou tipo_evento vierem nulos da extração.

@@ -30,3 +30,22 @@ export async function upsertConversationState(
     [leadId, ramo, JSON.stringify(dadosPreenchidos)]
   );
 }
+
+/** Etapa atual da régua de mídia progressiva (1 a 4), ou null se ainda não começou (Seção 4). */
+export async function getEtapaMidiaAtual(leadId: string): Promise<number | null> {
+  const result = await pool.query<{ aguardando_engajamento_etapa_midia: number | null }>(
+    `SELECT aguardando_engajamento_etapa_midia FROM conversation_state WHERE lead_id = $1`,
+    [leadId]
+  );
+  return result.rows[0]?.aguardando_engajamento_etapa_midia ?? null;
+}
+
+/** Registra que a mídia da etapa foi enviada — pressupõe que upsertConversationState já rodou antes para este lead. */
+export async function registrarEnvioMidia(leadId: string, etapa: number): Promise<void> {
+  await pool.query(
+    `UPDATE conversation_state
+     SET aguardando_engajamento_etapa_midia = $2, ultimo_envio_midia_em = now(), updated_at = now()
+     WHERE lead_id = $1`,
+    [leadId, etapa]
+  );
+}

@@ -1,7 +1,7 @@
 import { pool } from "../db/client";
 import { logger } from "../config/logger";
 import { extractFromMessage, ExtractedLeadData } from "./anthropic.service";
-import { determinarUnidadeRecomendada } from "./routing.service";
+import { determinarUnidadeRecomendada, UnidadeRecomendada } from "./routing.service";
 import { upsertLead } from "../repositories/leads.repo";
 import { insertDemandSignal } from "../repositories/demandSignals.repo";
 import { upsertConversationState } from "../repositories/conversationState.repo";
@@ -29,7 +29,12 @@ export function isMensagemRelevante(mensagem: string): boolean {
 
 export type ProcessResult =
   | { status: "ignorado"; motivo: string }
-  | { status: "processado"; leadId: string; dadosExtraidos: ExtractedLeadData }
+  | {
+      status: "processado";
+      leadId: string;
+      dadosExtraidos: ExtractedLeadData;
+      unidadeRecomendada: UnidadeRecomendada | null;
+    }
   | { status: "erro"; erro: string };
 
 /**
@@ -83,7 +88,7 @@ export async function processIncomingMessage(
     await pool.query(`UPDATE raw_messages SET processado = true WHERE id = $1`, [rawMessageId]);
 
     log.info({ leadId, ramo: extracted.ramo, unidadeRecomendada }, "lead e sinal de demanda gravados com sucesso");
-    return { status: "processado", leadId, dadosExtraidos: extracted };
+    return { status: "processado", leadId, dadosExtraidos: extracted, unidadeRecomendada };
   } catch (error) {
     // Em caso de erro, NÃO marca processado = true (permite reprocessamento manual — seção 6.1.h).
     await pool.query(`UPDATE raw_messages SET erro = $1 WHERE id = $2`, [String(error), rawMessageId]);

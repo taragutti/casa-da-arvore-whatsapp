@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "src/repositories/leads.repo.ts": {
-    "mtime": 1784401504.7518063,
-    "ast_hash": "7625a371e17a85ea7065666aafcebee5",
+    "mtime": 1784990956.177344,
+    "ast_hash": "b83e79caee3ea91888b4987891bc1711",
     "semantic_hash": ""
   },
   "src/routes/ingest.ts": {
@@ -115,8 +115,8 @@
     "semantic_hash": ""
   },
   "src/services/messageProcessing.service.ts": {
-    "mtime": 1784411557.4630902,
-    "ast_hash": "cbe2d3e630df81caac8465e5b99eca2a",
+    "mtime": 1784990971.7948823,
+    "ast_hash": "aff45d86525ef573fe0a0b9249b348f5",
     "semantic_hash": ""
   },
   "src/services/whatsapp.service.ts": {
@@ -210,13 +210,28 @@
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
-    "mtime": 1784989039.4663172,
-    "ast_hash": "44f179332ab4ec1e6d31ae93c0b5afd6",
+    "mtime": 1784990841.1055489,
+    "ast_hash": "31ba34b542d0022491f7bbfc7a82ea30",
     "semantic_hash": ""
   },
   "ENVIRONMENT.md": {
     "mtime": 1784985346.516245,
     "ast_hash": "8b3f581aa7e392e2c7ec108978919b29",
+    "semantic_hash": ""
+  },
+  "src/repositories/conversationState.repo.ts": {
+    "mtime": 1784990941.6803715,
+    "ast_hash": "1265bb564ad95fea86728ce6ae1b0742",
+    "semantic_hash": ""
+  },
+  "src/services/routing.service.test.ts": {
+    "mtime": 1784990994.5466168,
+    "ast_hash": "8f108d9816d5f236930b0863d37130c3",
+    "semantic_hash": ""
+  },
+  "src/services/routing.service.ts": {
+    "mtime": 1784990933.2006361,
+    "ast_hash": "7f5933dc2f947c81c53901804535e642",
     "semantic_hash": ""
   }
 }
