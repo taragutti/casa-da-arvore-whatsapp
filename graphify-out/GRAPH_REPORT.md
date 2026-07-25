@@ -1,16 +1,16 @@
 # Graph Report - CASA DA ARVORE FLUXO CRM  (2026-07-25)
 
 ## Corpus Check
-- 55 files · ~26,399 words
+- 59 files · ~27,342 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 333 nodes · 603 edges · 25 communities (19 shown, 6 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.5)
+- 347 nodes · 636 edges · 26 communities (20 shown, 6 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 3 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `242d9484`
+- Built from commit: `f418be05`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -38,14 +38,15 @@
 - extraction-spec.md
 - messageProcessing.service.ts
 - email.service.ts
+- email.service.ts
 
 ## God Nodes (most connected - your core abstractions)
 1. `logger` - 18 edges
 2. `compilerOptions` - 14 edges
-3. `runMonthlyBriefingJob()` - 12 edges
-4. `processarHandoff()` - 12 edges
-5. `What You Must Do When Invoked` - 12 edges
-6. `env` - 11 edges
+3. `env` - 12 edges
+4. `runMonthlyBriefingJob()` - 12 edges
+5. `processarHandoff()` - 12 edges
+6. `What You Must Do When Invoked` - 12 edges
 7. `processIncomingMessage()` - 11 edges
 8. `Casa da Árvore — Automação Comercial e Inteligência de Demanda` - 11 edges
 9. `/graphify` - 10 edges
@@ -54,27 +55,27 @@
 ## Surprising Connections (you probably didn't know these)
 - `main()` --calls--> `extractFromMessage()`  [EXTRACTED]
   scripts/test-extract.ts → src/services/anthropic.service.ts
-- `processarHandoff()` --references--> `logger`  [EXTRACTED]
-  src/services/messageProcessing.service.ts → src/config/logger.ts
-- `processIncomingMessage()` --references--> `logger`  [EXTRACTED]
-  src/services/messageProcessing.service.ts → src/config/logger.ts
-- `start()` --calls--> `scheduleLifecycleFollowUpJob()`  [EXTRACTED]
-  src/server.ts → src/jobs/lifecycleFollowUp.cron.ts
 - `runMonthlyBriefingJob()` --calls--> `sendBriefingEmail()`  [EXTRACTED]
   src/jobs/monthlyBriefing.cron.ts → src/services/email.service.ts
+- `startFollowUpWorker()` --calls--> `processarFollowUpAgendado()`  [EXTRACTED]
+  src/queue/followUp.job.ts → src/services/followUp.service.ts
+- `startMessageWorker()` --calls--> `processarMidiaProgressiva()`  [EXTRACTED]
+  src/queue/processMessage.job.ts → src/services/mediaEngine.service.ts
+- `startMessageWorker()` --calls--> `processIncomingMessage()`  [EXTRACTED]
+  src/queue/processMessage.job.ts → src/services/messageProcessing.service.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (25 total, 6 thin omitted)
+## Communities (26 total, 6 thin omitted)
 
 ### Community 0 - "server.ts"
-Cohesion: 0.12
-Nodes (25): env, envSchema, parsed, logger, checkDbConnection(), connection, startFollowUpWorker(), FollowUpJobData (+17 more)
+Cohesion: 0.16
+Nodes (17): env, envSchema, parsed, checkDbConnection(), scheduleLifecycleFollowUpJob(), scheduleMonthlyBriefingJob(), connection, startFollowUpWorker() (+9 more)
 
 ### Community 1 - "monthlyBriefing.cron.ts"
 Cohesion: 0.19
-Nodes (18): mesAnterior(), pad2(), periodoDeString(), PeriodoRange, runMonthlyBriefingJob(), scheduleMonthlyBriefingJob(), DemandSignalRow, findDemandSignalsBetween() (+10 more)
+Nodes (17): mesAnterior(), pad2(), periodoDeString(), PeriodoRange, runMonthlyBriefingJob(), DemandSignalRow, findDemandSignalsBetween(), markBriefingAsSent() (+9 more)
 
 ### Community 2 - "What You Must Do When Invoked"
 Cohesion: 0.08
@@ -89,16 +90,16 @@ Cohesion: 0.09
 Nodes (21): dist, ES2022, node_modules, src/**/*.test.ts, src/**/*.ts, compilerOptions, declaration, esModuleInterop (+13 more)
 
 ### Community 5 - "dependencies"
-Cohesion: 0.06
-Nodes (33): @anthropic-ai/sdk, bullmq, dotenv, express, ioredis, node-cron, pg, pino (+25 more)
+Cohesion: 0.11
+Nodes (19): @anthropic-ai/sdk, bullmq, dotenv, express, ioredis, node-cron, pg, pino (+11 more)
 
 ### Community 6 - "devDependencies"
-Cohesion: 0.12
-Nodes (17): pino-pretty, tsx, @types/express, @types/node, @types/node-cron, @types/pg, typescript, devDependencies (+9 more)
+Cohesion: 0.06
+Nodes (31): pino-pretty, tsx, @types/express, @types/node, @types/node-cron, @types/pg, typescript, description (+23 more)
 
 ### Community 7 - "scripts"
-Cohesion: 0.11
-Nodes (33): pool, atualizarTentativasSemClassificacao(), marcarEmAtendimentoHumano(), upsertConversationState(), insertDemandSignal(), upsertLead(), ExtractedLeadData, SinalEngajamento (+25 more)
+Cohesion: 0.12
+Nodes (28): logger, pool, apenasPreenchidos(), atualizarTentativasSemClassificacao(), EstadoHandoff, marcarEmAtendimentoHumano(), upsertConversationState(), insertDemandSignal() (+20 more)
 
 ### Community 8 - "Casa da Árvore — Automação Comercial e Inteligência de Demanda"
 Cohesion: 0.12
@@ -129,12 +130,16 @@ Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ### Community 23 - "messageProcessing.service.ts"
-Cohesion: 0.11
-Nodes (27): apenasPreenchidos(), EstadoHandoff, getEtapaMidiaAtual(), registrarEnvioMidia(), buscarMidias(), CategoriaMidia, MediaItem, TipoMidia (+19 more)
+Cohesion: 0.12
+Nodes (25): getEtapaMidiaAtual(), registrarEnvioMidia(), buscarMidias(), CategoriaMidia, MediaItem, TipoMidia, DadosPorRamo, SinalEngajamento (+17 more)
 
 ### Community 24 - "email.service.ts"
-Cohesion: 0.40
-Nodes (9): runLifecycleFollowUpJob(), scheduleLifecycleFollowUpJob(), adicionarTag(), arquivarLeadFrio(), buscarAniversariosCasamento(), buscarLeadsFriosParaArquivar(), buscarProspeccaoCorporativa(), LeadParaCicloDeVida (+1 more)
+Cohesion: 0.18
+Nodes (17): runLifecycleFollowUpJob(), FollowUpJobData, followUpQueue, ReguaFollowUp, getEstadoHandoff(), adicionarTag(), arquivarLeadFrio(), buscarAniversariosCasamento() (+9 more)
+
+### Community 25 - "email.service.ts"
+Cohesion: 0.17
+Nodes (18): buscarLeadsParaPainel(), LeadPainel, autenticarPainel(), compararSeguro(), painelRouter, destinatarioHandoff(), enviarViaResend(), formatarBriefingEmHtml() (+10 more)
 
 ## Knowledge Gaps
 - **138 isolated node(s):** `name`, `version`, `description`, `private`, `type` (+133 more)
@@ -144,14 +149,14 @@ Nodes (9): runLifecycleFollowUpJob(), scheduleLifecycleFollowUpJob(), adicionarT
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `logger` connect `server.ts` to `monthlyBriefing.cron.ts`, `anthropic.service.ts`, `scripts`, `messageProcessing.service.ts`, `email.service.ts`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
-- **Why does `devDependencies` connect `devDependencies` to `dependencies`?**
+- **Why does `logger` connect `scripts` to `server.ts`, `monthlyBriefing.cron.ts`, `anthropic.service.ts`, `messageProcessing.service.ts`, `email.service.ts`, `email.service.ts`?**
+  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+- **Why does `env` connect `server.ts` to `monthlyBriefing.cron.ts`, `anthropic.service.ts`, `scripts`, `messageProcessing.service.ts`, `email.service.ts`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **Why does `dependencies` connect `dependencies` to `devDependencies`?**
   _High betweenness centrality (0.012) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
   _138 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `server.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.1241565452091768 - nodes in this community are weakly interconnected._
 - **Should `What You Must Do When Invoked` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._
 - **Should `anthropic.service.ts` be split into smaller, more focused modules?**

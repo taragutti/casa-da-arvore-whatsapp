@@ -23,6 +23,14 @@ const envSchema = z.object({
   WHATSAPP_APP_SECRET: z.string().optional(),
   WHATSAPP_ACCESS_TOKEN: z.string().optional(),
   WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+
+  // Painel mínimo de visibilidade (Seção 7) — HTTP Basic Auth. Se qualquer
+  // um dos dois faltar, a rota fica desativada (503) em vez de abrir sem
+  // autenticação: o painel expõe dados pessoais de leads (nome, telefone,
+  // detalhes do evento), então "sem credencial configurada" tem que
+  // significar "bloqueado", nunca "público".
+  PAINEL_USERNAME: z.string().optional(),
+  PAINEL_PASSWORD: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

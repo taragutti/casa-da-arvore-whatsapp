@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "src/config/env.ts": {
-    "mtime": 1784993314.811749,
-    "ast_hash": "ff29dc9ab8ac3a5d2e3369de078aca43",
+    "mtime": 1784995431.259694,
+    "ast_hash": "25723127eec623b0a5a6a87c55969a31",
     "semantic_hash": ""
   },
   "src/config/logger.ts": {
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "src/server.ts": {
-    "mtime": 1784994660.6839948,
-    "ast_hash": "f06614e351aa2a084de489da4cf8de54",
+    "mtime": 1784995491.6676247,
+    "ast_hash": "1f1c32e5b97449642994d2f6db5b65fa",
     "semantic_hash": ""
   },
   "src/services/anthropic.service.test.ts": {
@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "src/services/email.service.ts": {
-    "mtime": 1784993392.2349882,
-    "ast_hash": "b8b21619f6efff1c3ccdd5ca33f301d8",
+    "mtime": 1784995451.508408,
+    "ast_hash": "e9f46025c0a8b9def515803010327b2e",
     "semantic_hash": ""
   },
   "src/services/messageProcessing.service.ts": {
@@ -215,8 +215,8 @@
     "semantic_hash": ""
   },
   "ENVIRONMENT.md": {
-    "mtime": 1784993907.457789,
-    "ast_hash": "c6d28364a5694bf1f1b1bfee91b0edd4",
+    "mtime": 1784995578.5134585,
+    "ast_hash": "c811d2bedacc4400cb0bf49a480cedeb",
     "semantic_hash": ""
   },
   "src/repositories/conversationState.repo.ts": {
@@ -277,6 +277,26 @@
   "src/services/followUp.service.ts": {
     "mtime": 1784994604.843854,
     "ast_hash": "4470119d10a922b2a8bc6f424d2b1fd1",
+    "semantic_hash": ""
+  },
+  "src/repositories/painel.repo.ts": {
+    "mtime": 1784995438.7449794,
+    "ast_hash": "c575e4f792983da7b485915963244de3",
+    "semantic_hash": ""
+  },
+  "src/routes/painel.ts": {
+    "mtime": 1784995479.593142,
+    "ast_hash": "7c8243793cd28943436133f13a7afe92",
+    "semantic_hash": ""
+  },
+  "src/services/painel.service.ts": {
+    "mtime": 1784995470.6442537,
+    "ast_hash": "3dd78ac5bb5a75cd03fdff6142b4841a",
+    "semantic_hash": ""
+  },
+  "src/utils/html.ts": {
+    "mtime": 1784995443.9921596,
+    "ast_hash": "9a1c9f6fa4fcd606ae42180bda95137c",
     "semantic_hash": ""
   }
 }

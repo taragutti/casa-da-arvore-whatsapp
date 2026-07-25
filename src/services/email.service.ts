@@ -4,15 +4,7 @@ import { MonthlyBriefingContent } from "./briefing.service";
 import { GatilhoHandoff } from "./handoff.service";
 import { RamoEvento } from "./anthropic.service";
 import { UnidadeRecomendada } from "./routing.service";
-
-function escapeHtml(texto: string): string {
-  return texto
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+import { escapeHtml } from "../utils/html";
 
 /** Monta o HTML legível do briefing mensal (seção 6.3, passo 7). */
 export function formatarBriefingEmHtml(briefing: MonthlyBriefingContent): string {
