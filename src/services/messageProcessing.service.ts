@@ -5,6 +5,7 @@ import { extractFromMessage, ExtractedLeadData } from "./anthropic.service";
 import { determinarUnidadeRecomendada, UnidadeRecomendada } from "./routing.service";
 import { detectarGatilhoHandoff, calcularSlaMinutos, dentroDoHorarioComercial, GatilhoHandoff } from "./handoff.service";
 import { sendHandoffNotificationEmail, sendHandoffFollowUpEmail } from "./email.service";
+import { notificarVendedor } from "./whatsapp.service";
 import { upsertLead, adicionarTag } from "../repositories/leads.repo";
 import { insertDemandSignal } from "../repositories/demandSignals.repo";
 import {
@@ -94,6 +95,9 @@ async function processarHandoff(
     await adicionarTag(leadId, "precisa_qualificacao_humana");
   }
 
+  const slaMinutos = calcularSlaMinutos(unidadeRecomendada, extracted.ramo);
+  const emHorarioComercial = dentroDoHorarioComercial();
+
   try {
     await sendHandoffNotificationEmail({
       whatsappNumber,
@@ -102,13 +106,43 @@ async function processarHandoff(
       unidadeRecomendada,
       gatilho: decisao.gatilho,
       paraGerente: decisao.paraGerente,
-      slaMinutos: calcularSlaMinutos(unidadeRecomendada, extracted.ramo),
-      dentroDoHorarioComercial: dentroDoHorarioComercial(),
+      slaMinutos,
+      dentroDoHorarioComercial: emHorarioComercial,
       resumoPedido: extracted.resumo_pedido,
       mensagemOriginal: mensagem,
     });
   } catch (error) {
     log.error({ err: error, gatilho: decisao.gatilho }, "falha ao notificar handoff por e-mail");
+  }
+
+  // Notificação no WhatsApp do vendedor, em paralelo ao e-mail (Seção 5). Pode
+  // falhar se a janela de 24h da Meta estiver fechada — por isso o e-mail
+  // continua sendo o canal confiável e a falha aqui não interrompe o handoff.
+  try {
+    await notificarVendedor({
+      whatsappCliente: whatsappNumber,
+      nomeCliente: extracted.nome_cliente,
+      email: extracted.email,
+      ramo: extracted.ramo,
+      unidadeRecomendada,
+      dataEvento: extracted.data_evento,
+      numeroConvidados: extracted.numero_convidados,
+      orcamentoMencionado: extracted.orcamento_mencionado,
+      resumoPedido: extracted.resumo_pedido,
+      objecaoOuDuvida: extracted.objecao_ou_duvida,
+      gatilho: decisao.gatilho,
+      paraGerente: decisao.paraGerente,
+      slaMinutos,
+      dentroDoHorarioComercial: emHorarioComercial,
+      mensagemOriginal: mensagem,
+      dadosRamo: extracted.dados_ramo as unknown as Record<string, unknown>,
+    });
+    log.info("vendedor notificado no WhatsApp");
+  } catch (error) {
+    log.error(
+      { err: error, gatilho: decisao.gatilho },
+      "falha ao notificar vendedor no WhatsApp — verifique a janela de 24h da Meta; e-mail segue como canal de registro"
+    );
   }
 
   log.info({ gatilho: decisao.gatilho, paraGerente: decisao.paraGerente }, "handoff disparado");

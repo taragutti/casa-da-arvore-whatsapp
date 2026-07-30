@@ -31,6 +31,23 @@ vivem em dois lugares possíveis:
 | `WHATSAPP_ACCESS_TOKEN` | Railway (?) — **confirmar local exato** | ✅ funcionando — token **definitivo** (não expira em 24h) | vazio no `.env` local — mesma observação acima |
 | `WHATSAPP_PHONE_NUMBER_ID` | Railway (?) — **confirmar local exato** | ✅ funcionando | vazio no `.env` local — mesma observação acima |
 | `PAINEL_USERNAME` / `PAINEL_PASSWORD` | Railway | ✅ ok | definidas em 25/07/2026; painel acessível em `/painel` com HTTP Basic Auth |
+| `VENDEDOR_WHATSAPP_NUMBER` | Railway | ⚠️ configurada, envio não validado | `+5522997546818` (definida 30/07/2026). Só recebe texto livre dentro da janela de 24h da Meta — ver "Pendência aberta" abaixo |
+
+## Pendência aberta — janela de 24h da Meta (notificação do vendedor)
+
+A notificação de handoff no WhatsApp do vendedor (`VENDEDOR_WHATSAPP_NUMBER`)
+é uma mensagem **iniciada pela empresa**. A Meta só entrega texto livre se o
+vendedor tiver mandado alguma mensagem pro número do bot nas últimas 24h.
+Fora dessa janela o envio é rejeitado — o código loga o erro e segue (o
+e-mail de handoff continua funcionando como canal de registro), mas a
+notificação no WhatsApp **não chega**.
+
+Duas saídas possíveis:
+1. **Contorno frágil:** o vendedor manda um "oi" pro número do bot todo dia,
+   mantendo a janela aberta. Funciona, mas depende de disciplina humana.
+2. **Solução real:** criar um template aprovado pra notificação de handoff no
+   Meta Business Manager (mesmo processo dos templates de follow-up) e trocar
+   o envio de texto livre por template no código.
 
 ## Pendência aberta
 

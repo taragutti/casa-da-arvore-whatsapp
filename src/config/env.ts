@@ -17,6 +17,16 @@ const envSchema = z.object({
   // se não configurado.
   HANDOFF_NOTIFICATION_EMAIL: z.string().optional(),
 
+  // Número de WhatsApp do vendedor que recebe o lead no handoff (Seção 5),
+  // em formato internacional (ex: +5522997546818). Se não configurado, o
+  // handoff continua notificando só por e-mail.
+  //
+  // ATENÇÃO: enviar pra este número é uma mensagem iniciada pela empresa —
+  // a Meta só permite texto livre dentro de 24h da última mensagem que o
+  // vendedor mandou pro número do bot. Fora dessa janela, o envio falha
+  // (logado, sem quebrar o pipeline) até existir um template aprovado.
+  VENDEDOR_WHATSAPP_NUMBER: z.string().optional(),
+
   // WhatsApp Business Cloud API (Meta) — usado só pelo webhook de teste em
   // /webhooks/whatsapp. O endpoint genérico /api/leads/ingest não depende disso.
   WHATSAPP_VERIFY_TOKEN: z.string().optional(),
