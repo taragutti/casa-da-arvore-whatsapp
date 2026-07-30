@@ -89,6 +89,33 @@ export async function sendWhatsAppDocument(to: string, url: string, filename: st
 }
 
 /**
+ * Erros da Meta na família 132xxx são todos problemas do TEMPLATE em si
+ * (não existe, não aprovado, pausado, desabilitado, número de parâmetros
+ * errado, texto longo demais) — distintos de falha de rede/token/janela.
+ * Separá-los permite decidir por fallback só quando o problema é o template.
+ * Referência: códigos 132000–132016 da Cloud API.
+ */
+export class WhatsAppTemplateError extends Error {
+  readonly metaCode: number | null;
+  readonly ehProblemaDeTemplate: boolean;
+
+  constructor(templateName: string, httpStatus: number, corpoResposta: string) {
+    super(`Falha ao enviar template "${templateName}" via WhatsApp (${httpStatus}): ${corpoResposta}`);
+    this.name = "WhatsAppTemplateError";
+
+    let code: number | null = null;
+    try {
+      code = JSON.parse(corpoResposta)?.error?.code ?? null;
+    } catch {
+      code = null; // corpo não-JSON: trata como erro genérico, sem fallback
+    }
+
+    this.metaCode = typeof code === "number" ? code : null;
+    this.ehProblemaDeTemplate = this.metaCode != null && this.metaCode >= 132000 && this.metaCode <= 132999;
+  }
+}
+
+/**
  * Envia uma mensagem de template aprovado. Diferente do texto livre, funciona
  * fora da janela de 24h da Meta — é o único caminho confiável pra mensagem
  * iniciada pela empresa (notificação de vendedor, follow-ups).
@@ -132,7 +159,7 @@ export async function sendWhatsAppTemplate(
 
   if (!response.ok) {
     const detalhe = await response.text();
-    throw new Error(`Falha ao enviar template "${templateName}" via WhatsApp (${response.status}): ${detalhe}`);
+    throw new WhatsAppTemplateError(templateName, response.status, detalhe);
   }
 }
 
@@ -369,9 +396,14 @@ export function montarVariaveisTemplateVendedor(r: ResumoLeadParaVendedor): stri
  * texto livre, que só é entregue se o vendedor tiver mandado mensagem pro bot
  * nas últimas 24h.
  *
- * Não há fallback automático de template pra texto livre de propósito: se o
- * template falhar (nome errado, não aprovado), o erro tem que aparecer no log
- * em vez de ser mascarado por um envio que só funcionaria por acaso.
+ * Se o template estiver configurado mas a Meta recusar por problema do próprio
+ * template (não existe, ainda em análise, pausado — família 132xxx), tenta
+ * texto livre em seguida e loga o motivo em nível de erro. Assim a variável
+ * pode ser definida ANTES da aprovação sair sem derrubar a notificação, e a
+ * má configuração continua visível no log em vez de silenciosa.
+ *
+ * Erros que não são do template (token, rede, número inválido) não fazem
+ * fallback — retentar como texto livre não resolveria e só mascararia a causa.
  */
 export async function notificarVendedor(resumo: ResumoLeadParaVendedor): Promise<void> {
   if (!env.VENDEDOR_WHATSAPP_NUMBER) {
@@ -379,21 +411,30 @@ export async function notificarVendedor(resumo: ResumoLeadParaVendedor): Promise
     return;
   }
 
+  const destino = env.VENDEDOR_WHATSAPP_NUMBER;
   const templateName = env.VENDEDOR_HANDOFF_TEMPLATE_NAME;
 
-  if (templateName) {
-    await sendWhatsAppTemplate(
-      env.VENDEDOR_WHATSAPP_NUMBER,
-      templateName,
-      montarVariaveisTemplateVendedor(resumo)
+  if (!templateName) {
+    logger.warn(
+      "VENDEDOR_HANDOFF_TEMPLATE_NAME não configurado — enviando texto livre, que só é entregue dentro da janela de 24h da Meta."
     );
+    await sendWhatsAppMessage(destino, montarResumoParaVendedor(resumo));
     return;
   }
 
-  logger.warn(
-    "VENDEDOR_HANDOFF_TEMPLATE_NAME não configurado — enviando texto livre, que só é entregue dentro da janela de 24h da Meta."
-  );
-  await sendWhatsAppMessage(env.VENDEDOR_WHATSAPP_NUMBER, montarResumoParaVendedor(resumo));
+  try {
+    await sendWhatsAppTemplate(destino, templateName, montarVariaveisTemplateVendedor(resumo));
+  } catch (error) {
+    if (error instanceof WhatsAppTemplateError && error.ehProblemaDeTemplate) {
+      logger.error(
+        { templateName, metaCode: error.metaCode, err: error },
+        "template de handoff recusado pela Meta (não existe, em análise ou pausado) — caindo pra texto livre, que só chega dentro da janela de 24h"
+      );
+      await sendWhatsAppMessage(destino, montarResumoParaVendedor(resumo));
+      return;
+    }
+    throw error;
+  }
 }
 
 /**

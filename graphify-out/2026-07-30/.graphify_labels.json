@@ -23,5 +23,6 @@
   "21": "vitest.config.ts",
   "22": "vitest.setup.ts",
   "23": "messageProcessing.service.ts",
-  "24": "email.service.ts"
+  "24": "email.service.ts",
+  "25": "messageProcessing.service.ts"
 }

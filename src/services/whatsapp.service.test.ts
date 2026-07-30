@@ -3,6 +3,7 @@ import {
   montarResumoParaVendedor,
   montarVariaveisTemplateVendedor,
   CORPO_TEMPLATE_HANDOFF,
+  WhatsAppTemplateError,
   ResumoLeadParaVendedor,
 } from "./whatsapp.service";
 
@@ -218,5 +219,46 @@ describe("montarVariaveisTemplateVendedor", () => {
     const variaveis = montarVariaveisTemplateVendedor(resumoBase({ mensagemOriginal: mensagem, dadosRamo: {} }));
 
     expect(variaveis[9]).toBe(mensagem);
+  });
+});
+
+describe("WhatsAppTemplateError", () => {
+  it("reconhece template inexistente/não aprovado (132001) como problema de template", () => {
+    const erro = new WhatsAppTemplateError(
+      "handoff_vendedor",
+      400,
+      JSON.stringify({ error: { code: 132001, message: "Template name does not exist" } })
+    );
+
+    expect(erro.metaCode).toBe(132001);
+    expect(erro.ehProblemaDeTemplate).toBe(true);
+  });
+
+  it("reconhece template pausado (132015) como problema de template", () => {
+    const erro = new WhatsAppTemplateError("x", 400, JSON.stringify({ error: { code: 132015 } }));
+    expect(erro.ehProblemaDeTemplate).toBe(true);
+  });
+
+  it("NÃO trata erro de token/permissão (190) como problema de template — não deve virar fallback", () => {
+    const erro = new WhatsAppTemplateError("x", 401, JSON.stringify({ error: { code: 190 } }));
+    expect(erro.metaCode).toBe(190);
+    expect(erro.ehProblemaDeTemplate).toBe(false);
+  });
+
+  it("NÃO trata erro de janela de 24h (131047) como problema de template", () => {
+    const erro = new WhatsAppTemplateError("x", 400, JSON.stringify({ error: { code: 131047 } }));
+    expect(erro.ehProblemaDeTemplate).toBe(false);
+  });
+
+  it("corpo não-JSON não quebra e não vira fallback", () => {
+    const erro = new WhatsAppTemplateError("x", 502, "<html>Bad Gateway</html>");
+    expect(erro.metaCode).toBeNull();
+    expect(erro.ehProblemaDeTemplate).toBe(false);
+  });
+
+  it("preserva o nome do template e o status HTTP na mensagem, pra diagnóstico no log", () => {
+    const erro = new WhatsAppTemplateError("handoff_vendedor", 400, JSON.stringify({ error: { code: 132001 } }));
+    expect(erro.message).toContain("handoff_vendedor");
+    expect(erro.message).toContain("400");
   });
 });
