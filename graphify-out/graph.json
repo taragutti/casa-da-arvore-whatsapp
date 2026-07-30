@@ -10,8 +10,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_json",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "package.json"
     },
     {
@@ -21,8 +21,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_name",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "name"
     },
     {
@@ -32,8 +32,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_version",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "version"
     },
     {
@@ -43,8 +43,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_description",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "description"
     },
     {
@@ -54,8 +54,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_private",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "private"
     },
     {
@@ -65,8 +65,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_type",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "type"
     },
     {
@@ -76,8 +76,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_scripts",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "scripts"
     },
     {
@@ -87,8 +87,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_scripts_dev",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "dev"
     },
     {
@@ -98,8 +98,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_scripts_build",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "build"
     },
     {
@@ -109,8 +109,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_scripts_start",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "start"
     },
     {
@@ -120,8 +120,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_scripts_typecheck",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "typecheck"
     },
     {
@@ -131,8 +131,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_scripts_test_extract",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "test:extract"
     },
     {
@@ -142,8 +142,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_scripts_briefing",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "briefing"
     },
     {
@@ -153,8 +153,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_scripts_migrate",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "migrate"
     },
     {
@@ -164,8 +164,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "users_thiagoaragutti_casa_da_arvore_package_scripts_test",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 6,
+      "community_name": "devDependencies",
       "norm_label": "test"
     },
     {
@@ -769,30 +769,41 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_jobs_lifecyclefollowup_cron",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "lifecyclefollowup.cron.ts"
+    },
+    {
+      "label": "TEMPLATES_CICLO_DE_VIDA",
+      "file_type": "code",
+      "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "src_jobs_lifecyclefollowup_cron_templates_ciclo_de_vida",
+      "community": 26,
+      "community_name": "leads.repo.ts",
+      "norm_label": "templates_ciclo_de_vida"
     },
     {
       "label": "runLifecycleFollowUpJob()",
       "file_type": "code",
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L34",
+      "source_location": "L51",
       "_origin": "ast",
       "id": "src_jobs_lifecyclefollowup_cron_runlifecyclefollowupjob",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "runlifecyclefollowupjob()"
     },
     {
       "label": "scheduleLifecycleFollowUpJob()",
       "file_type": "code",
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L82",
+      "source_location": "L117",
       "_origin": "ast",
       "id": "src_jobs_lifecyclefollowup_cron_schedulelifecyclefollowupjob",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "schedulelifecyclefollowupjob()"
     },
     {
@@ -1011,8 +1022,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_queue_processmessage_job_startmessageworker",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 0,
+      "community_name": "server.ts",
       "norm_label": "startmessageworker()"
     },
     {
@@ -1077,8 +1088,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "conversationstate.repo.ts"
     },
     {
@@ -1088,8 +1099,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_apenaspreenchidos",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "apenaspreenchidos()"
     },
     {
@@ -1099,8 +1110,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_upsertconversationstate",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "upsertconversationstate()"
     },
     {
@@ -1110,8 +1121,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_getetapamidiaatual",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "getetapamidiaatual()"
     },
     {
@@ -1121,8 +1132,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_registrarenviomidia",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "registrarenviomidia()"
     },
     {
@@ -1132,8 +1143,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_estadohandoff",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "estadohandoff"
     },
     {
@@ -1143,8 +1154,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_getestadohandoff",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "getestadohandoff()"
     },
     {
@@ -1198,8 +1209,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_repositories_leads_repo",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "leads.repo.ts"
     },
     {
@@ -1220,8 +1231,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_adicionartag",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "adicionartag()"
     },
     {
@@ -1231,8 +1242,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_getultimainteracao",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "getultimainteracao()"
     },
     {
@@ -1242,8 +1253,8 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_leadparaciclodevida",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "leadparaciclodevida"
     },
     {
@@ -1253,8 +1264,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_buscaraniversarioscasamento",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "buscaraniversarioscasamento()"
     },
     {
@@ -1264,8 +1275,8 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_buscarprospeccaocorporativa",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "buscarprospeccaocorporativa()"
     },
     {
@@ -1275,8 +1286,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_buscarleadsfriosparaarquivar",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "buscarleadsfriosparaarquivar()"
     },
     {
@@ -1286,8 +1297,8 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_arquivarleadfrio",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "arquivarleadfrio()"
     },
     {
@@ -1429,8 +1440,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_routes_painel",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 24,
+      "community_name": "email.service.ts",
       "norm_label": "painel.ts"
     },
     {
@@ -1440,8 +1451,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_routes_painel_painelrouter",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 24,
+      "community_name": "email.service.ts",
       "norm_label": "painelrouter"
     },
     {
@@ -1451,8 +1462,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_routes_painel_compararseguro",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 24,
+      "community_name": "email.service.ts",
       "norm_label": "compararseguro()"
     },
     {
@@ -1462,8 +1473,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "src_routes_painel_autenticarpainel",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 24,
+      "community_name": "email.service.ts",
       "norm_label": "autenticarpainel()"
     },
     {
@@ -1704,8 +1715,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "src_services_anthropic_service_ramoevento",
-      "community": 24,
-      "community_name": "email.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "ramoevento"
     },
     {
@@ -2001,8 +2012,8 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "src_services_email_service_handoffnotificationparams",
-      "community": 24,
-      "community_name": "email.service.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "handoffnotificationparams"
     },
     {
@@ -2045,8 +2056,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_services_followup_service",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "followup.service.ts"
     },
     {
@@ -2056,8 +2067,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_services_followup_service_delay_ms",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "delay_ms"
     },
     {
@@ -2067,41 +2078,52 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "src_services_followup_service_proxima_regua",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "proxima_regua"
+    },
+    {
+      "label": "TEMPLATES_FOLLOW_UP",
+      "file_type": "code",
+      "source_file": "src/services/followUp.service.ts",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "src_services_followup_service_templates_follow_up",
+      "community": 23,
+      "community_name": "messageProcessing.service.ts",
+      "norm_label": "templates_follow_up"
     },
     {
       "label": "MENSAGENS_FOLLOW_UP",
       "file_type": "code",
       "source_file": "src/services/followUp.service.ts",
-      "source_location": "L29",
+      "source_location": "L47",
       "_origin": "ast",
       "id": "src_services_followup_service_mensagens_follow_up",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "mensagens_follow_up"
     },
     {
       "label": "agendarFollowUp()",
       "file_type": "code",
       "source_file": "src/services/followUp.service.ts",
-      "source_location": "L39",
+      "source_location": "L57",
       "_origin": "ast",
       "id": "src_services_followup_service_agendarfollowup",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "agendarfollowup()"
     },
     {
       "label": "processarFollowUpAgendado()",
       "file_type": "code",
       "source_file": "src/services/followUp.service.ts",
-      "source_location": "L53",
+      "source_location": "L71",
       "_origin": "ast",
       "id": "src_services_followup_service_processarfollowupagendado",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "processarfollowupagendado()"
     },
     {
@@ -2133,8 +2155,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_services_handoff_service_gatilhohandoff",
-      "community": 24,
-      "community_name": "email.service.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "gatilhohandoff"
     },
     {
@@ -2243,8 +2265,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_services_mediaengine_service_test",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "mediaengine.service.test.ts"
     },
     {
@@ -2254,8 +2276,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_services_mediaengine_service",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "mediaengine.service.ts"
     },
     {
@@ -2265,8 +2287,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_services_mediaengine_service_etapamidia",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "etapamidia"
     },
     {
@@ -2276,8 +2298,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "src_services_mediaengine_service_acaomidia",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "acaomidia"
     },
     {
@@ -2287,8 +2309,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "src_services_mediaengine_service_decidirproximaacaomidia",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "decidirproximaacaomidia()"
     },
     {
@@ -2298,8 +2320,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "src_services_mediaengine_service_inferirperfillead",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "inferirperfillead()"
     },
     {
@@ -2309,8 +2331,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "src_services_mediaengine_service_enviaretapamidia",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "enviaretapamidia()"
     },
     {
@@ -2320,8 +2342,8 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "src_services_mediaengine_service_processarmidiaprogressiva",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "processarmidiaprogressiva()"
     },
     {
@@ -2386,8 +2408,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "src_services_messageprocessing_service_resultadohandoff",
-      "community": 24,
-      "community_name": "email.service.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "resultadohandoff"
     },
     {
@@ -2628,8 +2650,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_sendwhatsappmedia",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "sendwhatsappmedia()"
     },
     {
@@ -2639,8 +2661,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_sendwhatsappimage",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "sendwhatsappimage()"
     },
     {
@@ -2650,8 +2672,8 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_sendwhatsappvideo",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "sendwhatsappvideo()"
     },
     {
@@ -2661,8 +2683,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_sendwhatsappdocument",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "sendwhatsappdocument()"
     },
     {
@@ -2699,10 +2721,21 @@
       "norm_label": "sendwhatsapptemplate()"
     },
     {
+      "label": "enviarComTemplateOuTexto()",
+      "file_type": "code",
+      "source_file": "src/services/whatsapp.service.ts",
+      "source_location": "L185",
+      "_origin": "ast",
+      "id": "src_services_whatsapp_service_enviarcomtemplateoutexto",
+      "community": 23,
+      "community_name": "messageProcessing.service.ts",
+      "norm_label": "enviarcomtemplateoutexto()"
+    },
+    {
       "label": "ResumoLeadParaVendedor",
       "file_type": "code",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L166",
+      "source_location": "L207",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_resumoleadparavendedor",
       "community": 23,
@@ -2713,7 +2746,7 @@
       "label": "formatarLabel()",
       "file_type": "code",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L185",
+      "source_location": "L226",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_formatarlabel",
       "community": 23,
@@ -2724,7 +2757,7 @@
       "label": "montarResumoParaVendedor()",
       "file_type": "code",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L190",
+      "source_location": "L231",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_montarresumoparavendedor",
       "community": 23,
@@ -2735,7 +2768,7 @@
       "label": "LIMITES_CAMPOS_FIXOS",
       "file_type": "code",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L291",
+      "source_location": "L332",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_limites_campos_fixos",
       "community": 23,
@@ -2746,7 +2779,7 @@
       "label": "sanitizarVariavelTemplate()",
       "file_type": "code",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L305",
+      "source_location": "L346",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_sanitizarvariaveltemplate",
       "community": 23,
@@ -2757,7 +2790,7 @@
       "label": "achatarDadosRamo()",
       "file_type": "code",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L316",
+      "source_location": "L357",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_achatardadosramo",
       "community": 23,
@@ -2768,7 +2801,7 @@
       "label": "montarVariaveisTemplateVendedor()",
       "file_type": "code",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L336",
+      "source_location": "L377",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_montarvariaveistemplatevendedor",
       "community": 23,
@@ -2779,7 +2812,7 @@
       "label": "notificarVendedor()",
       "file_type": "code",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L408",
+      "source_location": "L449",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_notificarvendedor",
       "community": 23,
@@ -2790,12 +2823,34 @@
       "label": "montarMensagemConfirmacao()",
       "file_type": "code",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L444",
+      "source_location": "L479",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_montarmensagemconfirmacao",
-      "community": 23,
-      "community_name": "messageProcessing.service.ts",
+      "community": 0,
+      "community_name": "server.ts",
       "norm_label": "montarmensagemconfirmacao()"
+    },
+    {
+      "label": "whatsappTemplatePayload.test.ts",
+      "file_type": "code",
+      "source_file": "src/services/whatsappTemplatePayload.test.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_services_whatsapptemplatepayload_test",
+      "community": 27,
+      "community_name": "whatsappTemplatePayload.test.ts",
+      "norm_label": "whatsapptemplatepayload.test.ts"
+    },
+    {
+      "label": "corpoDaChamada()",
+      "file_type": "code",
+      "source_file": "src/services/whatsappTemplatePayload.test.ts",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "src_services_whatsapptemplatepayload_test_corpodachamada",
+      "community": 27,
+      "community_name": "whatsappTemplatePayload.test.ts",
+      "norm_label": "corpodachamada()"
     },
     {
       "label": "html.ts",
@@ -5648,7 +5703,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L34",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_jobs_lifecyclefollowup_cron",
@@ -5659,11 +5714,22 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L82",
+      "source_location": "L117",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_jobs_lifecyclefollowup_cron",
       "target": "src_jobs_lifecyclefollowup_cron_schedulelifecyclefollowupjob",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_jobs_lifecyclefollowup_cron",
+      "target": "src_jobs_lifecyclefollowup_cron_templates_ciclo_de_vida",
       "confidence_score": 1.0
     },
     {
@@ -5759,7 +5825,7 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_jobs_lifecyclefollowup_cron",
-      "target": "src_services_whatsapp_service_sendwhatsappmessage",
+      "target": "src_services_whatsapp_service_enviarcomtemplateoutexto",
       "confidence_score": 1.0
     },
     {
@@ -5780,7 +5846,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L44",
+      "source_location": "L67",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_jobs_lifecyclefollowup_cron_runlifecyclefollowupjob",
@@ -5792,7 +5858,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L67",
+      "source_location": "L102",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_jobs_lifecyclefollowup_cron_runlifecyclefollowupjob",
@@ -5804,7 +5870,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L37",
+      "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_jobs_lifecyclefollowup_cron_runlifecyclefollowupjob",
@@ -5816,7 +5882,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L59",
+      "source_location": "L88",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_jobs_lifecyclefollowup_cron_runlifecyclefollowupjob",
@@ -5828,7 +5894,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L48",
+      "source_location": "L71",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_jobs_lifecyclefollowup_cron_runlifecyclefollowupjob",
@@ -5840,18 +5906,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L40",
+      "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_jobs_lifecyclefollowup_cron_runlifecyclefollowupjob",
-      "target": "src_services_whatsapp_service_sendwhatsappmessage"
+      "target": "src_services_whatsapp_service_enviarcomtemplateoutexto"
     },
     {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/jobs/lifecycleFollowUp.cron.ts",
-      "source_location": "L86",
+      "source_location": "L121",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_jobs_lifecyclefollowup_cron_schedulelifecyclefollowupjob",
@@ -7170,7 +7236,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/followUp.service.ts",
-      "source_location": "L61",
+      "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_followup_service_processarfollowupagendado",
@@ -7545,7 +7611,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/followUp.service.ts",
-      "source_location": "L61",
+      "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_followup_service_processarfollowupagendado",
@@ -9191,7 +9257,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/followUp.service.ts",
-      "source_location": "L39",
+      "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_followup_service",
@@ -9213,7 +9279,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/followUp.service.ts",
-      "source_location": "L29",
+      "source_location": "L47",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_followup_service",
@@ -9224,7 +9290,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/followUp.service.ts",
-      "source_location": "L53",
+      "source_location": "L71",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_followup_service",
@@ -9240,6 +9306,17 @@
       "_origin": "ast",
       "source": "src_services_followup_service",
       "target": "src_services_followup_service_proxima_regua",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/followUp.service.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_services_followup_service",
+      "target": "src_services_followup_service_templates_follow_up",
       "confidence_score": 1.0
     },
     {
@@ -9287,7 +9364,7 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_followup_service",
-      "target": "src_services_whatsapp_service_sendwhatsappmessage",
+      "target": "src_services_whatsapp_service_enviarcomtemplateoutexto",
       "confidence_score": 1.0
     },
     {
@@ -9332,7 +9409,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/followUp.service.ts",
-      "source_location": "L73",
+      "source_location": "L91",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_followup_service_processarfollowupagendado",
@@ -9344,11 +9421,11 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/followUp.service.ts",
-      "source_location": "L80",
+      "source_location": "L98",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_followup_service_processarfollowupagendado",
-      "target": "src_services_whatsapp_service_sendwhatsappmessage"
+      "target": "src_services_whatsapp_service_enviarcomtemplateoutexto"
     },
     {
       "relation": "imports_from",
@@ -10471,7 +10548,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L316",
+      "source_location": "L357",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service",
@@ -10486,6 +10563,17 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service",
+      "target": "src_services_whatsapp_service_enviarcomtemplateoutexto",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/whatsapp.service.ts",
+      "source_location": "L226",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_services_whatsapp_service",
       "target": "src_services_whatsapp_service_formatarlabel",
       "confidence_score": 1.0
     },
@@ -10493,7 +10581,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L291",
+      "source_location": "L332",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service",
@@ -10504,7 +10592,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L444",
+      "source_location": "L479",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service",
@@ -10515,7 +10603,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L190",
+      "source_location": "L231",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service",
@@ -10526,7 +10614,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L336",
+      "source_location": "L377",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service",
@@ -10537,7 +10625,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L408",
+      "source_location": "L449",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service",
@@ -10548,7 +10636,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L166",
+      "source_location": "L207",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service",
@@ -10559,7 +10647,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L305",
+      "source_location": "L346",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service",
@@ -10659,7 +10747,19 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L421",
+      "source_location": "L200",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_services_whatsapp_service_enviarcomtemplateoutexto",
+      "target": "src_services_whatsapp_service_sendwhatsappmessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/whatsapp.service.ts",
+      "source_location": "L462",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service_notificarvendedor",
@@ -10718,10 +10818,10 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L426",
+      "source_location": "L193",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "src_services_whatsapp_service_notificarvendedor",
+      "source": "src_services_whatsapp_service_enviarcomtemplateoutexto",
       "target": "src_services_whatsapp_service_sendwhatsapptemplate",
       "confidence_score": 1.0
     },
@@ -10730,7 +10830,19 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L327",
+      "source_location": "L466",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_services_whatsapp_service_notificarvendedor",
+      "target": "src_services_whatsapp_service_enviarcomtemplateoutexto",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/whatsapp.service.ts",
+      "source_location": "L368",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service_achatardadosramo",
@@ -10742,7 +10854,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L195",
+      "source_location": "L236",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service_montarresumoparavendedor",
@@ -10754,7 +10866,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L337",
+      "source_location": "L378",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service_montarvariaveistemplatevendedor",
@@ -10766,7 +10878,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L421",
+      "source_location": "L462",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service_notificarvendedor",
@@ -10778,7 +10890,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L362",
+      "source_location": "L403",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service_montarvariaveistemplatevendedor",
@@ -10790,7 +10902,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L385",
+      "source_location": "L426",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service_montarvariaveistemplatevendedor",
@@ -10802,11 +10914,22 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/whatsapp.service.ts",
-      "source_location": "L426",
+      "source_location": "L469",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_whatsapp_service_notificarvendedor",
       "target": "src_services_whatsapp_service_montarvariaveistemplatevendedor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/whatsappTemplatePayload.test.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_services_whatsapptemplatepayload_test",
+      "target": "src_services_whatsapptemplatepayload_test_corpodachamada",
       "confidence_score": 1.0
     },
     {
@@ -11839,5 +11962,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "c97417dec4ed342ff4f02d1fa6ed83191828ae03"
+  "built_at_commit": "15bcbe4c5e7a7f97e037548064ef6f0813adc9f8"
 }

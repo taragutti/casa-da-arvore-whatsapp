@@ -147,12 +147,19 @@ export async function sendWhatsAppTemplate(
       template: {
         name: templateName,
         language: { code: languageCode },
-        components: [
-          {
-            type: "body",
-            parameters: variaveis.map((texto) => ({ type: "text", text: texto })),
-          },
-        ],
+        // Template sem variáveis (texto puro) não aceita componente body com
+        // lista de parâmetros vazia — a Meta rejeita. Nesse caso o campo é
+        // omitido de propósito.
+        ...(variaveis.length > 0
+          ? {
+              components: [
+                {
+                  type: "body",
+                  parameters: variaveis.map((texto) => ({ type: "text", text: texto })),
+                },
+              ],
+            }
+          : {}),
       },
     }),
   });
@@ -160,6 +167,40 @@ export async function sendWhatsAppTemplate(
   if (!response.ok) {
     const detalhe = await response.text();
     throw new WhatsAppTemplateError(templateName, response.status, detalhe);
+  }
+}
+
+/**
+ * Envia por template aprovado e, se a Meta recusar por problema do próprio
+ * template (família 132xxx: não existe, em análise, pausado), cai pra texto
+ * livre registrando o motivo.
+ *
+ * É assim que uma mensagem iniciada pela empresa consegue ser confiável quando
+ * o template existe, e ainda funcionar (dentro da janela de 24h) enquanto não
+ * existe — sem exigir mudança de código no dia da aprovação.
+ *
+ * Erros que não são do template (token, rede, número inválido) propagam: tentar
+ * texto livre não resolveria e só esconderia a causa real.
+ */
+export async function enviarComTemplateOuTexto(params: {
+  to: string;
+  templateName: string;
+  variaveis: string[];
+  textoFallback: string;
+  contexto: Record<string, unknown>;
+}): Promise<void> {
+  try {
+    await sendWhatsAppTemplate(params.to, params.templateName, params.variaveis);
+  } catch (error) {
+    if (error instanceof WhatsAppTemplateError && error.ehProblemaDeTemplate) {
+      logger.error(
+        { ...params.contexto, templateName: params.templateName, metaCode: error.metaCode },
+        "template recusado pela Meta (não existe, em análise ou pausado) — caindo pra texto livre, que só chega dentro da janela de 24h"
+      );
+      await sendWhatsAppMessage(params.to, params.textoFallback);
+      return;
+    }
+    throw error;
   }
 }
 
@@ -422,19 +463,13 @@ export async function notificarVendedor(resumo: ResumoLeadParaVendedor): Promise
     return;
   }
 
-  try {
-    await sendWhatsAppTemplate(destino, templateName, montarVariaveisTemplateVendedor(resumo));
-  } catch (error) {
-    if (error instanceof WhatsAppTemplateError && error.ehProblemaDeTemplate) {
-      logger.error(
-        { templateName, metaCode: error.metaCode, err: error },
-        "template de handoff recusado pela Meta (não existe, em análise ou pausado) — caindo pra texto livre, que só chega dentro da janela de 24h"
-      );
-      await sendWhatsAppMessage(destino, montarResumoParaVendedor(resumo));
-      return;
-    }
-    throw error;
-  }
+  await enviarComTemplateOuTexto({
+    to: destino,
+    templateName,
+    variaveis: montarVariaveisTemplateVendedor(resumo),
+    textoFallback: montarResumoParaVendedor(resumo),
+    contexto: { notificacao: "handoff_vendedor", gatilho: resumo.gatilho },
+  });
 }
 
 /**

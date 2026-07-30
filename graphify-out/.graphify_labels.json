@@ -24,5 +24,7 @@
   "22": "vitest.setup.ts",
   "23": "messageProcessing.service.ts",
   "24": "email.service.ts",
-  "25": "messageProcessing.service.ts"
+  "25": "messageProcessing.service.ts",
+  "26": "leads.repo.ts",
+  "27": "whatsappTemplatePayload.test.ts"
 }

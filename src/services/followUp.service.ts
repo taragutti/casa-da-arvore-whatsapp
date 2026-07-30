@@ -3,7 +3,7 @@ import { followUpQueue, ReguaFollowUp } from "../queue/followUpQueue";
 import { getUltimaInteracao } from "../repositories/leads.repo";
 import { getEstadoHandoff } from "../repositories/conversationState.repo";
 import { dentroDoHorarioComercial } from "./handoff.service";
-import { sendWhatsAppMessage } from "./whatsapp.service";
+import { enviarComTemplateOuTexto } from "./whatsapp.service";
 
 const DELAY_MS: Record<ReguaFollowUp, number> = {
   "2h": 2 * 60 * 60 * 1000,
@@ -21,10 +21,28 @@ const PROXIMA_REGUA: Record<ReguaFollowUp, ReguaFollowUp> = {
 };
 
 /**
+ * Nome do template aprovado na Meta por régua. Os templates são de texto puro
+ * (sem variáveis), então o conteúdo tem que ser IDÊNTICO ao de
+ * MENSAGENS_FOLLOW_UP abaixo — mudar um sem resubmeter o outro faz o cliente
+ * receber um texto diferente do revisado.
+ *
+ * Follow-up é mensagem iniciada pela empresa: fora da janela de 24h só o
+ * template é entregue, por isso ele vem primeiro e o texto livre é só fallback.
+ */
+const TEMPLATES_FOLLOW_UP: Record<ReguaFollowUp, string> = {
+  "2h": "followup_2h",
+  "48h": "followup_48h",
+  "7d": "followup_7d",
+  "30d": "followup_30d",
+};
+
+/**
  * Textos de follow-up: a Seção 6 define os GATILHOS (quando disparar), mas
  * não o texto exato das mensagens — diferente da confirmação automática
  * (essa sim veio pronta da especificação original). Revisar/ajustar o tom
  * antes de confiar cegamente nisso em produção.
+ *
+ * Usado como fallback quando o template correspondente não estiver aprovado.
  */
 const MENSAGENS_FOLLOW_UP: Record<ReguaFollowUp, string> = {
   "2h": "Oi! Vi que te mandei algumas informações mais cedo — ficou alguma dúvida? Fico à disposição pra ajudar no que precisar! 🌳",
@@ -77,7 +95,13 @@ export async function processarFollowUpAgendado(
   }
 
   try {
-    await sendWhatsAppMessage(whatsappNumber, MENSAGENS_FOLLOW_UP[regua]);
+    await enviarComTemplateOuTexto({
+      to: whatsappNumber,
+      templateName: TEMPLATES_FOLLOW_UP[regua],
+      variaveis: [], // templates de follow-up são texto puro, sem variáveis
+      textoFallback: MENSAGENS_FOLLOW_UP[regua],
+      contexto: { leadId, regua },
+    });
     log.info("mensagem de follow-up enviada");
   } catch (error) {
     log.error({ err: error }, "falha ao enviar mensagem de follow-up");

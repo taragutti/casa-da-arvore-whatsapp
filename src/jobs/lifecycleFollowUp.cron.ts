@@ -7,10 +7,27 @@ import {
   arquivarLeadFrio,
   adicionarTag,
 } from "../repositories/leads.repo";
-import { sendWhatsAppMessage } from "../services/whatsapp.service";
+import { enviarComTemplateOuTexto } from "../services/whatsapp.service";
+
+/**
+ * Templates de ciclo de vida. Em 30/07/2026 NENHUM destes existe na Meta ainda
+ * (a criação foi pausada no aniversario_casamento) — então hoje todos caem no
+ * fallback de texto livre, que só é entregue se o cliente tiver escrito nas
+ * últimas 24h. Como estas réguas disparam 1 ano após o evento, na prática elas
+ * quase nunca vão entregar até os templates serem criados e aprovados.
+ *
+ * Nada a mudar no código quando isso acontecer: basta criar os templates com
+ * estes nomes e o mesmo texto abaixo.
+ */
+const TEMPLATES_CICLO_DE_VIDA = {
+  aniversarioCasamento: "aniversario_casamento",
+  prospeccaoCorporativa: "prospeccao_corporativa",
+  ultimaCampanha: "ultima_campanha",
+} as const;
 
 // Textos autorais — a Seção 6 define os gatilhos de ciclo de vida (cross-sell),
 // não o texto exato das mensagens. Revisar antes de confiar em produção.
+// Precisam ser idênticos ao corpo dos templates acima quando eles existirem.
 const MENSAGEM_ANIVERSARIO_CASAMENTO =
   "Parabéns pelo seu 1º aniversário de casamento! 🎉 Que tal comemorar essa data especial com um evento no Casarão? Ficamos à disposição pra planejar algo inesquecível com vocês. 🌳";
 
@@ -37,7 +54,13 @@ export async function runLifecycleFollowUpJob(): Promise<void> {
   const aniversariosCasamento = await buscarAniversariosCasamento();
   for (const lead of aniversariosCasamento) {
     try {
-      await sendWhatsAppMessage(lead.whatsapp_number, MENSAGEM_ANIVERSARIO_CASAMENTO);
+      await enviarComTemplateOuTexto({
+        to: lead.whatsapp_number,
+        templateName: TEMPLATES_CICLO_DE_VIDA.aniversarioCasamento,
+        variaveis: [],
+        textoFallback: MENSAGEM_ANIVERSARIO_CASAMENTO,
+        contexto: { leadId: lead.id, regua: "aniversario_casamento" },
+      });
     } catch (error) {
       log.error({ err: error, leadId: lead.id }, "falha ao enviar follow-up de aniversário de casamento");
     }
@@ -48,7 +71,13 @@ export async function runLifecycleFollowUpJob(): Promise<void> {
   const prospeccoesCorporativas = await buscarProspeccaoCorporativa();
   for (const lead of prospeccoesCorporativas) {
     try {
-      await sendWhatsAppMessage(lead.whatsapp_number, MENSAGEM_PROSPECCAO_CORPORATIVA);
+      await enviarComTemplateOuTexto({
+        to: lead.whatsapp_number,
+        templateName: TEMPLATES_CICLO_DE_VIDA.prospeccaoCorporativa,
+        variaveis: [],
+        textoFallback: MENSAGEM_PROSPECCAO_CORPORATIVA,
+        contexto: { leadId: lead.id, regua: "prospeccao_corporativa" },
+      });
     } catch (error) {
       log.error({ err: error, leadId: lead.id }, "falha ao enviar follow-up de prospecção corporativa");
     }
@@ -59,7 +88,13 @@ export async function runLifecycleFollowUpJob(): Promise<void> {
   const leadsFrios = await buscarLeadsFriosParaArquivar();
   for (const lead of leadsFrios) {
     try {
-      await sendWhatsAppMessage(lead.whatsapp_number, MENSAGEM_ULTIMA_CAMPANHA);
+      await enviarComTemplateOuTexto({
+        to: lead.whatsapp_number,
+        templateName: TEMPLATES_CICLO_DE_VIDA.ultimaCampanha,
+        variaveis: [],
+        textoFallback: MENSAGEM_ULTIMA_CAMPANHA,
+        contexto: { leadId: lead.id, regua: "ultima_campanha" },
+      });
     } catch (error) {
       log.error({ err: error, leadId: lead.id }, "falha ao enviar última campanha antes do arquivamento");
     }
