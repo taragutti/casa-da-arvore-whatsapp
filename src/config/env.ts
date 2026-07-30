@@ -27,6 +27,14 @@ const envSchema = z.object({
   // (logado, sem quebrar o pipeline) até existir um template aprovado.
   VENDEDOR_WHATSAPP_NUMBER: z.string().optional(),
 
+  // Nome do template aprovado na Meta pra notificação de handoff. Quando
+  // definido, a notificação do vendedor sai por template (funciona fora da
+  // janela de 24h); quando ausente, sai como texto livre (só funciona dentro
+  // da janela). O corpo exato que precisa ser aprovado está documentado em
+  // services/whatsapp.service.ts (CORPO_TEMPLATE_HANDOFF) — a ordem das
+  // variáveis é acoplada, não mude um lado sem o outro.
+  VENDEDOR_HANDOFF_TEMPLATE_NAME: z.string().optional(),
+
   // WhatsApp Business Cloud API (Meta) — usado só pelo webhook de teste em
   // /webhooks/whatsapp. O endpoint genérico /api/leads/ingest não depende disso.
   WHATSAPP_VERIFY_TOKEN: z.string().optional(),

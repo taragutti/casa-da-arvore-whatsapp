@@ -88,6 +88,54 @@ export async function sendWhatsAppDocument(to: string, url: string, filename: st
   return sendWhatsAppMedia(to, "document", url, { caption, filename });
 }
 
+/**
+ * Envia uma mensagem de template aprovado. Diferente do texto livre, funciona
+ * fora da janela de 24h da Meta — é o único caminho confiável pra mensagem
+ * iniciada pela empresa (notificação de vendedor, follow-ups).
+ */
+export async function sendWhatsAppTemplate(
+  to: string,
+  templateName: string,
+  variaveis: string[],
+  languageCode = "pt_BR"
+): Promise<void> {
+  if (!env.WHATSAPP_ACCESS_TOKEN || !env.WHATSAPP_PHONE_NUMBER_ID) {
+    logger.warn("WHATSAPP_ACCESS_TOKEN/WHATSAPP_PHONE_NUMBER_ID não configurados — pulando envio de template.");
+    return;
+  }
+
+  const url = `https://graph.facebook.com/v20.0/${env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+  const numeroLimpo = to.replace(/^\+/, "");
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.WHATSAPP_ACCESS_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: numeroLimpo,
+      type: "template",
+      template: {
+        name: templateName,
+        language: { code: languageCode },
+        components: [
+          {
+            type: "body",
+            parameters: variaveis.map((texto) => ({ type: "text", text: texto })),
+          },
+        ],
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const detalhe = await response.text();
+    throw new Error(`Falha ao enviar template "${templateName}" via WhatsApp (${response.status}): ${detalhe}`);
+  }
+}
+
 export interface ResumoLeadParaVendedor {
   whatsappCliente: string;
   nomeCliente: string | null;
@@ -171,10 +219,159 @@ export function montarResumoParaVendedor(r: ResumoLeadParaVendedor): string {
 }
 
 /**
- * Notifica o vendedor no WhatsApp sobre um lead em handoff (Seção 5). Não
- * lança em caso de falha — a notificação por e-mail é o canal confiável, e
- * este envio pode ser rejeitado pela Meta se a janela de 24h estiver fechada
- * (ver comentário em VENDEDOR_WHATSAPP_NUMBER, config/env.ts).
+ * Corpo EXATO que precisa ser submetido e aprovado na Meta (WhatsApp Manager →
+ * Modelos de mensagem → Criar modelo), categoria **Utility**, idioma
+ * **Portuguese (BR)**. Não é usado em runtime — existe aqui para que o corpo
+ * aprovado e a ordem das variáveis vivam no mesmo arquivo que as monta.
+ *
+ * Se mudar este corpo, é obrigatório resubmeter o template na Meta E ajustar
+ * montarVariaveisTemplateVendedor() na mesma ordem — os dois lados são
+ * acoplados por posição, e trocar um só embaralha os campos silenciosamente.
+ */
+export const CORPO_TEMPLATE_HANDOFF = `Novo lead para atender.
+
+Motivo: {{1}}
+Prazo: {{2}}
+
+Cliente: {{3}}
+WhatsApp: {{4}}
+
+Tipo de evento: {{5}}
+Unidade sugerida: {{6}}
+Dados do evento: {{7}}
+Detalhes: {{8}}
+
+Resumo: {{9}}
+
+Última mensagem do cliente: {{10}}`;
+
+const VALOR_AUSENTE = "não informado";
+
+/** Limite do corpo de template da Meta, com margem para diferenças de contagem de caracteres. */
+const LIMITE_CORPO_TEMPLATE = 1024;
+const MARGEM_SEGURANCA = 24;
+
+/** Texto fixo do template (tudo que não é variável) — derivado da constante para não virar número mágico. */
+const TAMANHO_TEXTO_FIXO = CORPO_TEMPLATE_HANDOFF.replace(/\{\{\d+\}\}/g, "").length;
+
+/** Orçamento total disponível para a soma de TODAS as variáveis. */
+const ORCAMENTO_VARIAVEIS = LIMITE_CORPO_TEMPLATE - MARGEM_SEGURANCA - TAMANHO_TEXTO_FIXO;
+
+/**
+ * Limites dos campos derivados de enum/formato fixo — são naturalmente curtos,
+ * mas o corte protege contra nome/e-mail absurdamente longos vindos do cliente.
+ */
+const LIMITES_CAMPOS_FIXOS = {
+  motivo: 60,
+  prazo: 90,
+  cliente: 90,
+  whatsapp: 25,
+  ramo: 30,
+  unidade: 30,
+  dadosEvento: 70,
+} as const;
+
+/**
+ * A Meta rejeita variável de template com quebra de linha, tab, 4+ espaços
+ * seguidos, ou vazia.
+ */
+function sanitizarVariavelTemplate(valor: string | null | undefined, limite: number): string {
+  const limpo = (valor ?? "")
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  if (!limpo) return VALOR_AUSENTE;
+  return limpo.length > limite ? `${limpo.slice(0, limite - 1).trimEnd()}…` : limpo;
+}
+
+/** Achata os campos por ramo numa linha única — variável de template não aceita quebra de linha. */
+function achatarDadosRamo(dadosRamo: Record<string, unknown>): string {
+  return Object.entries(dadosRamo)
+    .filter(([, v]) => v != null && v !== "" && !(Array.isArray(v) && v.length === 0))
+    .map(([chave, valor]) => {
+      const texto = Array.isArray(valor)
+        ? valor.map(String).join("/")
+        : typeof valor === "boolean"
+          ? valor
+            ? "sim"
+            : "não"
+          : String(valor);
+      return `${formatarLabel(chave)}: ${texto}`;
+    })
+    .join(", ");
+}
+
+/**
+ * Monta os 10 valores de {{1}}..{{10}} na ORDEM EXATA de
+ * CORPO_TEMPLATE_HANDOFF. Ver aviso de acoplamento na doc daquela constante.
+ */
+export function montarVariaveisTemplateVendedor(r: ResumoLeadParaVendedor): string[] {
+  const motivo = r.paraGerente ? `URGENTE (gerente) — ${formatarLabel(r.gatilho)}` : formatarLabel(r.gatilho);
+
+  const prazo = r.dentroDoHorarioComercial
+    ? `responder em até ${r.slaMinutos} min`
+    : "fora do horário comercial — responder na primeira hora do próximo dia útil";
+
+  const cliente = r.email ? `${r.nomeCliente ?? VALOR_AUSENTE} (${r.email})` : (r.nomeCliente ?? VALOR_AUSENTE);
+
+  const dadosEvento = [
+    r.dataEvento ? `data ${r.dataEvento}` : null,
+    r.numeroConvidados != null ? `${r.numeroConvidados} convidados` : null,
+    r.orcamentoMencionado != null ? `orçamento R$ ${r.orcamentoMencionado.toLocaleString("pt-BR")}` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const resumo = [r.resumoPedido, r.objecaoOuDuvida ? `Objeção: ${r.objecaoOuDuvida}` : null]
+    .filter(Boolean)
+    .join(" | ");
+
+  // Campos bounded primeiro — o que sobra do orçamento vai pros três campos de
+  // texto livre (detalhes, resumo, mensagem), que são os únicos que podem
+  // crescer sem limite natural. Sem isso, o corpo montado estoura o limite de
+  // 1024 da Meta e o envio é rejeitado.
+  const fixos = [
+    sanitizarVariavelTemplate(motivo, LIMITES_CAMPOS_FIXOS.motivo),
+    sanitizarVariavelTemplate(prazo, LIMITES_CAMPOS_FIXOS.prazo),
+    sanitizarVariavelTemplate(cliente, LIMITES_CAMPOS_FIXOS.cliente),
+    sanitizarVariavelTemplate(r.whatsappCliente, LIMITES_CAMPOS_FIXOS.whatsapp),
+    sanitizarVariavelTemplate(r.ramo ? formatarLabel(r.ramo) : null, LIMITES_CAMPOS_FIXOS.ramo),
+    sanitizarVariavelTemplate(
+      r.unidadeRecomendada ? formatarLabel(r.unidadeRecomendada) : null,
+      LIMITES_CAMPOS_FIXOS.unidade
+    ),
+    sanitizarVariavelTemplate(dadosEvento, LIMITES_CAMPOS_FIXOS.dadosEvento),
+  ];
+
+  const gastoFixo = fixos.reduce((total, v) => total + v.length, 0);
+  const restante = Math.max(0, ORCAMENTO_VARIAVEIS - gastoFixo);
+
+  // A mensagem do cliente é o contexto mais útil pro vendedor, então fica com
+  // a maior fatia; detalhes e resumo dividem o resto.
+  const limiteMensagem = Math.floor(restante * 0.4);
+  const limiteDetalhes = Math.floor(restante * 0.3);
+  const limiteResumo = restante - limiteMensagem - limiteDetalhes;
+
+  return [
+    ...fixos,
+    sanitizarVariavelTemplate(achatarDadosRamo(r.dadosRamo), limiteDetalhes),
+    sanitizarVariavelTemplate(resumo, limiteResumo),
+    sanitizarVariavelTemplate(r.mensagemOriginal, limiteMensagem),
+  ];
+}
+
+/**
+ * Notifica o vendedor no WhatsApp sobre um lead em handoff (Seção 5).
+ *
+ * Usa template aprovado quando VENDEDOR_HANDOFF_TEMPLATE_NAME está definido
+ * (entrega garantida, independente da janela de 24h da Meta); senão cai pra
+ * texto livre, que só é entregue se o vendedor tiver mandado mensagem pro bot
+ * nas últimas 24h.
+ *
+ * Não há fallback automático de template pra texto livre de propósito: se o
+ * template falhar (nome errado, não aprovado), o erro tem que aparecer no log
+ * em vez de ser mascarado por um envio que só funcionaria por acaso.
  */
 export async function notificarVendedor(resumo: ResumoLeadParaVendedor): Promise<void> {
   if (!env.VENDEDOR_WHATSAPP_NUMBER) {
@@ -182,6 +379,20 @@ export async function notificarVendedor(resumo: ResumoLeadParaVendedor): Promise
     return;
   }
 
+  const templateName = env.VENDEDOR_HANDOFF_TEMPLATE_NAME;
+
+  if (templateName) {
+    await sendWhatsAppTemplate(
+      env.VENDEDOR_WHATSAPP_NUMBER,
+      templateName,
+      montarVariaveisTemplateVendedor(resumo)
+    );
+    return;
+  }
+
+  logger.warn(
+    "VENDEDOR_HANDOFF_TEMPLATE_NAME não configurado — enviando texto livre, que só é entregue dentro da janela de 24h da Meta."
+  );
   await sendWhatsAppMessage(env.VENDEDOR_WHATSAPP_NUMBER, montarResumoParaVendedor(resumo));
 }
 

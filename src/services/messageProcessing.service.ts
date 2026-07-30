@@ -1,5 +1,6 @@
 import type { Logger } from "pino";
 import { pool } from "../db/client";
+import { env } from "../config/env";
 import { logger } from "../config/logger";
 import { extractFromMessage, ExtractedLeadData } from "./anthropic.service";
 import { determinarUnidadeRecomendada, UnidadeRecomendada } from "./routing.service";
@@ -34,6 +35,24 @@ const PALAVRAS_RELEVANTES = [
 export function isMensagemRelevante(mensagem: string): boolean {
   const texto = mensagem.toLowerCase();
   return PALAVRAS_RELEVANTES.some((termo) => texto.includes(termo));
+}
+
+function apenasDigitos(numero: string): string {
+  return numero.replace(/\D/g, "");
+}
+
+/**
+ * O número do vendedor é da equipe, não é lead. Sem este filtro, qualquer
+ * mensagem dele que contenha uma palavra relevante (ex.: "tem festa hoje?")
+ * criaria um lead com o próprio número do vendedor, dispararia confirmação
+ * automática, régua de mídia e follow-up em cima dele.
+ *
+ * Isso importa na prática porque o contorno da janela de 24h da Meta depende
+ * do vendedor mandar mensagem pro bot todo dia (ver ENVIRONMENT.md).
+ */
+export function isNumeroDaEquipe(whatsappNumber: string): boolean {
+  if (!env.VENDEDOR_WHATSAPP_NUMBER) return false;
+  return apenasDigitos(whatsappNumber) === apenasDigitos(env.VENDEDOR_WHATSAPP_NUMBER);
 }
 
 export interface ResultadoHandoff {
@@ -165,6 +184,12 @@ export async function processIncomingMessage(
   mensagem: string,
   payloadBruto: unknown
 ): Promise<ProcessResult> {
+  // Antes de qualquer gravação: mensagem da própria equipe não vira lead.
+  if (isNumeroDaEquipe(whatsappNumber)) {
+    logger.info({ whatsappNumber }, "mensagem do número da equipe (vendedor) — ignorada, não é lead");
+    return { status: "ignorado", motivo: "número da equipe, não é lead" };
+  }
+
   const rawResult = await pool.query<{ id: string }>(
     `INSERT INTO raw_messages (whatsapp_number, mensagem_original, payload_bruto, processado)
      VALUES ($1, $2, $3, false) RETURNING id`,
