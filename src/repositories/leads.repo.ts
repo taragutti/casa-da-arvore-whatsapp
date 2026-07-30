@@ -124,3 +124,55 @@ export async function buscarLeadsFriosParaArquivar(): Promise<LeadParaCicloDeVid
 export async function arquivarLeadFrio(leadId: string): Promise<void> {
   await pool.query(`UPDATE leads SET status = 'perdido' WHERE id = $1`, [leadId]);
 }
+
+export const STATUS_LEAD = [
+  "novo",
+  "qualificando",
+  "proposta_enviada",
+  "negociacao",
+  "fechado",
+  "perdido",
+] as const;
+export type StatusLead = (typeof STATUS_LEAD)[number];
+
+export interface AtualizacaoLead {
+  status?: StatusLead;
+  unidade_confirmada?: UnidadeRecomendada;
+}
+
+/**
+ * Atualização manual feita por quem atende (vendedor/gerente) via API/painel.
+ *
+ * Só mexe nos campos presentes em `dados` — diferente do upsertLead(), que é
+ * alimentado pela IA. Aqui a intenção é humana e explícita: se o vendedor
+ * escolheu um valor, ele vence, sem COALESCE.
+ *
+ * Não toca em `ultima_interacao` de propósito: aquele campo mede contato do
+ * CLIENTE e é o que a régua de follow-up usa pra saber se o lead respondeu
+ * (Seção 6). Atualizar ali por ação interna cancelaria follow-ups por engano.
+ *
+ * Retorna false se o lead não existe, pra a rota poder responder 404.
+ */
+export async function atualizarLead(leadId: string, dados: AtualizacaoLead): Promise<boolean> {
+  const campos: string[] = [];
+  const valores: unknown[] = [leadId];
+
+  if (dados.status !== undefined) {
+    campos.push(`status = $${valores.length + 1}`);
+    valores.push(dados.status);
+  }
+  if (dados.unidade_confirmada !== undefined) {
+    campos.push(`unidade_confirmada = $${valores.length + 1}`);
+    valores.push(dados.unidade_confirmada);
+  }
+
+  if (campos.length === 0) return true; // nada a alterar não é erro
+
+  const result = await pool.query(`UPDATE leads SET ${campos.join(", ")} WHERE id = $1`, valores);
+  return (result.rowCount ?? 0) > 0;
+}
+
+export async function leadExiste(leadId: string): Promise<boolean> {
+  const result = await pool.query(`SELECT 1 FROM leads WHERE id = $1`, [leadId]);
+  return (result.rowCount ?? 0) > 0;
+}

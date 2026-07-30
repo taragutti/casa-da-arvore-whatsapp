@@ -132,6 +132,19 @@ CREATE TABLE IF NOT EXISTS media_library (
   ativo BOOLEAN NOT NULL DEFAULT true
 );
 
+-- 7. lead_notes: observações escritas por quem atende (vendedor/gerente).
+--    Append-only de propósito: nota é registro do que se sabia naquele
+--    momento, não campo editável — e é a primeira peça de um histórico
+--    unificado por lead.
+CREATE TABLE IF NOT EXISTS lead_notes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id UUID NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  autor TEXT,
+  texto TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_lead_notes_lead_id ON lead_notes(lead_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_demand_signals_lead_id ON demand_signals(lead_id);
 CREATE INDEX IF NOT EXISTS idx_demand_signals_created_at ON demand_signals(created_at);
 CREATE INDEX IF NOT EXISTS idx_leads_whatsapp_number ON leads(whatsapp_number);

@@ -10,6 +10,7 @@ import { scheduleLifecycleFollowUpJob } from "./jobs/lifecycleFollowUp.cron";
 import { ingestRouter } from "./routes/ingest";
 import { whatsappRouter } from "./routes/whatsapp";
 import { painelRouter } from "./routes/painel";
+import { leadsApiRouter } from "./routes/leadsApi";
 
 const app = express();
 // Guarda o corpo bruto da requisição (necessário para validar a assinatura
@@ -48,6 +49,7 @@ app.get("/health", async (_req, res) => {
 app.use(ingestRouter);
 app.use(whatsappRouter);
 app.use(painelRouter);
+app.use(leadsApiRouter);
 
 async function start() {
   try {

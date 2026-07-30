@@ -82,3 +82,28 @@ export async function marcarEmAtendimentoHumano(leadId: string): Promise<void> {
     [leadId]
   );
 }
+
+/**
+ * Devolve a conversa ao bot depois do atendimento humano terminar.
+ *
+ * Sem isso, um lead que entrou em handoff ficava preso para sempre — o bot
+ * nunca voltava a responder e a única saída era mexer no banco na mão.
+ *
+ * Zera `tentativas_sem_classificacao` porque aquele contador existe pra
+ * detectar "a IA não entendeu 2x seguidas" (Seção 5); manter o valor antigo
+ * faria o lead voltar do handoff já perto de disparar handoff outra vez.
+ *
+ * NÃO zera a etapa de mídia: a régua progressiva já enviada continua válida —
+ * reenviar foto de boas-vindas para quem já falou com o vendedor seria pior.
+ *
+ * Retorna false se não havia estado de conversa para este lead.
+ */
+export async function devolverAoBot(leadId: string): Promise<boolean> {
+  const result = await pool.query(
+    `UPDATE conversation_state
+     SET em_atendimento_humano = false, tentativas_sem_classificacao = 0, updated_at = now()
+     WHERE lead_id = $1`,
+    [leadId]
+  );
+  return (result.rowCount ?? 0) > 0;
+}
