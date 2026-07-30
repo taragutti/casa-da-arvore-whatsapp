@@ -1,12 +1,21 @@
 import { logger } from "../config/logger";
 import { DadosPorRamo, RamoEvento, SinalEngajamento } from "./anthropic.service";
 import { UnidadeRecomendada } from "./routing.service";
-import { sendWhatsAppImage, sendWhatsAppVideo, sendWhatsAppDocument } from "./whatsapp.service";
+import { sendWhatsAppImage, sendWhatsAppVideo, sendWhatsAppDocument, sendWhatsAppMessage } from "./whatsapp.service";
 import { buscarMidias } from "../repositories/mediaLibrary.repo";
 import { getEtapaMidiaAtual, registrarEnvioMidia } from "../repositories/conversationState.repo";
 import { agendarFollowUp } from "./followUp.service";
 
 export type EtapaMidia = 1 | 2 | 3 | 4;
+
+// Ramo E — Recreação Avulsa (Seção 3.5): oferecer cupom de desconto pra
+// conversão em festa fechada. Texto autoral, sem valor/código real de
+// desconto — a Seção 3.5 pede a oferta mas não define o cupom em si.
+// Ajustar antes de confiar em produção, e revisar se precisa virar template
+// aprovado (é enviada em resposta imediata, dentro da janela de 24h, então
+// texto livre deve funcionar por enquanto).
+const OFERTA_CUPOM_RECREACAO_AVULSA =
+  "Aproveitando: temos uma condição especial de desconto pra quem quiser transformar essa recreação avulsa numa festa fechada aqui na Casa da Árvore ou no Park Lagos! Quer saber mais sobre essa condição? 🌳";
 
 export type AcaoMidia =
   | { tipo: "enviar"; etapa: EtapaMidia }
@@ -156,6 +165,18 @@ export async function processarMidiaProgressiva(
 
   await registrarEnvioMidia(leadId, acao.etapa);
   log.info({ unidadeRecomendada, etapa: acao.etapa }, "mídia da régua progressiva enviada");
+
+  // Ramo E (Seção 3.5): oferece o cupom de conversão junto com a primeira
+  // mídia — etapa 1 só acontece uma vez por lead, então isso naturalmente
+  // só dispara uma vez, sem precisar de estado extra pra "já oferecido".
+  if (ramo === "recreacao_avulsa" && acao.etapa === 1) {
+    try {
+      await sendWhatsAppMessage(whatsappNumber, OFERTA_CUPOM_RECREACAO_AVULSA);
+      log.info("oferta de cupom de conversão enviada (ramo recreação avulsa)");
+    } catch (error) {
+      log.error({ err: error }, "falha ao enviar oferta de cupom");
+    }
+  }
 
   // Régua de silêncio (Seção 6): agenda o follow-up de 2h a partir daqui.
   await agendarFollowUp(leadId, whatsappNumber);

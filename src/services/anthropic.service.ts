@@ -69,10 +69,12 @@ export interface DadosPorRamo {
   nome_crianca: string | null;
   idade_crianca: number | null;
   data_aniversario_crianca: string | null; // AAAA-MM-DD
+  cupom_aceito: boolean | null; // aceite do cupom de desconto oferecido (Seção 3.5) — null até haver sinal claro na mensagem
 }
 
 export interface ExtractedLeadData {
   nome_cliente: string | null;
+  email: string | null; // Seção 7 — campo comum a todos os ramos, coletado no handoff (na prática: sempre que aparecer numa mensagem, antes ou depois)
   tipo_evento: TipoEvento | null;
   data_evento: string | null; // AAAA-MM-DD
   numero_convidados: number | null;
@@ -94,6 +96,7 @@ const SYSTEM_PROMPT = `Você é um assistente que extrai dados estruturados de m
 Formato exato de saída:
 {
   "nome_cliente": "string ou null se não informado",
+  "email": "string com formato de e-mail (ex: nome@dominio.com), ou null se não informado nesta mensagem",
   "tipo_evento": "uma das opções: aniversario_infantil, casamento, debutante, corporativo, cha_de_bebe, outro, ou null",
   "data_evento": "AAAA-MM-DD ou null se não informado",
   "numero_convidados": número inteiro ou null,
@@ -121,13 +124,15 @@ Formato exato de saída:
     "nome_responsavel": "string ou null — só para ramo recreacao_avulsa",
     "nome_crianca": "string ou null — só para ramo recreacao_avulsa",
     "idade_crianca": "número ou null — só para ramo recreacao_avulsa",
-    "data_aniversario_crianca": "AAAA-MM-DD ou null — só para ramo recreacao_avulsa, campo crítico para cross-sell"
+    "data_aniversario_crianca": "AAAA-MM-DD ou null — só para ramo recreacao_avulsa, campo crítico para cross-sell",
+    "cupom_aceito": "true | false | null — só para ramo recreacao_avulsa; true/false SOMENTE se esta mensagem for uma resposta clara a uma oferta de cupom de desconto (ex: 'sim, quero o cupom' ou 'não, obrigada'); null se a mensagem não for sobre isso"
   },
   "sinal_engajamento": "uma das opções: positivo, neutro, negativo, pergunta_valor, pedido_visita"
 }
 
 Regras:
 - Se a informação não estiver na mensagem, use null. Nunca invente dados.
+- email: só preencha se a mensagem contiver um endereço de e-mail reconhecível; nunca invente ou complete um e-mail parcial.
 - Extraia números mesmo se escritos por extenso.
 - Datas relativas ("mês que vem", "em setembro") deixe null e mencione em resumo_pedido.
 - palavras_chave deve usar, sempre que possível, as palavras exatas do cliente.
@@ -150,6 +155,11 @@ function getClient(): Anthropic {
 
 function isValidDate(value: string): boolean {
   return !Number.isNaN(new Date(value).getTime()) && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+/** Validação superficial de formato — não confirma que o e-mail existe de verdade, só que tem a forma de um. */
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 /** Valida e normaliza dados_ramo — mesmo princípio do sanitize() principal: nunca confiar cegamente na IA. */
@@ -185,6 +195,7 @@ function sanitizeDadosRamo(raw: any): DadosPorRamo {
       typeof r.data_aniversario_crianca === "string" && isValidDate(r.data_aniversario_crianca)
         ? r.data_aniversario_crianca
         : null,
+    cupom_aceito: typeof r.cupom_aceito === "boolean" ? r.cupom_aceito : null,
   };
 }
 
@@ -213,6 +224,7 @@ function sanitize(raw: any): ExtractedLeadData {
 
   return {
     nome_cliente: typeof raw?.nome_cliente === "string" ? raw.nome_cliente : null,
+    email: typeof raw?.email === "string" && isValidEmail(raw.email) ? raw.email : null,
     tipo_evento,
     data_evento,
     numero_convidados: typeof raw?.numero_convidados === "number" ? raw.numero_convidados : null,

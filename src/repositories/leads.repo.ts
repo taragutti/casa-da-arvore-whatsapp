@@ -19,12 +19,13 @@ export async function upsertLead(
 ): Promise<string> {
   const result = await pool.query<{ id: string }>(
     `INSERT INTO leads (
-       whatsapp_number, nome_cliente, tipo_evento, data_evento,
+       whatsapp_number, nome_cliente, email, tipo_evento, data_evento,
        numero_convidados, orcamento_mencionado, resumo_pedido, unidade_recomendada, ultima_interacao
      )
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
      ON CONFLICT (whatsapp_number) DO UPDATE SET
        nome_cliente = COALESCE(EXCLUDED.nome_cliente, leads.nome_cliente),
+       email = COALESCE(EXCLUDED.email, leads.email),
        tipo_evento = COALESCE(EXCLUDED.tipo_evento, leads.tipo_evento),
        data_evento = COALESCE(EXCLUDED.data_evento, leads.data_evento),
        numero_convidados = COALESCE(EXCLUDED.numero_convidados, leads.numero_convidados),
@@ -36,6 +37,7 @@ export async function upsertLead(
     [
       whatsappNumber,
       data.nome_cliente,
+      data.email,
       data.tipo_evento,
       data.data_evento,
       data.numero_convidados,

@@ -67,6 +67,10 @@ ALTER TABLE leads ADD COLUMN IF NOT EXISTS unidade_confirmada unidade_enum;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS tags TEXT[];
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS origem_lead TEXT;
 
+-- E-mail (Seção 7, campo comum a todos os ramos) — capturado pela extração
+-- via IA sempre que aparecer numa mensagem, não só no momento do handoff.
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS email TEXT;
+
 -- 3. demand_signals: sinais qualitativos por interação
 DO $$ BEGIN
   CREATE TYPE gatilho_emocional_enum AS ENUM (

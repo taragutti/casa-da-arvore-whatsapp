@@ -29,7 +29,7 @@ function linhaLead(lead: LeadPainel): string {
 
   return `
     <tr>
-      <td>${escapeHtml(lead.nome_cliente ?? "não informado")}<br><small>${escapeHtml(lead.whatsapp_number)}</small></td>
+      <td>${escapeHtml(lead.nome_cliente ?? "não informado")}<br><small>${escapeHtml(lead.whatsapp_number)}${lead.email ? " · " + escapeHtml(lead.email) : ""}</small></td>
       <td>${escapeHtml(lead.ramo ?? lead.tipo_evento ?? "—")}</td>
       <td>${escapeHtml(lead.unidade_recomendada ?? "—")}</td>
       <td>${escapeHtml(lead.etapa_atual ?? "—")}</td>
@@ -46,11 +46,12 @@ function linhaLead(lead: LeadPainel): string {
  * Painel mínimo de visibilidade (Seção 7) — uma tabela HTML server-rendered,
  * sem framework de front-end, com os campos consolidados de CRM por lead.
  *
- * Duas lacunas conhecidas, não implementadas em nenhum lugar do sistema
- * ainda (por isso aparecem sempre vazias aqui): "e-mail (coletado no
- * handoff)" — nunca é coletado, nem no handoff.service.ts nem na extração
- * via IA — e "cupom aceito (S/N)" do ramo recreação avulsa — não há
- * rastreio de aceite de cupom em lugar nenhum do sistema.
+ * E-mail (quando informado numa mensagem) aparece junto do telefone. Cupom
+ * aceito (ramo recreação avulsa) aparece dentro de "Dados coletados" quando
+ * a IA conseguir identificar uma resposta clara à oferta — é extração
+ * best-effort a partir de uma mensagem isolada (sem histórico da conversa),
+ * então pode ficar null mesmo quando o cliente respondeu, se a resposta for
+ * ambígua fora de contexto (ex.: um "sim" sozinho).
  */
 export function renderizarPainelHtml(leads: LeadPainel[]): string {
   const linhas = leads.map(linhaLead).join("\n");
@@ -74,8 +75,9 @@ export function renderizarPainelHtml(leads: LeadPainel[]): string {
   <h1>Painel — Casa da Árvore</h1>
   <p>${leads.length} lead(s) mais recentemente ativos (limite de 200, sem paginação — painel mínimo).</p>
   <div class="aviso">
-    <strong>Campos não coletados por nenhuma parte do sistema ainda:</strong> e-mail do cliente e aceite de cupom
-    (ramo recreação avulsa). Aparecem sempre vazios abaixo.
+    <strong>Sobre o cupom aceito (ramo recreação avulsa):</strong> aparece dentro de "Dados coletados" — a
+    extração é feita mensagem a mensagem, sem histórico da conversa, então uma resposta ambígua fora de
+    contexto pode não ser capturada mesmo que o cliente tenha respondido.
   </div>
   <table>
     <thead>

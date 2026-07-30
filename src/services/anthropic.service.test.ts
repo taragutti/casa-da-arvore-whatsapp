@@ -297,4 +297,124 @@ describe("extractFromMessage", () => {
     expect(resultado.dados_ramo.formato_festa).toBeNull();
     expect(resultado.sinal_engajamento).toBe("neutro");
   });
+
+  it("extrai e-mail quando a mensagem traz um endereço válido", async () => {
+    respostaIA({
+      nome_cliente: "Ana",
+      email: "ana@exemplo.com",
+      tipo_evento: "casamento",
+      data_evento: null,
+      numero_convidados: null,
+      orcamento_mencionado: null,
+      resumo_pedido: "Quer orçamento, deixou o e-mail",
+      palavras_chave: ["orçamento"],
+      objecao_ou_duvida: null,
+      gatilho_emocional: null,
+    });
+
+    const resultado = await extractFromMessage("Meu e-mail é ana@exemplo.com, pode mandar o orçamento?");
+
+    expect(resultado.email).toBe("ana@exemplo.com");
+  });
+
+  it("descarta e-mail em formato inválido em vez de quebrar", async () => {
+    respostaIA({
+      nome_cliente: null,
+      email: "nao-é-um-email",
+      tipo_evento: null,
+      data_evento: null,
+      numero_convidados: null,
+      orcamento_mencionado: null,
+      resumo_pedido: "Mensagem qualquer",
+      palavras_chave: [],
+      objecao_ou_duvida: null,
+      gatilho_emocional: null,
+    });
+
+    const resultado = await extractFromMessage("qualquer mensagem");
+
+    expect(resultado.email).toBeNull();
+  });
+
+  it("mensagem sem e-mail retorna email null", async () => {
+    respostaIA({
+      nome_cliente: "Bruno",
+      tipo_evento: "aniversario_infantil",
+      data_evento: null,
+      numero_convidados: null,
+      orcamento_mencionado: null,
+      resumo_pedido: "Festa infantil",
+      palavras_chave: [],
+      objecao_ou_duvida: null,
+      gatilho_emocional: null,
+    });
+
+    const resultado = await extractFromMessage("Quero uma festa infantil");
+
+    expect(resultado.email).toBeNull();
+  });
+
+  it("detecta aceite de cupom (ramo recreação avulsa)", async () => {
+    respostaIA({
+      nome_cliente: null,
+      tipo_evento: null,
+      data_evento: null,
+      numero_convidados: null,
+      orcamento_mencionado: null,
+      resumo_pedido: "Aceitou o cupom de desconto",
+      palavras_chave: ["cupom"],
+      objecao_ou_duvida: null,
+      gatilho_emocional: null,
+      ramo: "recreacao_avulsa",
+      dados_ramo: { cupom_aceito: true },
+      sinal_engajamento: "positivo",
+    });
+
+    const resultado = await extractFromMessage("Sim, quero o cupom de desconto pra festa fechada!");
+
+    expect(resultado.dados_ramo.cupom_aceito).toBe(true);
+  });
+
+  it("detecta recusa de cupom (ramo recreação avulsa)", async () => {
+    respostaIA({
+      nome_cliente: null,
+      tipo_evento: null,
+      data_evento: null,
+      numero_convidados: null,
+      orcamento_mencionado: null,
+      resumo_pedido: "Recusou o cupom",
+      palavras_chave: [],
+      objecao_ou_duvida: null,
+      gatilho_emocional: null,
+      ramo: "recreacao_avulsa",
+      dados_ramo: { cupom_aceito: false },
+      sinal_engajamento: "neutro",
+    });
+
+    const resultado = await extractFromMessage("Não, obrigada, só a recreação avulsa mesmo por enquanto");
+
+    expect(resultado.dados_ramo.cupom_aceito).toBe(false);
+  });
+
+  it("cupom_aceito fica null quando a IA não manda o campo (mensagem não relacionada a cupom)", async () => {
+    respostaIA({
+      nome_cliente: "Carla",
+      tipo_evento: null,
+      data_evento: null,
+      numero_convidados: null,
+      orcamento_mencionado: null,
+      resumo_pedido: "Recreação avulsa pro filho",
+      palavras_chave: [],
+      objecao_ou_duvida: null,
+      gatilho_emocional: null,
+      ramo: "recreacao_avulsa",
+      dados_ramo: { nome_responsavel: "Carla", nome_crianca: "Théo" },
+      sinal_engajamento: "neutro",
+    });
+
+    const resultado = await extractFromMessage("Quero recreação avulsa pro meu filho Théo");
+
+    expect(resultado.dados_ramo.cupom_aceito).toBeNull();
+    expect(resultado.dados_ramo.nome_responsavel).toBe("Carla");
+  });
 });
