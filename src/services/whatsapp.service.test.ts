@@ -262,3 +262,24 @@ describe("WhatsAppTemplateError", () => {
     expect(erro.message).toContain("400");
   });
 });
+
+describe("CORPO_TEMPLATE_HANDOFF — regras de formato da Meta", () => {
+  it("não começa nem termina com variável (a Meta rejeita o template)", () => {
+    const corpo = CORPO_TEMPLATE_HANDOFF.trim();
+    expect(corpo.startsWith("{{")).toBe(false);
+    expect(corpo.endsWith("}}")).toBe(false);
+  });
+
+  it("não tem duas variáveis coladas, sem texto entre elas (a Meta rejeita)", () => {
+    expect(CORPO_TEMPLATE_HANDOFF).not.toMatch(/\}\}\s*\{\{/);
+  });
+
+  it("numera as variáveis de 1 a N sem pular nem repetir", () => {
+    const numeros = [...CORPO_TEMPLATE_HANDOFF.matchAll(/\{\{(\d+)\}\}/g)].map((m) => Number(m[1]));
+    expect(numeros).toEqual(Array.from({ length: numeros.length }, (_, i) => i + 1));
+  });
+
+  it("o corpo em si cabe no limite de 1024 caracteres antes da substituição", () => {
+    expect(CORPO_TEMPLATE_HANDOFF.length).toBeLessThanOrEqual(1024);
+  });
+});

@@ -295,6 +295,10 @@ export function montarResumoParaVendedor(r: ResumoLeadParaVendedor): string {
  * Se mudar este corpo, é obrigatório resubmeter o template na Meta E ajustar
  * montarVariaveisTemplateVendedor() na mesma ordem — os dois lados são
  * acoplados por posição, e trocar um só embaralha os campos silenciosamente.
+ *
+ * As aspas em volta de {{10}} não são decorativas: a Meta rejeita template que
+ * COMEÇA ou TERMINA com variável, e {{10}} é o último elemento. As aspas fazem
+ * o corpo terminar em texto fixo.
  */
 export const CORPO_TEMPLATE_HANDOFF = `Novo lead para atender.
 
@@ -311,7 +315,7 @@ Detalhes: {{8}}
 
 Resumo: {{9}}
 
-Última mensagem do cliente: {{10}}`;
+Última mensagem do cliente: "{{10}}"`;
 
 const VALOR_AUSENTE = "não informado";
 
