@@ -31,23 +31,56 @@ vivem em dois lugares possíveis:
 | `WHATSAPP_ACCESS_TOKEN` | Railway (?) — **confirmar local exato** | ✅ funcionando — token **definitivo** (não expira em 24h) | vazio no `.env` local — mesma observação acima |
 | `WHATSAPP_PHONE_NUMBER_ID` | Railway (?) — **confirmar local exato** | ✅ funcionando | vazio no `.env` local — mesma observação acima |
 | `PAINEL_USERNAME` / `PAINEL_PASSWORD` | Railway | ✅ ok | definidas em 25/07/2026; painel acessível em `/painel` com HTTP Basic Auth |
-| `VENDEDOR_WHATSAPP_NUMBER` | Railway | ⚠️ configurada, envio não validado | `+5522997546818` (definida 30/07/2026). Só recebe texto livre dentro da janela de 24h da Meta — ver "Pendência aberta" abaixo |
+| `VENDEDOR_WHATSAPP_NUMBER` | Railway | ✅ configurada, envio não validado em produção | `+5522997546818` (definida 30/07/2026) |
+| `VENDEDOR_HANDOFF_TEMPLATE_NAME` | Railway | ✅ configurada | `handoff_vendedor` (definida 30/07/2026). Enquanto o template não for aprovado, o código cai pra texto livre automaticamente |
 
-## Pendência aberta — janela de 24h da Meta (notificação do vendedor)
+## Templates de mensagem da Meta
 
-A notificação de handoff no WhatsApp do vendedor (`VENDEDOR_WHATSAPP_NUMBER`)
-é uma mensagem **iniciada pela empresa**. A Meta só entrega texto livre se o
-vendedor tiver mandado alguma mensagem pro número do bot nas últimas 24h.
-Fora dessa janela o envio é rejeitado — o código loga o erro e segue (o
-e-mail de handoff continua funcionando como canal de registro), mas a
-notificação no WhatsApp **não chega**.
+Toda mensagem que o sistema envia **por iniciativa própria** (notificação do
+vendedor no handoff, follow-ups, réguas de ciclo de vida) só é entregue fora da
+janela de 24h se usar um **template aprovado** pela Meta. Texto livre nessas
+situações é rejeitado.
 
-Duas saídas possíveis:
-1. **Contorno frágil:** o vendedor manda um "oi" pro número do bot todo dia,
-   mantendo a janela aberta. Funciona, mas depende de disciplina humana.
-2. **Solução real:** criar um template aprovado pra notificação de handoff no
-   Meta Business Manager (mesmo processo dos templates de follow-up) e trocar
-   o envio de texto livre por template no código.
+O código tenta template primeiro e cai pra texto livre apenas quando a Meta
+recusa por problema do próprio template (erros 132xxx) — então **nada precisa
+ser alterado no código quando um template for aprovado**, é automático. Os
+nomes abaixo já estão mapeados.
+
+Status em **30/07/2026**:
+
+| Template | Categoria | Status | Usado por |
+|---|---|---|---|
+| `followup_2h` | Marketing | ✅ Ativo | régua de silêncio, 2h |
+| `followup_48h` | Marketing | ✅ Ativo | régua de silêncio, 48h |
+| `followup_7d` | Marketing | ✅ Ativo | régua de silêncio, 7 dias |
+| `followup_30d` | Marketing | ✅ Ativo | nutrição, 30 dias |
+| `handoff_vendedor` | Utilidade | ⏳ Em análise | notificação do vendedor no handoff |
+| `aniversario_casamento` | Marketing | ⏳ Em análise | ciclo de vida, 1º ano de casamento |
+| `prospeccao_corporativa` | Marketing | ⏳ Em análise | ciclo de vida, 1 ano após evento corporativo |
+| `ultima_campanha` | Marketing | ⏳ Em análise | última campanha antes de arquivar lead frio |
+
+Onde conferir/alterar: **business.facebook.com → Gerenciador do WhatsApp →
+Modelos de mensagem → Gerenciar modelos** (cuidado com o filtro de data, que
+esconde modelos antigos por padrão).
+
+Regras da Meta que já custaram uma rejeição aqui, registradas pra não repetir:
+- Template não pode **começar nem terminar** com variável (por isso `{{10}}`
+  está entre aspas em `CORPO_TEMPLATE_HANDOFF`).
+- Variável não aceita quebra de linha, tab, 4+ espaços seguidos, nem valor vazio.
+- Corpo montado (texto fixo + valores) não pode passar de **1024 caracteres**.
+- Categoria errada é a causa mais comum de rejeição: notificação operacional
+  interna é **Utilidade**; reengajamento/promoção é **Marketing**.
+
+Os testes em `whatsapp.service.test.ts` cobrem essas regras — se alguém mudar
+o corpo do template e esquecer de resubmeter na Meta, um teste falha.
+
+### Validade da mensagem (TTL)
+
+Templates de utilidade têm validade padrão de **10 minutos** na Meta: se o
+WhatsApp não conseguir entregar nesse prazo (celular desligado, sem sinal), a
+mensagem é descartada silenciosamente. Como o SLA de handoff é de 15 a 30
+minutos, vale configurar um período de validade maior na tela do template —
+notificação de lead atrasada ainda serve, perdida não.
 
 ## Pendência aberta
 
