@@ -49,6 +49,21 @@ const envSchema = z.object({
   // significar "bloqueado", nunca "público".
   PAINEL_USERNAME: z.string().optional(),
   PAINEL_PASSWORD: z.string().optional(),
+
+  // Diretório onde os arquivos de mídia enviados pelo painel são gravados
+  // (biblioteca de mídia, Seção 4). Em produção DEVE apontar para o ponto de
+  // montagem de um volume do Railway — o disco do container é efêmero, então
+  // sem volume todo arquivo enviado desaparece no próximo deploy, e a
+  // media_library ficaria cheia de URLs quebradas (pior que estar vazia,
+  // porque o motor de mídia acharia que tem mídia e o envio falharia na Meta).
+  MEDIA_STORAGE_DIR: z.string().default("./midia-arquivos"),
+
+  // Base absoluta das URLs de mídia gravadas na media_library. A Meta baixa o
+  // arquivo do NOSSO servidor, então URL relativa não serve: tem que ser
+  // absoluta e pública. Se não definida, cai no domínio público do Railway
+  // (injetado automaticamente) e, fora dele, em localhost.
+  PUBLIC_BASE_URL: z.string().optional(),
+  RAILWAY_PUBLIC_DOMAIN: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -58,7 +73,24 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+// process.exit acima encerra o processo, mas o TypeScript não estreita
+// parsed.data dentro de uma função por causa disso — a constante resolve.
+const dados = parsed.data;
+const PORT = Number(dados.PORT);
+
+/**
+ * Base pública resolvida uma única vez: se PUBLIC_BASE_URL não foi definida,
+ * usa o domínio do Railway (que a plataforma injeta sem esquema) e, na
+ * ausência dele, localhost. Sem barra no fim, para concatenar caminho direto.
+ */
+function resolverBaseUrl(): string {
+  if (dados.PUBLIC_BASE_URL) return dados.PUBLIC_BASE_URL.replace(/\/+$/, "");
+  if (dados.RAILWAY_PUBLIC_DOMAIN) return `https://${dados.RAILWAY_PUBLIC_DOMAIN}`;
+  return `http://localhost:${PORT}`;
+}
+
 export const env = {
-  ...parsed.data,
-  PORT: Number(parsed.data.PORT),
+  ...dados,
+  PORT,
+  PUBLIC_BASE_URL: resolverBaseUrl(),
 };

@@ -11,7 +11,10 @@ import { ingestRouter } from "./routes/ingest";
 import { whatsappRouter } from "./routes/whatsapp";
 import { painelRouter } from "./routes/painel";
 import { leadsApiRouter } from "./routes/leadsApi";
+import { midiasApiRouter } from "./routes/midiasApi";
+import { midiaPublicaRouter } from "./routes/midiaPublica";
 import { authRouter } from "./routes/auth";
+import { garantirDiretorio, diretorioBase } from "./services/mediaStorage.service";
 import { tratarErros } from "./middleware/asyncHandler";
 
 const app = express();
@@ -56,6 +59,10 @@ app.use(whatsappRouter);
 app.use(authRouter);
 app.use(painelRouter);
 app.use(leadsApiRouter);
+app.use(midiasApiRouter);
+// Rota pública (sem autenticação) — é por ela que os servidores da Meta baixam
+// o arquivo para entregar ao cliente. Ver comentário em routes/midiaPublica.ts.
+app.use(midiaPublicaRouter);
 
 // Precisa vir DEPOIS de todas as rotas: o Express só chama o tratador de erros
 // que estiver registrado no fim da cadeia.
@@ -86,6 +93,20 @@ async function start() {
   } catch (error) {
     logger.error({ err: error }, "falha ao conectar no Postgres");
     process.exit(1);
+  }
+
+  // Cria o diretório de mídia antes de aceitar requisição: se o volume não
+  // estiver montado, é melhor descobrir no boot (com o caminho no log) do que
+  // no primeiro upload. Falhar aqui não derruba o servidor — o resto do
+  // sistema funciona sem biblioteca de mídia.
+  try {
+    await garantirDiretorio();
+    logger.info({ diretorio: diretorioBase() }, "diretório de mídia pronto");
+  } catch (error) {
+    logger.error(
+      { err: error, diretorio: diretorioBase() },
+      "não foi possível preparar o diretório de mídia — uploads vão falhar até corrigir MEDIA_STORAGE_DIR"
+    );
   }
 
   // Sobe o worker da fila (Etapa 5) no mesmo processo do servidor — simples

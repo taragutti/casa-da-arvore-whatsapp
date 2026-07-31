@@ -2,7 +2,7 @@ import { logger } from "../config/logger";
 import { DadosPorRamo, RamoEvento, SinalEngajamento } from "./anthropic.service";
 import { UnidadeRecomendada } from "./routing.service";
 import { sendWhatsAppImage, sendWhatsAppVideo, sendWhatsAppDocument, sendWhatsAppMessage } from "./whatsapp.service";
-import { buscarMidias } from "../repositories/mediaLibrary.repo";
+import { buscarMidias, ETAPAS_MIDIA } from "../repositories/mediaLibrary.repo";
 import { getEtapaMidiaAtual, registrarEnvioMidia } from "../repositories/conversationState.repo";
 import { agendarFollowUp } from "./followUp.service";
 
@@ -84,33 +84,31 @@ async function enviarEtapaMidia(
   etapa: EtapaMidia,
   perfilLead: string | null
 ): Promise<boolean> {
+  // tipo/categoria/quantidade vêm de ETAPAS_MIDIA, a mesma tabela que o painel
+  // usa para cadastrar. Duplicar esses valores aqui faria mídia cadastrada por
+  // uma etapa nunca ser encontrada pela outra ponta.
+  const { tipo, categoria, quantidade } = ETAPAS_MIDIA[etapa];
+
+  // Só a etapa 3 é curada por perfil de lead (fotos de eventos reais); nas
+  // outras o material é institucional e igual para todos.
+  const midias = await buscarMidias(unidade, tipo, categoria, etapa === 3 ? perfilLead : null, quantidade);
+  if (midias.length === 0) return false;
+
   switch (etapa) {
-    case 1: {
-      const [foto] = await buscarMidias(unidade, "foto", "externa", null, 1);
-      if (!foto) return false;
-      await sendWhatsAppImage(whatsappNumber, foto.url);
+    case 1:
+      await sendWhatsAppImage(whatsappNumber, midias[0]!.url);
       return true;
-    }
-    case 2: {
-      const [video] = await buscarMidias(unidade, "video", "tour", null, 1);
-      if (!video) return false;
-      await sendWhatsAppVideo(whatsappNumber, video.url);
+    case 2:
+      await sendWhatsAppVideo(whatsappNumber, midias[0]!.url);
       return true;
-    }
-    case 3: {
-      const fotos = await buscarMidias(unidade, "foto", "evento", perfilLead, 4);
-      if (fotos.length === 0) return false;
-      for (const foto of fotos) {
+    case 3:
+      for (const foto of midias) {
         await sendWhatsAppImage(whatsappNumber, foto.url);
       }
       return true;
-    }
-    case 4: {
-      const [catalogo] = await buscarMidias(unidade, "catalogo", "catalogo", null, 1);
-      if (!catalogo) return false;
-      await sendWhatsAppDocument(whatsappNumber, catalogo.url, `Catalogo-${unidade}.pdf`);
+    case 4:
+      await sendWhatsAppDocument(whatsappNumber, midias[0]!.url, `Catalogo-${unidade}.pdf`);
       return true;
-    }
   }
 }
 

@@ -21,6 +21,17 @@ export function comErro(handler: RequestHandler): RequestHandler {
 
 /** Último middleware da cadeia: registra o erro e responde sem vazar detalhe interno. */
 export function tratarErros(err: unknown, req: Request, res: Response, _next: NextFunction): void {
+  // Arquivo acima do limite do body parser (upload de mídia). Sem este caso o
+  // usuário do painel receberia "Erro interno" para algo que ele mesmo pode
+  // resolver, e o log registraria como falha do servidor.
+  if ((err as { type?: string })?.type === "entity.too.large") {
+    logger.warn({ method: req.method, path: req.path }, "upload recusado por exceder o limite de tamanho");
+    if (!res.headersSent) {
+      res.status(413).json({ erro: "Arquivo grande demais para envio pelo WhatsApp." });
+    }
+    return;
+  }
+
   logger.error({ err, method: req.method, path: req.path }, "erro não tratado em requisição");
 
   if (res.headersSent) {

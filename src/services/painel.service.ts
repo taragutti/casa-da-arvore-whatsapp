@@ -199,8 +199,9 @@ export function renderizarPainelHtml(leads: LeadPainel[], autor: Autor): string 
             flex-wrap: wrap; }
     .usuario { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #555; }
     .usuario form { margin: 0; }
-    button.sair { background: #fff; color: #2f5233; border: 1px solid #cfd8d0; padding: 6px 12px; font-size: 13px; }
-    button.sair:hover { background: #eef2ee; }
+    button.sair, a.sair { background: #fff; color: #2f5233; border: 1px solid #cfd8d0; padding: 6px 12px;
+                          font-size: 13px; border-radius: 6px; text-decoration: none; display: inline-block; }
+    button.sair:hover, a.sair:hover { background: #eef2ee; }
     .aviso-bootstrap { background: #fff8e1; color: #8a6d00; border: 1px solid #ffe69c; padding: 12px;
                        border-radius: 8px; font-size: 13px; max-width: 900px; margin-bottom: 16px; line-height: 1.5; }
   </style>
@@ -212,6 +213,7 @@ export function renderizarPainelHtml(leads: LeadPainel[], autor: Autor): string 
       <p class="sub">${leads.length} lead(s) · ${emAtendimento} em atendimento humano · mostrando os 200 mais recentes</p>
     </div>
     <div class="usuario">
+      <a class="sair" href="/painel/midias">Mídias</a>
       <span>${escapeHtml(autor.nome)}</span>
       <form method="post" action="/logout"><button type="submit" class="sair">Sair</button></form>
     </div>

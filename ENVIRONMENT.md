@@ -33,6 +33,35 @@ vivem em dois lugares possíveis:
 | `PAINEL_USERNAME` / `PAINEL_PASSWORD` | Railway | ✅ ok | definidas em 25/07/2026; painel acessível em `/painel` com HTTP Basic Auth |
 | `VENDEDOR_WHATSAPP_NUMBER` | Railway | ✅ configurada, envio não validado em produção | `+5522997546818` (definida 30/07/2026) |
 | `VENDEDOR_HANDOFF_TEMPLATE_NAME` | Railway | ✅ configurada | `handoff_vendedor` (definida 30/07/2026). Enquanto o template não for aprovado, o código cai pra texto livre automaticamente |
+| `MEDIA_STORAGE_DIR` | Railway | ⚠️ **pendente** | precisa apontar para o ponto de montagem do volume (ex.: `/dados/midia`). Ver "Volume de mídia" abaixo — sem isso os arquivos somem a cada deploy |
+| `PUBLIC_BASE_URL` | não configurada | ✅ opcional | se ausente, usa `RAILWAY_PUBLIC_DOMAIN` (injetada pela plataforma). Só definir se o app passar a atender por domínio próprio |
+
+## Volume de mídia (biblioteca de mídia, Seção 4)
+
+O painel em `/painel/midias` grava os arquivos de foto, vídeo e catálogo **em
+disco**, e a rota pública `/midia/:arquivo` os serve — é por ela que os
+servidores da Meta baixam o binário para entregar ao cliente no WhatsApp.
+
+**O disco do container do Railway é efêmero.** Sem um volume, todo arquivo
+enviado desaparece no próximo deploy e a `media_library` fica cheia de URLs
+que retornam 404. Esse é o pior estado possível: o motor de mídia trata o
+registro como mídia disponível, manda a URL pra Meta e o envio falha na frente
+do cliente — diferente da biblioteca vazia, que apenas não avança a régua.
+
+Como configurar (uma vez):
+
+1. Railway → serviço `sparkling-forgiveness` → aba **Settings** → **Volumes** →
+   **Add Volume**, com ponto de montagem `/dados`.
+2. Na aba **Variables**, definir `MEDIA_STORAGE_DIR=/dados/midia`.
+3. Redeploy. No boot o log mostra `diretório de mídia pronto` com o caminho
+   resolvido — se aparecer erro ali, o volume não está montado.
+
+Como confirmar que está de pé: subir uma foto em `/painel/midias`, abrir a URL
+do arquivo em aba anônima (precisa carregar **sem** pedir senha — se pedir, a
+Meta também não conseguiria baixar) e fazer um redeploy: a foto tem que
+continuar aparecendo depois.
+
+Local, nada a fazer: o default é `./midia-arquivos` na raiz do projeto.
 
 ## Templates de mensagem da Meta
 

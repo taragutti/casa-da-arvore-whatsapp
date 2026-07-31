@@ -3,6 +3,8 @@ import { exigirLogin } from "../middleware/auth";
 import { comErro } from "../middleware/asyncHandler";
 import { buscarLeadsParaPainel } from "../repositories/painel.repo";
 import { renderizarPainelHtml } from "../services/painel.service";
+import { contarMidiasAtivasPorEtapa, listarTodasMidias } from "../repositories/mediaLibrary.repo";
+import { renderizarPainelMidiasHtml } from "../services/midiasPainel.service";
 
 export const painelRouter = Router();
 
@@ -12,4 +14,18 @@ painelRouter.get("/painel", comErro(exigirLogin), comErro(async (req: Request, r
   res
     .set("Content-Type", "text/html; charset=utf-8")
     .send(renderizarPainelHtml(leads, req.autor!));
+}));
+
+/**
+ * GET /painel/midias — gestão da biblioteca de mídia (Seção 4).
+ *
+ * Rota separada em vez de aba na mesma página: as duas telas não compartilham
+ * dado nenhum, e carregar 200 leads para quem só quer trocar uma foto seria
+ * desperdício em toda visita.
+ */
+painelRouter.get("/painel/midias", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
+  const [itens, contagens] = await Promise.all([listarTodasMidias(), contarMidiasAtivasPorEtapa()]);
+  res
+    .set("Content-Type", "text/html; charset=utf-8")
+    .send(renderizarPainelMidiasHtml(itens, contagens, req.autor!));
 }));
