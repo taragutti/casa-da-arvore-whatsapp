@@ -128,12 +128,21 @@ async function enviarLoteDeFotos(
   return enviadas > 0;
 }
 
+/**
+ * Distinguir "não tem material" de "tentou e falhou" é essencial: a primeira
+ * situação deve PULAR para a etapa seguinte (a régua não pode congelar por
+ * material que nunca foi cadastrado), a segunda NÃO — falha de rede é
+ * temporária, e pular por causa dela faria o cliente receber o catálogo em vez
+ * das fotos, com as fotos marcadas como já passadas.
+ */
+type ResultadoEnvioEtapa = "enviado" | "sem_midia" | "falhou";
+
 async function enviarEtapaMidia(
   whatsappNumber: string,
   unidade: UnidadeRecomendada,
   etapa: EtapaMidia,
   perfilLead: string | null
-): Promise<boolean> {
+): Promise<ResultadoEnvioEtapa> {
   // tipo/categoria/quantidade vêm de ETAPAS_MIDIA, a mesma tabela que o painel
   // usa para cadastrar. Duplicar esses valores aqui faria mídia cadastrada por
   // uma etapa nunca ser encontrada pela outra ponta.
@@ -142,20 +151,23 @@ async function enviarEtapaMidia(
   // Só a etapa 3 é curada por perfil de lead (fotos de eventos reais); nas
   // outras o material é institucional e igual para todos.
   const midias = await buscarMidias(unidade, tipo, categoria, etapa === 3 ? perfilLead : null, quantidade);
-  if (midias.length === 0) return false;
+  if (midias.length === 0) return "sem_midia";
 
+  // Nas etapas de item único, uma exceção do envio propaga de propósito: o
+  // chamador não registra avanço e a régua tenta de novo na mensagem seguinte.
   switch (etapa) {
     case 1:
       await sendWhatsAppImage(whatsappNumber, midias[0]!.url);
-      return true;
+      return "enviado";
     case 2:
       await sendWhatsAppVideo(whatsappNumber, midias[0]!.url);
-      return true;
+      return "enviado";
     case 3:
-      return enviarLoteDeFotos(whatsappNumber, midias, unidade);
+      // O lote engole falha individual, então precisa dizer se algo saiu.
+      return (await enviarLoteDeFotos(whatsappNumber, midias, unidade)) ? "enviado" : "falhou";
     case 4:
       await sendWhatsAppDocument(whatsappNumber, midias[0]!.url, `Catalogo-${unidade}.pdf`);
-      return true;
+      return "enviado";
   }
 }
 
@@ -198,22 +210,59 @@ export async function processarMidiaProgressiva(
   }
 
   const perfilLead = inferirPerfilLead(ramo, dadosRamo, numeroConvidados);
-  const enviado = await enviarEtapaMidia(whatsappNumber, unidadeRecomendada, acao.etapa, perfilLead);
 
-  if (!enviado) {
+  // Etapa sem material não pode CONGELAR a régua. Antes, se a etapa alvo
+  // estivesse vazia a função saía sem registrar avanço — e a próxima mensagem
+  // do cliente tentava a mesma etapa vazia outra vez, para sempre. O efeito era
+  // silencioso e caro: uma unidade com foto na etapa 1, etapa 2 vazia e 10
+  // fotos na etapa 3 travava na 1, e as 10 nunca chegavam a ninguém.
+  //
+  // Só avança para FRENTE: recuar não faz sentido (o salto para o catálogo em
+  // pergunta_valor não deve virar envio de foto de evento).
+  let etapaEnviada: EtapaMidia | null = null;
+  for (let etapa = acao.etapa; etapa <= 4; etapa++) {
+    const resultado = await enviarEtapaMidia(whatsappNumber, unidadeRecomendada, etapa as EtapaMidia, perfilLead);
+
+    if (resultado === "enviado") {
+      etapaEnviada = etapa as EtapaMidia;
+      break;
+    }
+
+    if (resultado === "falhou") {
+      // Não pula: a etapa TEM material, o envio é que falhou. Sem registrar
+      // avanço, a régua tenta esta mesma etapa na próxima mensagem.
+      log.error({ unidadeRecomendada, etapa }, "envio da etapa falhou — régua mantida para nova tentativa");
+      return;
+    }
+
     log.warn(
-      { unidadeRecomendada, etapa: acao.etapa },
-      "nenhuma mídia ativa encontrada em media_library para esta etapa/unidade — biblioteca precisa ser populada"
+      { unidadeRecomendada, etapa },
+      "etapa sem mídia ativa em media_library — pulando para a próxima com material"
+    );
+  }
+
+  if (etapaEnviada == null) {
+    log.warn(
+      { unidadeRecomendada, etapaAlvo: acao.etapa },
+      "nenhuma etapa a partir da alvo tem mídia ativa — biblioteca precisa ser populada"
     );
     return;
   }
 
-  await registrarEnvioMidia(leadId, acao.etapa);
-  log.info({ unidadeRecomendada, etapa: acao.etapa }, "mídia da régua progressiva enviada");
+  await registrarEnvioMidia(leadId, etapaEnviada);
+  log.info(
+    { unidadeRecomendada, etapa: etapaEnviada, etapaAlvo: acao.etapa },
+    "mídia da régua progressiva enviada"
+  );
 
   // Ramo E (Seção 3.5): oferece o cupom de conversão junto com a primeira
-  // mídia — etapa 1 só acontece uma vez por lead, então isso naturalmente
-  // só dispara uma vez, sem precisar de estado extra pra "já oferecido".
+  // mídia que o cliente recebe.
+  //
+  // A condição olha `acao.etapa` (o alvo da régua), não `etapaEnviada`: se a
+  // etapa 1 estiver vazia e o envio pular para a 3, aquela ainda é a PRIMEIRA
+  // mídia daquele lead, e o cupom deve ir junto. Continua disparando uma única
+  // vez sem estado extra, porque a régua só tem a etapa 1 como alvo enquanto
+  // nada foi enviado.
   if (ramo === "recreacao_avulsa" && acao.etapa === 1) {
     try {
       await sendWhatsAppMessage(whatsappNumber, OFERTA_CUPOM_RECREACAO_AVULSA);
@@ -267,12 +316,15 @@ export async function enviarMidiaDeEspera(
   }
 
   const perfilLead = inferirPerfilLead(ramo, dadosRamo, numeroConvidados);
-  const enviado = await enviarEtapaMidia(whatsappNumber, unidadeRecomendada, 1, perfilLead);
+  const resultado = await enviarEtapaMidia(whatsappNumber, unidadeRecomendada, 1, perfilLead);
 
-  if (!enviado) {
+  // Comparação explícita: o retorno é uma string, e `!resultado` seria sempre
+  // falso — o TypeScript não acusaria, e o handoff seguiria registrando envio
+  // que não aconteceu.
+  if (resultado !== "enviado") {
     log.warn(
-      { unidadeRecomendada },
-      "sem mídia de etapa 1 para esta unidade — cliente fica sem retorno visual no handoff"
+      { unidadeRecomendada, resultado },
+      "sem foto de etapa 1 para esta unidade — cliente fica sem retorno visual no handoff"
     );
     return;
   }
