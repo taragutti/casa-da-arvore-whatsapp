@@ -22,12 +22,11 @@ export const atualizacaoSchema = z
     message: "informe ao menos um campo: status, unidade_confirmada ou devolver_ao_bot",
   });
 
+/**
+ * `autor` NÃO é aceito no corpo de propósito: desde o estágio 2 a autoria vem
+ * da sessão. Se o cliente pudesse informá-la, a nota não provaria nada sobre
+ * quem realmente escreveu.
+ */
 export const notaSchema = z.object({
   texto: z.string().trim().min(1, "texto da nota é obrigatório").max(2000),
-  /**
-   * Preenchido pelo cliente porque a autenticação é uma credencial única
-   * compartilhada — não há usuário individual pra derivar o autor. Quando
-   * existir login por pessoa, isto deve passar a vir da sessão.
-   */
-  autor: z.string().trim().max(120).optional(),
 });

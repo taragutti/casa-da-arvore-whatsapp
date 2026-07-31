@@ -1,4 +1,5 @@
 import { LeadPainel } from "../repositories/painel.repo";
+import { Autor } from "../middleware/auth";
 import { escapeHtml } from "../utils/html";
 
 /** Rótulos legíveis — o banco guarda snake_case, mas quem atende não deveria ler "proposta_enviada". */
@@ -128,7 +129,6 @@ function cardLead(lead: LeadPainel): string {
 
   <div class="nota-nova">
     <input type="text" placeholder="Anotar algo sobre este lead..." maxlength="2000">
-    <input type="text" class="autor" placeholder="Seu nome" maxlength="120">
     <button class="salvar-nota" type="button">Salvar</button>
   </div>
   <p class="feedback"></p>
@@ -143,10 +143,10 @@ function cardLead(lead: LeadPainel): string {
  * (routes/leadsApi.ts). Cards em vez de tabela porque com quatro controles por
  * lead uma tabela de dez colunas fica impraticável.
  *
- * A autenticação é a mesma Basic Auth da página, reaproveitada pelo navegador
- * nas chamadas fetch — não há token separado a gerenciar.
+ * A autenticação é a sessão da própria página (cookie HttpOnly), enviada pelo
+ * navegador nas chamadas fetch — não há token separado a gerenciar no JS.
  */
-export function renderizarPainelHtml(leads: LeadPainel[]): string {
+export function renderizarPainelHtml(leads: LeadPainel[], autor: Autor): string {
   const emAtendimento = leads.filter((l) => l.em_atendimento_humano === true).length;
 
   return `<!doctype html>
@@ -195,11 +195,34 @@ export function renderizarPainelHtml(leads: LeadPainel[]): string {
     .feedback.erro { color: #b00020; }
     .aviso-linha { font-size: 12px; color: #8a6d00; background: #fff8e1; padding: 6px 8px; border-radius: 5px;
                    margin: 8px 0 0; }
+    .topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; max-width: 900px;
+            flex-wrap: wrap; }
+    .usuario { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #555; }
+    .usuario form { margin: 0; }
+    button.sair { background: #fff; color: #2f5233; border: 1px solid #cfd8d0; padding: 6px 12px; font-size: 13px; }
+    button.sair:hover { background: #eef2ee; }
+    .aviso-bootstrap { background: #fff8e1; color: #8a6d00; border: 1px solid #ffe69c; padding: 12px;
+                       border-radius: 8px; font-size: 13px; max-width: 900px; margin-bottom: 16px; line-height: 1.5; }
   </style>
 </head>
 <body>
-  <h1>Painel — Casa da Árvore</h1>
-  <p class="sub">${leads.length} lead(s) · ${emAtendimento} em atendimento humano · mostrando os 200 mais recentes</p>
+  <div class="topo">
+    <div>
+      <h1>Painel — Casa da Árvore</h1>
+      <p class="sub">${leads.length} lead(s) · ${emAtendimento} em atendimento humano · mostrando os 200 mais recentes</p>
+    </div>
+    <div class="usuario">
+      <span>${escapeHtml(autor.nome)}</span>
+      <form method="post" action="/logout"><button type="submit" class="sair">Sair</button></form>
+    </div>
+  </div>
+  ${
+    autor.compartilhado
+      ? `<div class="aviso-bootstrap"><b>Você entrou pela credencial compartilhada.</b>
+         Nesse modo não há como registrar quem fez cada ação. Crie um usuário com
+         <code>npm run criar-usuario</code> — a partir do primeiro usuário, esta credencial deixa de funcionar.</div>`
+      : ""
+  }
   ${leads.map(cardLead).join("\n") || "<p>Nenhum lead encontrado.</p>"}
 
 <script>
@@ -266,16 +289,14 @@ document.querySelectorAll(".card").forEach(function (card) {
 
   var btnNota = card.querySelector("button.salvar-nota");
   btnNota.addEventListener("click", async function () {
-    var inputs = card.querySelectorAll(".nota-nova input[type=text]");
-    var texto = inputs[0].value.trim();
-    var autor = inputs[1].value.trim();
+    var texto = card.querySelector(".nota-nova input[type=text]").value.trim();
     if (!texto) { feedback(card, "Escreva a observação antes de salvar.", false); return; }
     btnNota.disabled = true;
     try {
       var resp = await fetch(apiUrl("/api/leads/" + card.dataset.lead + "/notas"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ texto: texto, autor: autor || undefined })
+        body: JSON.stringify({ texto: texto })
       });
       if (!resp.ok) throw new Error("HTTP " + resp.status + " " + (await resp.text()));
       location.reload();

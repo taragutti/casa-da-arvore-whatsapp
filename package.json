@@ -12,7 +12,8 @@
     "test:extract": "tsx scripts/test-extract.ts",
     "briefing": "tsx scripts/run-briefing.ts",
     "migrate": "node scripts/migrate.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "criar-usuario": "tsx scripts/criar-usuario.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",

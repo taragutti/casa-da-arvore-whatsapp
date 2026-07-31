@@ -11,6 +11,8 @@ import { ingestRouter } from "./routes/ingest";
 import { whatsappRouter } from "./routes/whatsapp";
 import { painelRouter } from "./routes/painel";
 import { leadsApiRouter } from "./routes/leadsApi";
+import { authRouter } from "./routes/auth";
+import { tratarErros } from "./middleware/asyncHandler";
 
 const app = express();
 // Guarda o corpo bruto da requisição (necessário para validar a assinatura
@@ -22,6 +24,9 @@ app.use(
     },
   })
 );
+// Formulário de login (POST /login) envia application/x-www-form-urlencoded,
+// não JSON — sem isto req.body chegaria vazio e o login sempre falharia.
+app.use(express.urlencoded({ extended: false }));
 
 // Log de toda requisição HTTP (Etapa 8) — primeiro evento no rastro de
 // qualquer mensagem que chega pelo endpoint genérico ou pelo webhook.
@@ -48,8 +53,31 @@ app.get("/health", async (_req, res) => {
 
 app.use(ingestRouter);
 app.use(whatsappRouter);
+app.use(authRouter);
 app.use(painelRouter);
 app.use(leadsApiRouter);
+
+// Precisa vir DEPOIS de todas as rotas: o Express só chama o tratador de erros
+// que estiver registrado no fim da cadeia.
+app.use(tratarErros);
+
+/**
+ * Rede de segurança do processo. O padrão do Node para Promise rejeitada sem
+ * tratamento é ENCERRAR — e aqui o processo hospeda os workers da fila e os
+ * jobs agendados, então morrer por causa de uma falha isolada derruba o
+ * processamento de mensagens em andamento junto.
+ *
+ * Registrar e seguir é a escolha certa neste caso: o middleware `comErro` já
+ * cobre o caminho HTTP, então o que chega aqui é falha fora dele, e perder o
+ * servidor inteiro é sempre pior que perder aquela operação.
+ */
+process.on("unhandledRejection", (motivo) => {
+  logger.error({ err: motivo }, "Promise rejeitada sem tratamento — processo mantido de pé");
+});
+
+process.on("uncaughtException", (erro) => {
+  logger.fatal({ err: erro }, "exceção não capturada");
+});
 
 async function start() {
   try {

@@ -7,12 +7,22 @@ export interface LeadNote {
   texto: string;
 }
 
-export async function inserirNota(leadId: string, texto: string, autor: string | null): Promise<LeadNote> {
+/**
+ * `autor` (texto) e `autorUsuarioId` são gravados juntos: o id garante
+ * integridade referencial, o texto permite listar sem JOIN e preserva o nome
+ * como estava no momento da escrita, mesmo que a pessoa mude de nome depois.
+ */
+export async function inserirNota(
+  leadId: string,
+  texto: string,
+  autor: string | null,
+  autorUsuarioId: string | null
+): Promise<LeadNote> {
   const result = await pool.query<LeadNote>(
-    `INSERT INTO lead_notes (lead_id, texto, autor)
-     VALUES ($1, $2, $3)
+    `INSERT INTO lead_notes (lead_id, texto, autor, autor_usuario_id)
+     VALUES ($1, $2, $3, $4)
      RETURNING id, created_at, autor, texto`,
-    [leadId, texto, autor]
+    [leadId, texto, autor, autorUsuarioId]
   );
   return result.rows[0];
 }

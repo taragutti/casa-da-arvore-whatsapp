@@ -132,7 +132,23 @@ CREATE TABLE IF NOT EXISTS media_library (
   ativo BOOLEAN NOT NULL DEFAULT true
 );
 
--- 7. lead_notes: observações escritas por quem atende (vendedor/gerente).
+-- 7. usuarios: contas individuais de quem opera o sistema (estágio 2).
+--    Substitui a credencial única compartilhada — sem isso não há como saber
+--    QUEM executou cada ação, e `autor` nas notas tinha que ser digitado à mão.
+CREATE TABLE IF NOT EXISTS usuarios (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  email TEXT NOT NULL UNIQUE,
+  nome TEXT NOT NULL,
+  senha_hash TEXT NOT NULL,
+  -- Desativar em vez de apagar preserva a autoria das notas já escritas.
+  ativo BOOLEAN NOT NULL DEFAULT true,
+  ultimo_login_em TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(lower(email));
+
+-- 8. lead_notes: observações escritas por quem atende (vendedor/gerente).
 --    Append-only de propósito: nota é registro do que se sabia naquele
 --    momento, não campo editável — e é a primeira peça de um histórico
 --    unificado por lead.
@@ -143,6 +159,12 @@ CREATE TABLE IF NOT EXISTS lead_notes (
   autor TEXT,
   texto TEXT NOT NULL
 );
+
+-- Autoria real, derivada da sessão (estágio 2). A coluna `autor` (texto livre)
+-- continua existindo porque as notas escritas ANTES da autenticação existir
+-- têm o nome digitado à mão — apagá-la perderia esse histórico. Notas novas
+-- preenchem as duas: o id para integridade, o texto para leitura sem JOIN.
+ALTER TABLE lead_notes ADD COLUMN IF NOT EXISTS autor_usuario_id UUID REFERENCES usuarios(id);
 
 CREATE INDEX IF NOT EXISTS idx_lead_notes_lead_id ON lead_notes(lead_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_demand_signals_lead_id ON demand_signals(lead_id);

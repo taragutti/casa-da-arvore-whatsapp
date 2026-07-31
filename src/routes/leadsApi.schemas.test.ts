@@ -69,13 +69,15 @@ describe("atualizacaoSchema", () => {
 });
 
 describe("notaSchema", () => {
-  it("aceita nota com texto e autor", () => {
-    const r = notaSchema.safeParse({ texto: "Cliente pediu proposta por e-mail", autor: "Thiago" });
-    expect(r.success).toBe(true);
+  it("aceita nota apenas com o texto", () => {
+    expect(notaSchema.safeParse({ texto: "Ligou, não atendeu" }).success).toBe(true);
   });
 
-  it("aceita nota sem autor (credencial compartilhada, autor é opcional)", () => {
-    expect(notaSchema.safeParse({ texto: "Ligou, não atendeu" }).success).toBe(true);
+  it("IGNORA autor enviado no corpo — a autoria vem da sessão, senão a nota não provaria quem escreveu", () => {
+    const r = notaSchema.safeParse({ texto: "Cliente pediu proposta", autor: "Alguém Que Não Sou" });
+    expect(r.success).toBe(true);
+    // Se este campo voltar a ser aceito, qualquer cliente poderia falsificar autoria.
+    expect(r.success && "autor" in r.data).toBe(false);
   });
 
   it("rejeita texto vazio ou só espaços", () => {
@@ -83,10 +85,9 @@ describe("notaSchema", () => {
     expect(notaSchema.safeParse({ texto: "   " }).success).toBe(false);
   });
 
-  it("apara espaços em volta do texto e do autor", () => {
-    const r = notaSchema.safeParse({ texto: "  anotação  ", autor: "  Thiago  " });
+  it("apara espaços em volta do texto", () => {
+    const r = notaSchema.safeParse({ texto: "  anotação  " });
     expect(r.success && r.data.texto).toBe("anotação");
-    expect(r.success && r.data.autor).toBe("Thiago");
   });
 
   it("rejeita texto acima de 2000 caracteres", () => {

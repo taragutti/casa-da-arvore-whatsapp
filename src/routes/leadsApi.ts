@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { logger } from "../config/logger";
-import { autenticarPainel } from "../middleware/painelAuth";
+import { exigirLogin } from "../middleware/auth";
+import { comErro } from "../middleware/asyncHandler";
 import { atualizarLead, leadExiste } from "../repositories/leads.repo";
 import { devolverAoBot } from "../repositories/conversationState.repo";
 import { inserirNota, listarNotas } from "../repositories/leadNotes.repo";
@@ -15,7 +16,7 @@ export const leadsApiRouter = Router();
  * funil, confirmar a unidade (campo que existia no schema e nunca era escrito)
  * e devolver a conversa ao bot depois do atendimento humano.
  */
-leadsApiRouter.patch("/api/leads/:id", autenticarPainel, async (req: Request, res: Response) => {
+leadsApiRouter.patch("/api/leads/:id", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
   const idResult = idParamSchema.safeParse(req.params.id);
   if (!idResult.success) {
     res.status(400).json({ erro: idResult.error.issues[0]?.message });
@@ -48,12 +49,23 @@ leadsApiRouter.patch("/api/leads/:id", autenticarPainel, async (req: Request, re
     }
   }
 
-  logger.info({ leadId, status, unidade_confirmada, devolvidoAoBot: devolvido }, "lead atualizado manualmente");
+  logger.info(
+    {
+      leadId,
+      status,
+      unidade_confirmada,
+      devolvidoAoBot: devolvido,
+      // Rastro de quem agiu — antes da autenticação não havia como saber.
+      usuarioId: req.autor?.usuarioId,
+      autor: req.autor?.nome,
+    },
+    "lead atualizado manualmente"
+  );
   res.json({ ok: true, leadId, alterado: { status, unidade_confirmada, devolvido_ao_bot: devolvido } });
-});
+}));
 
 /** POST /api/leads/:id/notas — registra observação de quem atendeu. */
-leadsApiRouter.post("/api/leads/:id/notas", autenticarPainel, async (req: Request, res: Response) => {
+leadsApiRouter.post("/api/leads/:id/notas", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
   const idResult = idParamSchema.safeParse(req.params.id);
   if (!idResult.success) {
     res.status(400).json({ erro: idResult.error.issues[0]?.message });
@@ -72,13 +84,17 @@ leadsApiRouter.post("/api/leads/:id/notas", autenticarPainel, async (req: Reques
     return;
   }
 
-  const nota = await inserirNota(leadId, parsed.data.texto, parsed.data.autor ?? null);
-  logger.info({ leadId, notaId: nota.id }, "nota adicionada ao lead");
+  // Autoria vem da SESSÃO, não do corpo da requisição: se o cliente pudesse
+  // escolher o autor, a nota não provaria nada sobre quem a escreveu.
+  const autor = req.autor!;
+  const nota = await inserirNota(leadId, parsed.data.texto, autor.nome, autor.usuarioId);
+
+  logger.info({ leadId, notaId: nota.id, usuarioId: autor.usuarioId }, "nota adicionada ao lead");
   res.status(201).json(nota);
-});
+}));
 
 /** GET /api/leads/:id/notas — histórico de observações do lead. */
-leadsApiRouter.get("/api/leads/:id/notas", autenticarPainel, async (req: Request, res: Response) => {
+leadsApiRouter.get("/api/leads/:id/notas", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
   const idResult = idParamSchema.safeParse(req.params.id);
   if (!idResult.success) {
     res.status(400).json({ erro: idResult.error.issues[0]?.message });
@@ -86,4 +102,4 @@ leadsApiRouter.get("/api/leads/:id/notas", autenticarPainel, async (req: Request
   }
 
   res.json(await listarNotas(idResult.data));
-});
+}));
