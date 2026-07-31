@@ -1,7 +1,38 @@
 import { LeadPainel } from "../repositories/painel.repo";
 import { escapeHtml } from "../utils/html";
 
-/** Formata um valor de dados_coletados (JSONB) pra exibição — arrays viram lista separada por vírgula. */
+/** Rótulos legíveis — o banco guarda snake_case, mas quem atende não deveria ler "proposta_enviada". */
+const LABEL_STATUS: Record<string, string> = {
+  novo: "Novo",
+  qualificando: "Qualificando",
+  proposta_enviada: "Proposta enviada",
+  negociacao: "Negociação",
+  fechado: "Fechado",
+  perdido: "Perdido",
+};
+
+const LABEL_UNIDADE: Record<string, string> = {
+  casa_da_arvore: "Casa da Árvore",
+  park_lagos: "Park Lagos",
+  shopping_park_lagos: "Shopping Park Lagos",
+  casarao: "Casarão",
+  casa_por_do_sol: "Casa Pôr do Sol",
+};
+
+const LABEL_RAMO: Record<string, string> = {
+  infantil: "Festa infantil",
+  "15_anos": "15 anos",
+  casamento: "Casamento",
+  corporativo: "Corporativo",
+  recreacao_avulsa: "Recreação avulsa",
+  outro: "Outro / não identificado",
+};
+
+function rotular(mapa: Record<string, string>, valor: string | null): string {
+  if (!valor) return "—";
+  return mapa[valor] ?? valor.replace(/_/g, " ");
+}
+
 function formatarValor(valor: unknown): string {
   if (valor == null || valor === "") return "—";
   if (Array.isArray(valor)) return valor.length ? valor.map(String).join(", ") : "—";
@@ -9,95 +40,243 @@ function formatarValor(valor: unknown): string {
   return String(valor);
 }
 
-/** Renderiza os campos coletados por ramo (Seção 7) como uma lista compacta "campo: valor". */
-function formatarDadosColetados(dados: Record<string, unknown> | null): string {
-  if (!dados) return "—";
-  const entradas = Object.entries(dados).filter(([, v]) => v != null && v !== "" && !(Array.isArray(v) && v.length === 0));
-  if (entradas.length === 0) return "—";
-  return entradas.map(([chave, valor]) => `<strong>${escapeHtml(chave)}:</strong> ${escapeHtml(formatarValor(valor))}`).join("<br>");
-}
-
 function formatarData(iso: string | null): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
 }
 
-function linhaLead(lead: LeadPainel): string {
-  const emHandoff = lead.em_atendimento_humano
-    ? '<span style="color:#b00020;font-weight:bold;">● atendimento humano</span>'
-    : '<span style="color:#2f5233;">bot</span>';
+function selectOpcoes(mapa: Record<string, string>, atual: string | null, incluirVazio: string | null): string {
+  const vazio = incluirVazio ? `<option value="">${escapeHtml(incluirVazio)}</option>` : "";
+  const opcoes = Object.entries(mapa)
+    .map(
+      ([valor, label]) =>
+        `<option value="${escapeHtml(valor)}"${valor === atual ? " selected" : ""}>${escapeHtml(label)}</option>`
+    )
+    .join("");
+  return vazio + opcoes;
+}
+
+function blocoDadosColetados(dados: Record<string, unknown> | null): string {
+  if (!dados) return "";
+  const entradas = Object.entries(dados).filter(
+    ([, v]) => v != null && v !== "" && !(Array.isArray(v) && v.length === 0)
+  );
+  if (entradas.length === 0) return "";
+  return `<div class="detalhes">${entradas
+    .map(([k, v]) => `<span><b>${escapeHtml(k.replace(/_/g, " "))}:</b> ${escapeHtml(formatarValor(v))}</span>`)
+    .join("")}</div>`;
+}
+
+function blocoNotas(lead: LeadPainel): string {
+  if (lead.notas.length === 0) return '<p class="vazio">Nenhuma observação registrada.</p>';
+  return `<ul class="notas">${lead.notas
+    .map(
+      (n) =>
+        `<li><span class="meta">${formatarData(n.created_at)}${n.autor ? " · " + escapeHtml(n.autor) : ""}</span>${escapeHtml(n.texto)}</li>`
+    )
+    .join("")}</ul>`;
+}
+
+function cardLead(lead: LeadPainel): string {
+  const emHandoff = lead.em_atendimento_humano === true;
+
+  // A comparação sugerido vs confirmado é o único sinal disponível de se as
+  // regras de roteamento da Seção 3 acertam na prática.
+  const divergenciaUnidade =
+    lead.unidade_confirmada && lead.unidade_recomendada && lead.unidade_confirmada !== lead.unidade_recomendada;
+
+  const resumoEvento = [
+    lead.data_evento ? `Data ${lead.data_evento}` : null,
+    lead.numero_convidados != null ? `${lead.numero_convidados} convidados` : null,
+    lead.orcamento_mencionado != null ? `R$ ${Number(lead.orcamento_mencionado).toLocaleString("pt-BR")}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return `
-    <tr>
-      <td>${escapeHtml(lead.nome_cliente ?? "não informado")}<br><small>${escapeHtml(lead.whatsapp_number)}${lead.email ? " · " + escapeHtml(lead.email) : ""}</small></td>
-      <td>${escapeHtml(lead.ramo ?? lead.tipo_evento ?? "—")}</td>
-      <td>${escapeHtml(lead.unidade_recomendada ?? "—")}</td>
-      <td>${escapeHtml(lead.etapa_atual ?? "—")}</td>
-      <td>${escapeHtml(lead.status)}</td>
-      <td>${emHandoff}</td>
-      <td>${escapeHtml((lead.tags ?? []).join(", ") || "—")}</td>
-      <td>${formatarData(lead.created_at)}</td>
-      <td>${formatarData(lead.ultima_interacao)}</td>
-      <td>${formatarDadosColetados(lead.dados_coletados)}</td>
-    </tr>`;
+<article class="card" data-lead="${escapeHtml(lead.id)}">
+  <header>
+    <div>
+      <h2>${escapeHtml(lead.nome_cliente ?? "Cliente sem nome")}</h2>
+      <p class="contato">${escapeHtml(lead.whatsapp_number)}${lead.email ? " · " + escapeHtml(lead.email) : ""}</p>
+    </div>
+    <span class="badge ${emHandoff ? "humano" : "bot"}">${emHandoff ? "● atendimento humano" : "bot ativo"}</span>
+  </header>
+
+  <div class="info">
+    <span><b>Tipo:</b> ${escapeHtml(rotular(LABEL_RAMO, lead.ramo ?? lead.tipo_evento))}</span>
+    <span><b>Unidade sugerida pela IA:</b> ${escapeHtml(rotular(LABEL_UNIDADE, lead.unidade_recomendada))}</span>
+    ${resumoEvento ? `<span><b>Evento:</b> ${escapeHtml(resumoEvento)}</span>` : ""}
+    <span><b>1º contato:</b> ${formatarData(lead.created_at)}</span>
+    <span><b>Última msg do cliente:</b> ${formatarData(lead.ultima_interacao)}</span>
+    ${lead.tags?.length ? `<span><b>Tags:</b> ${escapeHtml(lead.tags.join(", "))}</span>` : ""}
+  </div>
+
+  ${lead.resumo_pedido ? `<p class="resumo">${escapeHtml(lead.resumo_pedido)}</p>` : ""}
+  ${blocoDadosColetados(lead.dados_coletados)}
+
+  <div class="acoes">
+    <label>Etapa do funil
+      <select data-campo="status">${selectOpcoes(LABEL_STATUS, lead.status, null)}</select>
+    </label>
+    <label>Unidade confirmada
+      <select data-campo="unidade_confirmada">${selectOpcoes(LABEL_UNIDADE, lead.unidade_confirmada, "não confirmada")}</select>
+    </label>
+    ${emHandoff ? '<button class="devolver" type="button">Devolver ao bot</button>' : ""}
+  </div>
+  ${divergenciaUnidade ? '<p class="aviso-linha">A unidade confirmada difere da sugerida pela IA.</p>' : ""}
+
+  <div class="nota-nova">
+    <input type="text" placeholder="Anotar algo sobre este lead..." maxlength="2000">
+    <input type="text" class="autor" placeholder="Seu nome" maxlength="120">
+    <button class="salvar-nota" type="button">Salvar</button>
+  </div>
+  <p class="feedback"></p>
+  ${blocoNotas(lead)}
+</article>`;
 }
 
 /**
- * Painel mínimo de visibilidade (Seção 7) — uma tabela HTML server-rendered,
- * sem framework de front-end, com os campos consolidados de CRM por lead.
+ * Painel de acompanhamento e ação (Seção 7 + estágio "frontend").
  *
- * E-mail (quando informado numa mensagem) aparece junto do telefone. Cupom
- * aceito (ramo recreação avulsa) aparece dentro de "Dados coletados" quando
- * a IA conseguir identificar uma resposta clara à oferta — é extração
- * best-effort a partir de uma mensagem isolada (sem histórico da conversa),
- * então pode ficar null mesmo quando o cliente respondeu, se a resposta for
- * ambígua fora de contexto (ex.: um "sim" sozinho).
+ * Server-rendered, sem framework: o JS abaixo só chama a API de escrita
+ * (routes/leadsApi.ts). Cards em vez de tabela porque com quatro controles por
+ * lead uma tabela de dez colunas fica impraticável.
+ *
+ * A autenticação é a mesma Basic Auth da página, reaproveitada pelo navegador
+ * nas chamadas fetch — não há token separado a gerenciar.
  */
 export function renderizarPainelHtml(leads: LeadPainel[]): string {
-  const linhas = leads.map(linhaLead).join("\n");
+  const emAtendimento = leads.filter((l) => l.em_atendimento_humano === true).length;
 
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel — Casa da Árvore</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
-    h1 { color: #2f5233; }
-    table { border-collapse: collapse; width: 100%; font-size: 13px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
-    th { background: #2f5233; color: white; position: sticky; top: 0; }
-    tr:nth-child(even) { background: #f7f7f7; }
-    .aviso { background: #fff3cd; border: 1px solid #ffe69c; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; margin: 0; padding: 20px;
+           background: #f4f6f4; color: #222; }
+    h1 { color: #2f5233; margin: 0 0 4px; font-size: 22px; }
+    .sub { color: #666; font-size: 14px; margin: 0 0 20px; }
+    .card { background: #fff; border: 1px solid #e0e4e0; border-radius: 10px; padding: 16px; margin-bottom: 14px;
+            max-width: 900px; }
+    .card header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+                   border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+    .card h2 { margin: 0; font-size: 17px; color: #2f5233; }
+    .contato { margin: 2px 0 0; font-size: 13px; color: #666; }
+    .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+    .badge.humano { background: #fdecea; color: #b00020; font-weight: bold; }
+    .badge.bot { background: #e8f0e9; color: #2f5233; }
+    .info { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; margin-bottom: 8px; }
+    .resumo { font-size: 14px; background: #f7f9f7; padding: 8px 10px; border-radius: 6px; margin: 8px 0; }
+    .detalhes { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: #555; margin-bottom: 10px; }
+    .acoes { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; border-top: 1px solid #eee;
+             padding-top: 12px; }
+    .acoes label { display: flex; flex-direction: column; font-size: 12px; color: #555; gap: 4px; }
+    select, input[type=text] { padding: 7px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
+                               font-family: inherit; }
+    button { padding: 8px 14px; border: 0; border-radius: 6px; background: #2f5233; color: #fff; font-size: 14px;
+             cursor: pointer; font-family: inherit; }
+    button:hover { background: #3d6b42; }
+    button.devolver { background: #b00020; }
+    button.devolver:hover { background: #c62828; }
+    .nota-nova { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .nota-nova input[type=text]:first-child { flex: 1; min-width: 200px; }
+    .nota-nova .autor { width: 130px; }
+    .notas { list-style: none; padding: 0; margin: 10px 0 0; font-size: 13px; }
+    .notas li { border-left: 3px solid #d7e0d8; padding: 4px 0 4px 10px; margin-bottom: 6px; }
+    .notas .meta { display: block; color: #888; font-size: 11px; }
+    .vazio { color: #999; font-size: 13px; margin: 10px 0 0; }
+    .feedback { font-size: 13px; margin: 8px 0 0; min-height: 18px; }
+    .feedback.ok { color: #2f5233; }
+    .feedback.erro { color: #b00020; }
+    .aviso-linha { font-size: 12px; color: #8a6d00; background: #fff8e1; padding: 6px 8px; border-radius: 5px;
+                   margin: 8px 0 0; }
   </style>
 </head>
 <body>
   <h1>Painel — Casa da Árvore</h1>
-  <p>${leads.length} lead(s) mais recentemente ativos (limite de 200, sem paginação — painel mínimo).</p>
-  <div class="aviso">
-    <strong>Sobre o cupom aceito (ramo recreação avulsa):</strong> aparece dentro de "Dados coletados" — a
-    extração é feita mensagem a mensagem, sem histórico da conversa, então uma resposta ambígua fora de
-    contexto pode não ser capturada mesmo que o cliente tenha respondido.
-  </div>
-  <table>
-    <thead>
-      <tr>
-        <th>Cliente</th>
-        <th>Ramo / Tipo</th>
-        <th>Unidade recomendada</th>
-        <th>Etapa do funil</th>
-        <th>Status</th>
-        <th>Atendimento</th>
-        <th>Tags</th>
-        <th>Primeiro contato</th>
-        <th>Última interação</th>
-        <th>Dados coletados</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${linhas || '<tr><td colspan="10">Nenhum lead encontrado.</td></tr>'}
-    </tbody>
-  </table>
+  <p class="sub">${leads.length} lead(s) · ${emAtendimento} em atendimento humano · mostrando os 200 mais recentes</p>
+  ${leads.map(cardLead).join("\n") || "<p>Nenhum lead encontrado.</p>"}
+
+<script>
+function feedback(card, texto, ok) {
+  var el = card.querySelector(".feedback");
+  el.textContent = texto;
+  el.className = "feedback " + (ok ? "ok" : "erro");
+}
+
+async function patchLead(card, corpo) {
+  var id = card.dataset.lead;
+  var resp = await fetch("/api/leads/" + id, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(corpo)
+  });
+  if (!resp.ok) {
+    var detalhe = await resp.text();
+    throw new Error("HTTP " + resp.status + " " + detalhe);
+  }
+  return resp.json();
+}
+
+document.querySelectorAll(".card").forEach(function (card) {
+  card.querySelectorAll("select[data-campo]").forEach(function (sel) {
+    sel.addEventListener("change", async function () {
+      var campo = sel.dataset.campo;
+      // Select de unidade tem opção vazia ("não confirmada"); a API não aceita
+      // string vazia, então tratamos como "nada a enviar".
+      if (sel.value === "") { feedback(card, "Escolha uma unidade para confirmar.", false); return; }
+      var corpo = {}; corpo[campo] = sel.value;
+      try {
+        await patchLead(card, corpo);
+        feedback(card, "Salvo.", true);
+      } catch (e) {
+        feedback(card, "Falha ao salvar: " + e.message, false);
+      }
+    });
+  });
+
+  var btnDevolver = card.querySelector("button.devolver");
+  if (btnDevolver) {
+    btnDevolver.addEventListener("click", async function () {
+      if (!confirm("Devolver esta conversa ao bot? Ele volta a responder este cliente automaticamente.")) return;
+      btnDevolver.disabled = true;
+      try {
+        await patchLead(card, { devolver_ao_bot: true });
+        location.reload();
+      } catch (e) {
+        btnDevolver.disabled = false;
+        feedback(card, "Falha ao devolver ao bot: " + e.message, false);
+      }
+    });
+  }
+
+  var btnNota = card.querySelector("button.salvar-nota");
+  btnNota.addEventListener("click", async function () {
+    var inputs = card.querySelectorAll(".nota-nova input[type=text]");
+    var texto = inputs[0].value.trim();
+    var autor = inputs[1].value.trim();
+    if (!texto) { feedback(card, "Escreva a observação antes de salvar.", false); return; }
+    btnNota.disabled = true;
+    try {
+      var resp = await fetch("/api/leads/" + card.dataset.lead + "/notas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texto: texto, autor: autor || undefined })
+      });
+      if (!resp.ok) throw new Error("HTTP " + resp.status + " " + (await resp.text()));
+      location.reload();
+    } catch (e) {
+      btnNota.disabled = false;
+      feedback(card, "Falha ao salvar nota: " + e.message, false);
+    }
+  });
+});
+</script>
 </body>
 </html>`;
 }

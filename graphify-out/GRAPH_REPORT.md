@@ -1,16 +1,16 @@
 # Graph Report - CASA DA ARVORE FLUXO CRM  (2026-07-30)
 
 ## Corpus Check
-- 66 files · ~33,891 words
+- 66 files · ~34,805 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 390 nodes · 727 edges · 27 communities (21 shown, 6 thin omitted)
+- 396 nodes · 744 edges · 28 communities (22 shown, 6 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `31d5a7fe`
+- Built from commit: `cd733add`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -36,6 +36,7 @@
 - CLAUDE.md
 - CLAUDE.md
 - extraction-spec.md
+- mediaEngine.service.ts
 - email.service.ts
 - messageProcessing.service.ts
 - leads.repo.ts
@@ -67,11 +68,11 @@
 ## Import Cycles
 - None detected.
 
-## Communities (27 total, 6 thin omitted)
+## Communities (28 total, 6 thin omitted)
 
 ### Community 0 - "server.ts"
 Cohesion: 0.12
-Nodes (24): env, envSchema, parsed, logger, checkDbConnection(), connection, startFollowUpWorker(), FollowUpJobData (+16 more)
+Nodes (27): env, envSchema, parsed, logger, checkDbConnection(), connection, startFollowUpWorker(), FollowUpJobData (+19 more)
 
 ### Community 1 - "monthlyBriefing.cron.ts"
 Cohesion: 0.19
@@ -98,8 +99,8 @@ Cohesion: 0.06
 Nodes (31): pino-pretty, tsx, @types/express, @types/node, @types/node-cron, @types/pg, typescript, description (+23 more)
 
 ### Community 7 - "scripts"
-Cohesion: 0.11
-Nodes (32): MessageJobData, startMessageWorker(), EstadoHandoff, getEtapaMidiaAtual(), registrarEnvioMidia(), buscarMidias(), RamoEvento, agendarFollowUp() (+24 more)
+Cohesion: 0.18
+Nodes (18): enviarEtapaMidia(), achatarDadosRamo(), enviarComTemplateOuTexto(), formatarLabel(), LIMITES_CAMPOS_FIXOS, montarResumoParaVendedor(), montarVariaveisTemplateVendedor(), notificarVendedor() (+10 more)
 
 ### Community 8 - "Casa da Árvore — Automação Comercial e Inteligência de Demanda"
 Cohesion: 0.11
@@ -129,37 +130,41 @@ Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify refer
 Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
+### Community 23 - "mediaEngine.service.ts"
+Cohesion: 0.12
+Nodes (22): apenasPreenchidos(), EstadoHandoff, getEtapaMidiaAtual(), registrarEnvioMidia(), upsertConversationState(), AtualizacaoLead, buscarMidias(), CategoriaMidia (+14 more)
+
 ### Community 24 - "email.service.ts"
 Cohesion: 0.16
-Nodes (18): autenticarPainel(), compararSeguro(), buscarLeadsParaPainel(), LeadPainel, painelRouter, destinatarioHandoff(), enviarViaResend(), formatarBriefingEmHtml() (+10 more)
+Nodes (22): destinatarioHandoff(), enviarViaResend(), formatarBriefingEmHtml(), GATILHO_LABELS, HandoffNotificationParams, sendBriefingEmail(), sendHandoffFollowUpEmail(), sendHandoffNotificationEmail() (+14 more)
 
 ### Community 25 - "messageProcessing.service.ts"
-Cohesion: 0.08
-Nodes (37): pool, apenasPreenchidos(), atualizarTentativasSemClassificacao(), marcarEmAtendimentoHumano(), upsertConversationState(), insertDemandSignal(), AtualizacaoLead, upsertLead() (+29 more)
+Cohesion: 0.10
+Nodes (33): pool, runLifecycleFollowUpJob(), scheduleLifecycleFollowUpJob(), TEMPLATES_CICLO_DE_VIDA, atualizarTentativasSemClassificacao(), marcarEmAtendimentoHumano(), insertDemandSignal(), adicionarTag() (+25 more)
 
 ### Community 26 - "leads.repo.ts"
-Cohesion: 0.13
-Nodes (22): runLifecycleFollowUpJob(), scheduleLifecycleFollowUpJob(), TEMPLATES_CICLO_DE_VIDA, devolverAoBot(), inserirNota(), LeadNote, listarNotas(), adicionarTag() (+14 more)
+Cohesion: 0.14
+Nodes (18): autenticarPainel(), compararSeguro(), devolverAoBot(), inserirNota(), LeadNote, listarNotas(), listarNotasPorLeads(), atualizarLead() (+10 more)
 
 ## Knowledge Gaps
-- **145 isolated node(s):** `name`, `version`, `description`, `private`, `type` (+140 more)
+- **147 isolated node(s):** `name`, `version`, `description`, `private`, `type` (+142 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `logger` connect `server.ts` to `monthlyBriefing.cron.ts`, `anthropic.service.ts`, `scripts`, `email.service.ts`, `messageProcessing.service.ts`, `leads.repo.ts`?**
-  _High betweenness centrality (0.032) - this node is a cross-community bridge._
-- **Why does `env` connect `server.ts` to `monthlyBriefing.cron.ts`, `anthropic.service.ts`, `scripts`, `email.service.ts`, `messageProcessing.service.ts`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `devDependencies`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Why does `logger` connect `server.ts` to `monthlyBriefing.cron.ts`, `anthropic.service.ts`, `scripts`, `mediaEngine.service.ts`, `email.service.ts`, `messageProcessing.service.ts`, `leads.repo.ts`?**
+  _High betweenness centrality (0.031) - this node is a cross-community bridge._
+- **Why does `env` connect `server.ts` to `monthlyBriefing.cron.ts`, `anthropic.service.ts`, `scripts`, `email.service.ts`, `messageProcessing.service.ts`, `leads.repo.ts`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _145 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _147 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `server.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.12312312312312312 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11585365853658537 - nodes in this community are weakly interconnected._
 - **Should `What You Must Do When Invoked` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._
 - **Should `anthropic.service.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.14130434782608695 - nodes in this community are weakly interconnected._
+- **Should `compilerOptions` be split into smaller, more focused modules?**
+  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._

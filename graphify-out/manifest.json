@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "src/repositories/painel.repo.ts": {
-    "mtime": 1785004978.6387386,
-    "ast_hash": "18b023578fd46cffbf5085a38fcccceb",
+    "mtime": 1785448698.5784771,
+    "ast_hash": "80b9e8783e23ac48f4a658c113ec435f",
     "semantic_hash": ""
   },
   "src/routes/painel.ts": {
@@ -290,8 +290,8 @@
     "semantic_hash": ""
   },
   "src/services/painel.service.ts": {
-    "mtime": 1785005014.4613874,
-    "ast_hash": "f29eda8243b1cd3e5f4a70b9e7d0b287",
+    "mtime": 1785448674.4065118,
+    "ast_hash": "25235f3363736b8c0ee588505bc61e71",
     "semantic_hash": ""
   },
   "src/utils/html.ts": {
