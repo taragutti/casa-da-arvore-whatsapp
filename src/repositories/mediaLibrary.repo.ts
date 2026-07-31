@@ -30,13 +30,19 @@ export interface MediaItemAdmin extends MediaItem {
 export const ETAPAS_MIDIA = {
   1: { tipo: "foto", categoria: "externa", quantidade: 1, rotulo: "Etapa 1 — foto externa (fachada/área)" },
   2: { tipo: "video", categoria: "tour", quantidade: 1, rotulo: "Etapa 2 — vídeo de tour (15–30s)" },
-  3: { tipo: "foto", categoria: "evento", quantidade: 4, rotulo: "Etapa 3 — fotos de eventos reais (3–4)" },
+  3: { tipo: "foto", categoria: "evento", quantidade: 15, rotulo: "Etapa 3 — fotos de eventos reais (até 15)" },
   4: { tipo: "catalogo", categoria: "catalogo", quantidade: 1, rotulo: "Etapa 4 — catálogo em PDF" },
 } as const satisfies Record<number, { tipo: TipoMidia; categoria: CategoriaMidia; quantidade: number; rotulo: string }>;
 
 /**
  * Busca mídias ativas por unidade/tipo/categoria, priorizando as com
  * perfil_lead compatível quando informado (Seção 4, curadoria por perfil).
+ *
+ * O sorteio (`random()`) vem DEPOIS da prioridade de perfil, então material
+ * curado para o perfil do lead continua vindo primeiro — o sorteio só decide a
+ * ordem dentro de cada grupo. Sem ele a ordenação era fixa por código, e
+ * biblioteca maior que o limite da etapa teria sempre o mesmo excedente morto:
+ * as fotos do fim da lista nunca seriam enviadas a ninguém.
  */
 export async function buscarMidias(
   unidade: UnidadeRecomendada,
@@ -49,7 +55,7 @@ export async function buscarMidias(
     `SELECT codigo, unidade, tipo, categoria, perfil_lead, url
      FROM media_library
      WHERE unidade = $1 AND tipo = $2 AND categoria = $3 AND ativo = true
-     ORDER BY CASE WHEN perfil_lead = $4 THEN 0 ELSE 1 END, codigo ASC
+     ORDER BY CASE WHEN perfil_lead = $4 THEN 0 ELSE 1 END, random()
      LIMIT $5`,
     [unidade, tipo, categoria, perfilLead, limite]
   );

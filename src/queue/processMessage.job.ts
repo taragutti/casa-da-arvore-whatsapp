@@ -4,7 +4,7 @@ import { logger } from "../config/logger";
 import { MESSAGE_QUEUE_NAME, MessageJobData } from "./messageQueue";
 import { processIncomingMessage } from "../services/messageProcessing.service";
 import { sendWhatsAppMessage, montarMensagemConfirmacao } from "../services/whatsapp.service";
-import { processarMidiaProgressiva } from "../services/mediaEngine.service";
+import { processarMidiaProgressiva, enviarMidiaDeEspera } from "../services/mediaEngine.service";
 
 /**
  * Worker que roda fora do caminho da requisição HTTP (Etapa 5): toda a parte
@@ -28,6 +28,29 @@ export function startMessageWorker() {
           // nem responde automaticamente — só o e-mail de notificação (já
           // disparado em processIncomingMessage) avisa o consultor.
           log.debug("lead em atendimento humano — bot não responde automaticamente");
+
+          // Exceção: no momento EXATO em que o handoff dispara (gatilhoNovo),
+          // manda a foto do espaço antes de silenciar. Sem isso o cliente que
+          // perguntou preço fica olhando uma conversa sem resposta até o
+          // vendedor aparecer — que pode demorar, ou ser no dia seguinte se for
+          // fora do horário comercial.
+          //
+          // Só no gatilho novo: em lead JÁ em atendimento, cada mensagem cairia
+          // aqui e o bot ficaria interrompendo a conversa do vendedor.
+          if (result.handoff.gatilhoNovo) {
+            try {
+              await enviarMidiaDeEspera(
+                whatsappNumber,
+                result.leadId,
+                result.dadosExtraidos.ramo,
+                result.unidadeRecomendada,
+                result.dadosExtraidos.dados_ramo,
+                result.dadosExtraidos.numero_convidados
+              );
+            } catch (error) {
+              log.error({ err: error }, "falha ao enviar mídia de espera no handoff");
+            }
+          }
         } else {
           const confirmacao = montarMensagemConfirmacao(
             result.dadosExtraidos.nome_cliente,

@@ -78,6 +78,56 @@ function inferirPerfilLead(ramo: RamoEvento | null, dadosRamo: DadosPorRamo, num
 }
 
 /** Envia a mídia da etapa; retorna false (sem lançar) se media_library não tiver nada ativo pra essa etapa/unidade. */
+/**
+ * Pausa entre fotos do mesmo lote. Serve a dois propósitos: não disparar
+ * requisições em rajada contra a API da Meta, e garantir que as fotos cheguem
+ * na ordem em que foram enviadas (sem pausa, envios concorrentes podem ser
+ * entregues fora de ordem).
+ */
+const PAUSA_ENTRE_FOTOS_MS = 500;
+
+const esperar = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+/**
+ * Envia um lote de fotos tolerando falha individual.
+ *
+ * A falha de UMA foto não pode abortar o lote: se abortasse, `registrarEnvioMidia`
+ * não rodaria na função chamadora, a etapa continuaria pendente, e a próxima
+ * mensagem do cliente reenviaria o lote inteiro desde o começo — ele receberia
+ * as primeiras fotos duas vezes. Com lote grande isso deixa de ser detalhe e
+ * vira spam de verdade.
+ *
+ * Por isso: registra o que falhou, segue com as demais, e devolve `true` se ao
+ * menos uma chegou. Perder uma foto é melhor que duplicar o lote.
+ */
+async function enviarLoteDeFotos(
+  whatsappNumber: string,
+  midias: { codigo: string; url: string }[],
+  unidade: UnidadeRecomendada
+): Promise<boolean> {
+  let enviadas = 0;
+
+  for (const [indice, foto] of midias.entries()) {
+    try {
+      await sendWhatsAppImage(whatsappNumber, foto.url);
+      enviadas++;
+    } catch (error) {
+      logger.error(
+        { err: error, codigo: foto.codigo, unidade, posicao: indice + 1, total: midias.length },
+        "falha ao enviar foto do lote — seguindo com as demais"
+      );
+    }
+
+    if (indice < midias.length - 1) await esperar(PAUSA_ENTRE_FOTOS_MS);
+  }
+
+  if (enviadas < midias.length) {
+    logger.warn({ unidade, enviadas, total: midias.length }, "lote de fotos enviado parcialmente");
+  }
+
+  return enviadas > 0;
+}
+
 async function enviarEtapaMidia(
   whatsappNumber: string,
   unidade: UnidadeRecomendada,
@@ -102,10 +152,7 @@ async function enviarEtapaMidia(
       await sendWhatsAppVideo(whatsappNumber, midias[0]!.url);
       return true;
     case 3:
-      for (const foto of midias) {
-        await sendWhatsAppImage(whatsappNumber, foto.url);
-      }
-      return true;
+      return enviarLoteDeFotos(whatsappNumber, midias, unidade);
     case 4:
       await sendWhatsAppDocument(whatsappNumber, midias[0]!.url, `Catalogo-${unidade}.pdf`);
       return true;
@@ -178,4 +225,66 @@ export async function processarMidiaProgressiva(
 
   // Régua de silêncio (Seção 6): agenda o follow-up de 2h a partir daqui.
   await agendarFollowUp(leadId, whatsappNumber);
+}
+
+// Texto autoral (o fluxo não define esta mensagem). Explica por que o bot para
+// de responder — sem isso o cliente recebe uma foto e depois silêncio, e não
+// tem como saber que alguém já foi acionado.
+const AVISO_CONSULTOR_A_CAMINHO =
+  "Enquanto isso, olha só como é o espaço 🌳 Já avisei nosso consultor e ele vai te chamar aqui pelo WhatsApp pra falar sobre valores e disponibilidade!";
+
+/**
+ * Mídia de espera no handoff: quando o lead vai pro vendedor, o bot fica mudo
+ * (processMessage.job.ts) e o cliente pode esperar minutos — ou horas, fora do
+ * horário comercial. Esta função preenche esse vazio com a foto da etapa 1.
+ *
+ * Diferente de `processarMidiaProgressiva` em dois pontos deliberados:
+ *
+ * 1. NÃO agenda follow-up. O lead passou a ser do vendedor; o bot cobrando o
+ *    cliente em 2h atropelaria a conversa humana em andamento.
+ * 2. Só envia quando NADA foi enviado ainda (etapa atual nula). Se o cliente já
+ *    recebeu mídia, ele já viu o espaço — mandar mais junto do handoff viraria
+ *    ruído em cima da entrada do vendedor.
+ */
+export async function enviarMidiaDeEspera(
+  whatsappNumber: string,
+  leadId: string,
+  ramo: RamoEvento | null,
+  unidadeRecomendada: UnidadeRecomendada | null,
+  dadosRamo: DadosPorRamo,
+  numeroConvidados: number | null
+): Promise<void> {
+  const log = logger.child({ leadId });
+
+  if (!unidadeRecomendada) {
+    log.debug("handoff sem unidade definida — sem mídia de espera");
+    return;
+  }
+
+  if ((await getEtapaMidiaAtual(leadId)) != null) {
+    log.debug("lead já recebeu mídia antes do handoff — sem mídia de espera");
+    return;
+  }
+
+  const perfilLead = inferirPerfilLead(ramo, dadosRamo, numeroConvidados);
+  const enviado = await enviarEtapaMidia(whatsappNumber, unidadeRecomendada, 1, perfilLead);
+
+  if (!enviado) {
+    log.warn(
+      { unidadeRecomendada },
+      "sem mídia de etapa 1 para esta unidade — cliente fica sem retorno visual no handoff"
+    );
+    return;
+  }
+
+  await registrarEnvioMidia(leadId, 1);
+
+  try {
+    await sendWhatsAppMessage(whatsappNumber, AVISO_CONSULTOR_A_CAMINHO);
+  } catch (error) {
+    // A foto já foi: o aviso é complemento, não vale derrubar o handoff por ele.
+    log.error({ err: error }, "falha ao enviar aviso de consultor a caminho");
+  }
+
+  log.info({ unidadeRecomendada }, "mídia de espera enviada no handoff");
 }
