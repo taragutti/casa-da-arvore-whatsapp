@@ -879,8 +879,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_db_client",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 23,
+      "community_name": "mediaEngine.service.ts",
       "norm_label": "client.ts"
     },
     {
@@ -890,8 +890,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_db_client_pool",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 23,
+      "community_name": "mediaEngine.service.ts",
       "norm_label": "pool"
     },
     {
@@ -901,7 +901,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "src_db_client_checkdbconnection",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "checkdbconnection()"
     },
@@ -1022,8 +1022,8 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "src_jobs_monthlybriefing_cron_schedulemonthlybriefingjob",
-      "community": 1,
-      "community_name": "monthlyBriefing.cron.ts",
+      "community": 0,
+      "community_name": "server.ts",
       "norm_label": "schedulemonthlybriefingjob()"
     },
     {
@@ -1033,7 +1033,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_middleware_asynchandler",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "asynchandler.ts"
     },
@@ -1044,7 +1044,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "src_middleware_asynchandler_comerro",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "comerro()"
     },
@@ -1055,7 +1055,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "src_middleware_asynchandler_tratarerros",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "tratarerros()"
     },
@@ -1198,7 +1198,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_queue_followup_job_startfollowupworker",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "startfollowupworker()"
     },
@@ -1286,8 +1286,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_queue_processmessage_job",
-      "community": 7,
-      "community_name": "scripts",
+      "community": 0,
+      "community_name": "server.ts",
       "norm_label": "processmessage.job.ts"
     },
     {
@@ -1297,8 +1297,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_queue_processmessage_job_startmessageworker",
-      "community": 7,
-      "community_name": "scripts",
+      "community": 0,
+      "community_name": "server.ts",
       "norm_label": "startmessageworker()"
     },
     {
@@ -1429,8 +1429,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_getestadohandoff",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "getestadohandoff()"
     },
     {
@@ -1462,8 +1462,8 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_devolveraobot",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "devolveraobot()"
     },
     {
@@ -1583,8 +1583,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_getultimainteracao",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "getultimainteracao()"
     },
     {
@@ -1671,8 +1671,8 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_atualizacaolead",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "atualizacaolead"
     },
     {
@@ -2199,7 +2199,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_routes_midiapublica",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "midiapublica.ts"
     },
@@ -2210,7 +2210,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_routes_midiapublica_midiapublicarouter",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "midiapublicarouter"
     },
@@ -2221,7 +2221,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "src_routes_midiapublica_content_type",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "content_type"
     },
@@ -2463,7 +2463,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_server",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "server.ts"
     },
@@ -2474,7 +2474,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "src_server_app",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "app"
     },
@@ -2485,7 +2485,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "src_server_start",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "start()"
     },
@@ -2661,8 +2661,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "src_services_anthropic_service_sinalengajamento",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "sinalengajamento"
     },
     {
@@ -2991,8 +2991,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_services_followup_service",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "followup.service.ts"
     },
     {
@@ -3002,8 +3002,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_services_followup_service_delay_ms",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "delay_ms"
     },
     {
@@ -3013,8 +3013,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "src_services_followup_service_proxima_regua",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "proxima_regua"
     },
     {
@@ -3024,8 +3024,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "src_services_followup_service_templates_follow_up",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "templates_follow_up"
     },
     {
@@ -3035,8 +3035,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "src_services_followup_service_mensagens_follow_up",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "mensagens_follow_up"
     },
     {
@@ -3057,8 +3057,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "src_services_followup_service_processarfollowupagendado",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "processarfollowupagendado()"
     },
     {
@@ -3315,10 +3315,21 @@
       "norm_label": "enviarlotedefotos()"
     },
     {
+      "label": "ResultadoEnvioEtapa",
+      "file_type": "code",
+      "source_file": "src/services/mediaEngine.service.ts",
+      "source_location": "L138",
+      "_origin": "ast",
+      "id": "src_services_mediaengine_service_resultadoenvioetapa",
+      "community": 7,
+      "community_name": "scripts",
+      "norm_label": "resultadoenvioetapa"
+    },
+    {
       "label": "enviarEtapaMidia()",
       "file_type": "code",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L131",
+      "source_location": "L140",
       "_origin": "ast",
       "id": "src_services_mediaengine_service_enviaretapamidia",
       "community": 7,
@@ -3329,7 +3340,7 @@
       "label": "processarMidiaProgressiva()",
       "file_type": "code",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L168",
+      "source_location": "L180",
       "_origin": "ast",
       "id": "src_services_mediaengine_service_processarmidiaprogressiva",
       "community": 7,
@@ -3340,7 +3351,7 @@
       "label": "enviarMidiaDeEspera()",
       "file_type": "code",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L249",
+      "source_location": "L298",
       "_origin": "ast",
       "id": "src_services_mediaengine_service_enviarmidiadeespera",
       "community": 7,
@@ -3442,8 +3453,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_services_medialote_service_test",
-      "community": 30,
-      "community_name": "mediaLote.service.test.ts",
+      "community": 28,
+      "community_name": "server.ts",
       "norm_label": "medialote.service.test.ts"
     },
     {
@@ -3453,8 +3464,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_services_medialote_service_test_enviarimagem",
-      "community": 30,
-      "community_name": "mediaLote.service.test.ts",
+      "community": 28,
+      "community_name": "server.ts",
       "norm_label": "enviarimagem"
     },
     {
@@ -3464,8 +3475,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_services_medialote_service_test_enviartexto",
-      "community": 30,
-      "community_name": "mediaLote.service.test.ts",
+      "community": 28,
+      "community_name": "server.ts",
       "norm_label": "enviartexto"
     },
     {
@@ -3475,8 +3486,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_services_medialote_service_test_getetapamidiaatual",
-      "community": 30,
-      "community_name": "mediaLote.service.test.ts",
+      "community": 28,
+      "community_name": "server.ts",
       "norm_label": "getetapamidiaatual"
     },
     {
@@ -3486,8 +3497,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_services_medialote_service_test_registrarenviomidia",
-      "community": 30,
-      "community_name": "mediaLote.service.test.ts",
+      "community": 28,
+      "community_name": "server.ts",
       "norm_label": "registrarenviomidia"
     },
     {
@@ -3497,8 +3508,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_services_medialote_service_test_buscarmidias",
-      "community": 30,
-      "community_name": "mediaLote.service.test.ts",
+      "community": 28,
+      "community_name": "server.ts",
       "norm_label": "buscarmidias"
     },
     {
@@ -3508,30 +3519,41 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_services_medialote_service_test_agendarfollowup",
-      "community": 30,
-      "community_name": "mediaLote.service.test.ts",
+      "community": 28,
+      "community_name": "server.ts",
       "norm_label": "agendarfollowup"
+    },
+    {
+      "label": "enviarDocumento",
+      "file_type": "code",
+      "source_file": "src/services/mediaLote.service.test.ts",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "src_services_medialote_service_test_enviardocumento",
+      "community": 28,
+      "community_name": "server.ts",
+      "norm_label": "enviardocumento"
     },
     {
       "label": "fotos()",
       "file_type": "code",
       "source_file": "src/services/mediaLote.service.test.ts",
-      "source_location": "L29",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "src_services_medialote_service_test_fotos",
-      "community": 30,
-      "community_name": "mediaLote.service.test.ts",
+      "community": 28,
+      "community_name": "server.ts",
       "norm_label": "fotos()"
     },
     {
       "label": "dispararEtapa3()",
       "file_type": "code",
       "source_file": "src/services/mediaLote.service.test.ts",
-      "source_location": "L48",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "src_services_medialote_service_test_dispararetapa3",
-      "community": 30,
-      "community_name": "mediaLote.service.test.ts",
+      "community": 28,
+      "community_name": "server.ts",
       "norm_label": "dispararetapa3()"
     },
     {
@@ -3640,7 +3662,7 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "src_services_mediastorage_service_diretoriobase",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "diretoriobase()"
     },
@@ -3673,7 +3695,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "src_services_mediastorage_service_garantirdiretorio",
-      "community": 28,
+      "community": 0,
       "community_name": "server.ts",
       "norm_label": "garantirdiretorio()"
     },
@@ -10297,7 +10319,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L264",
+      "source_location": "L313",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_enviarmidiadeespera",
@@ -10309,7 +10331,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L184",
+      "source_location": "L196",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_processarmidiaprogressiva",
@@ -10333,7 +10355,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L280",
+      "source_location": "L332",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_enviarmidiadeespera",
@@ -10345,7 +10367,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L211",
+      "source_location": "L252",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_processarmidiaprogressiva",
@@ -11414,7 +11436,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L144",
+      "source_location": "L153",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_enviaretapamidia",
@@ -14136,7 +14158,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L227",
+      "source_location": "L276",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_processarmidiaprogressiva",
@@ -14576,7 +14598,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L131",
+      "source_location": "L140",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service",
@@ -14598,7 +14620,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L249",
+      "source_location": "L298",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service",
@@ -14642,11 +14664,22 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L168",
+      "source_location": "L180",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service",
       "target": "src_services_mediaengine_service_processarmidiaprogressiva",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/mediaEngine.service.ts",
+      "source_location": "L138",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_services_mediaengine_service",
+      "target": "src_services_mediaengine_service_resultadoenvioetapa",
       "confidence_score": 1.0
     },
     {
@@ -14738,7 +14771,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L185",
+      "source_location": "L197",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_processarmidiaprogressiva",
@@ -14750,7 +14783,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L269",
+      "source_location": "L318",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_enviarmidiadeespera",
@@ -14762,7 +14795,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L200",
+      "source_location": "L212",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_processarmidiaprogressiva",
@@ -14786,7 +14819,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L155",
+      "source_location": "L167",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_enviaretapamidia",
@@ -14810,7 +14843,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L157",
+      "source_location": "L169",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_enviaretapamidia",
@@ -14822,7 +14855,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L149",
+      "source_location": "L160",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_enviaretapamidia",
@@ -14834,7 +14867,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L152",
+      "source_location": "L163",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_enviaretapamidia",
@@ -14846,7 +14879,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L270",
+      "source_location": "L319",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_enviarmidiadeespera",
@@ -14858,7 +14891,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L201",
+      "source_location": "L224",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_processarmidiaprogressiva",
@@ -14871,7 +14904,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L219",
+      "source_location": "L268",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_processarmidiaprogressiva",
@@ -14883,7 +14916,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/mediaEngine.service.ts",
-      "source_location": "L283",
+      "source_location": "L335",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_mediaengine_service_enviarmidiadeespera",
@@ -14992,11 +15025,22 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaLote.service.test.ts",
-      "source_location": "L48",
+      "source_location": "L50",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_medialote_service_test",
       "target": "src_services_medialote_service_test_dispararetapa3",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/services/mediaLote.service.test.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_services_medialote_service_test",
+      "target": "src_services_medialote_service_test_enviardocumento",
       "confidence_score": 1.0
     },
     {
@@ -15025,7 +15069,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/mediaLote.service.test.ts",
-      "source_location": "L29",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_medialote_service_test",
@@ -18127,5 +18171,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "089e483a57c13b5a023797bad79aa3b340e90182"
+  "built_at_commit": "d285a0b5c7c176fa27f8976cb6f97c77f9f7aab7"
 }

@@ -20,11 +20,42 @@ const LABEL_PERFIL: Record<string, string> = {
 const ORDEM_UNIDADES = Object.keys(LABEL_UNIDADE) as UnidadeRecomendada[];
 const ETAPAS = [1, 2, 3, 4] as const;
 
+/**
+ * Unidades omitidas do mapa de cobertura, a pedido de quem opera: material
+ * ainda não vai ser cadastrado para elas, e a linha vermelha permanente virava
+ * ruído sem ação possível.
+ *
+ * Esconde SÓ o mapa. Deliberadamente não mexe em nada de comportamento:
+ *
+ * - o roteamento continua mandando leads para estas unidades (Park Lagos recebe
+ *   festa infantil de até 50 convidados, por exemplo). Elas simplesmente não
+ *   têm mídia para enviar — o bot segue respondendo, o handoff dispara e o
+ *   vendedor é avisado normalmente;
+ * - seguem selecionáveis no formulário de envio, para poderem ser populadas a
+ *   qualquer momento sem precisar de deploy.
+ *
+ * Esvaziar esta lista devolve as linhas ao mapa.
+ */
+const UNIDADES_OCULTAS_NO_MAPA: readonly UnidadeRecomendada[] = ["park_lagos"];
+
+const UNIDADES_NO_MAPA = ORDEM_UNIDADES.filter((u) => !UNIDADES_OCULTAS_NO_MAPA.includes(u));
+
 export interface ContagemEtapa {
   unidade: UnidadeRecomendada;
   tipo: TipoMidia;
   categoria: CategoriaMidia;
   total: number;
+}
+
+/**
+ * Nota de pé do mapa. Unidade escondida sem aviso nenhum seria pior que a linha
+ * vermelha: ninguém lembraria que ela existe, e leads continuariam chegando
+ * nela sem mídia — sem nada na tela sugerindo o porquê.
+ */
+function notaUnidadesOcultas(): string {
+  if (UNIDADES_OCULTAS_NO_MAPA.length === 0) return "";
+  const nomes = UNIDADES_OCULTAS_NO_MAPA.map((u) => LABEL_UNIDADE[u]).join(", ");
+  return ` Fora do mapa por opção: ${escapeHtml(nomes)} — ainda recebe leads, mas sem mídia para enviar.`;
 }
 
 function totalDaEtapa(contagens: ContagemEtapa[], unidade: UnidadeRecomendada, etapa: 1 | 2 | 3 | 4): number {
@@ -35,15 +66,17 @@ function totalDaEtapa(contagens: ContagemEtapa[], unidade: UnidadeRecomendada, e
 /**
  * Mapa de cobertura: linhas por unidade, colunas por etapa da régua.
  *
- * É o bloco mais importante da tela. A régua de mídia é sequencial — se a
- * etapa 2 de uma unidade está vazia, o lead para ali e o follow-up não é
- * reagendado, então a lacuna importa mais que o total de arquivos. Uma lista
- * simples de mídias esconderia exatamente essa informação.
+ * É o bloco mais importante da tela: mostra onde falta material, informação que
+ * uma lista simples de arquivos esconderia.
+ *
+ * Etapa vazia NÃO interrompe mais a régua — o motor pula para a etapa seguinte
+ * que tenha material (ver mediaEngine.service.ts). Então o vermelho aqui
+ * significa "esta etapa não será enviada", e não mais "a régua para aqui".
  */
 function mapaCobertura(contagens: ContagemEtapa[]): string {
   const cabecalho = ETAPAS.map((e) => `<th>Etapa ${e}</th>`).join("");
 
-  const linhas = ORDEM_UNIDADES.map((unidade) => {
+  const linhas = UNIDADES_NO_MAPA.map((unidade) => {
     const celulas = ETAPAS.map((etapa) => {
       const total = totalDaEtapa(contagens, unidade, etapa);
       const esperado = ETAPAS_MIDIA[etapa].quantidade;
@@ -221,7 +254,7 @@ export function renderizarPainelMidiasHtml(
   <h2>Cobertura por unidade</h2>
   <div class="bloco">
     ${mapaCobertura(contagens)}
-    <p class="legenda">Verde: etapa completa · Amarelo: tem mídia, abaixo do recomendado · Vermelho: vazia, régua para aqui.</p>
+    <p class="legenda">Verde: etapa completa · Amarelo: tem mídia, abaixo do recomendado · Vermelho: vazia, esta etapa é pulada.${notaUnidadesOcultas()}</p>
   </div>
 
   <h2>Enviar mídia</h2>

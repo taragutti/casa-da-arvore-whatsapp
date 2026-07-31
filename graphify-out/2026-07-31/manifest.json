@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "src/services/mediaEngine.service.ts": {
-    "mtime": 1785524640.007619,
-    "ast_hash": "45bdb4dff12abce434f124f743619c1c",
+    "mtime": 1785528031.1945028,
+    "ast_hash": "64cbbac2aa662f1dd692eb4449f0b1dc",
     "semantic_hash": ""
   },
   "src/services/handoff.service.test.ts": {
@@ -410,8 +410,8 @@
     "semantic_hash": ""
   },
   "src/services/mediaLote.service.test.ts": {
-    "mtime": 1785524506.4174485,
-    "ast_hash": "3f25235cc338345993a12251219765fd",
+    "mtime": 1785528055.6119623,
+    "ast_hash": "7d20a61d96fbdeb3b8156f7d62eb47e0",
     "semantic_hash": ""
   },
   "src/services/mediaStorage.service.test.ts": {
