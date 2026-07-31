@@ -209,9 +209,18 @@ function feedback(card, texto, ok) {
   el.className = "feedback " + (ok ? "ok" : "erro");
 }
 
+// location.origin nunca inclui usuario:senha, diferente de uma URL relativa
+// resolvida contra um documento aberto como http://user:pass@host/painel — o
+// fetch() recusa URL com credenciais e os botoes quebrariam silenciosamente.
+// Abrir painel Basic Auth com credenciais na URL e forma comum de compartilhar
+// o link, entao vale nao depender disso.
+function apiUrl(caminho) {
+  return location.origin + caminho;
+}
+
 async function patchLead(card, corpo) {
   var id = card.dataset.lead;
-  var resp = await fetch("/api/leads/" + id, {
+  var resp = await fetch(apiUrl("/api/leads/" + id), {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(corpo)
@@ -263,7 +272,7 @@ document.querySelectorAll(".card").forEach(function (card) {
     if (!texto) { feedback(card, "Escreva a observação antes de salvar.", false); return; }
     btnNota.disabled = true;
     try {
-      var resp = await fetch("/api/leads/" + card.dataset.lead + "/notas", {
+      var resp = await fetch(apiUrl("/api/leads/" + card.dataset.lead + "/notas"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texto: texto, autor: autor || undefined })
