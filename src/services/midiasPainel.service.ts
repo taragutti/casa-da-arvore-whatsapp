@@ -81,9 +81,9 @@ function mapaCobertura(contagens: ContagemEtapa[]): string {
       const total = totalDaEtapa(contagens, unidade, etapa);
       const esperado = ETAPAS_MIDIA[etapa].quantidade;
 
-      // Três estados, não dois: "vazio" interrompe a régua; "parcial" (etapa 3
-      // com 1 ou 2 fotos em vez de 3–4) funciona, mas entrega menos do que a
-      // Seção 4 pede — merece atenção sem soar como erro.
+      // Três estados, não dois: "vazio" significa etapa que será pulada;
+      // "parcial" entrega menos que o recomendado, mas funciona — merece
+      // atenção sem soar como erro.
       const estado = total === 0 ? "vazio" : total < esperado ? "parcial" : "ok";
       const rotulo = total === 0 ? "—" : esperado > 1 ? `${total}/${esperado}` : String(total);
       return `<td class="cel ${estado}">${rotulo}</td>`;
@@ -234,6 +234,7 @@ export function renderizarPainelMidiasHtml(
     </div>
     <div class="usuario">
       <a class="voltar" href="/painel">← Leads</a>
+      <a class="voltar" href="/painel/configuracoes">Configurações</a>
       <span>${escapeHtml(autor.nome)}</span>
       <form method="post" action="/logout"><button type="submit" class="sair">Sair</button></form>
     </div>

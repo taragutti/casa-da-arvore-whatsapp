@@ -172,3 +172,68 @@ CREATE INDEX IF NOT EXISTS idx_demand_signals_created_at ON demand_signals(creat
 CREATE INDEX IF NOT EXISTS idx_leads_whatsapp_number ON leads(whatsapp_number);
 CREATE INDEX IF NOT EXISTS idx_raw_messages_processado ON raw_messages(processado);
 CREATE INDEX IF NOT EXISTS idx_media_library_unidade ON media_library(unidade);
+
+-- ============================================================================
+-- Configurações operacionais do workflow (estágio 8)
+--
+-- Prazos, horário e gatilhos que antes eram constantes no código. Passam a ser
+-- editáveis no painel para que ajuste de operação não dependa de deploy.
+--
+-- Linha ÚNICA por construção: `id BOOLEAN PRIMARY KEY CHECK (id)` só admite o
+-- valor `true`, então um segundo INSERT falha em vez de criar configuração
+-- concorrente — sem isso, dois registros divergentes seriam possíveis e qual
+-- deles vale passaria a depender da ordenação da consulta.
+--
+-- Os DEFAULTs repetem os valores que estavam no código, então banco existente
+-- passa a se comportar exatamente como antes até alguém editar de propósito.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS configuracoes (
+  id BOOLEAN PRIMARY KEY DEFAULT true CHECK (id),
+
+  -- Régua de silêncio (Seção 6), em MINUTOS. Minuto em vez de ms para o painel
+  -- não pedir número de 8 dígitos, e em vez de horas para permitir ajuste fino.
+  followup_2h_minutos INT NOT NULL DEFAULT 120,
+  followup_48h_minutos INT NOT NULL DEFAULT 2880,
+  followup_7d_minutos INT NOT NULL DEFAULT 10080,
+  followup_30d_minutos INT NOT NULL DEFAULT 43200,
+
+  -- Reagendamento quando o follow-up cai fora do horário comercial.
+  reagendamento_fora_horario_minutos INT NOT NULL DEFAULT 60,
+
+  -- Horário comercial (fuso America/Sao_Paulo).
+  hora_abertura INT NOT NULL DEFAULT 9 CHECK (hora_abertura BETWEEN 0 AND 23),
+  hora_fechamento INT NOT NULL DEFAULT 18 CHECK (hora_fechamento BETWEEN 1 AND 24),
+  atende_domingo BOOLEAN NOT NULL DEFAULT false,
+  atende_sabado BOOLEAN NOT NULL DEFAULT true,
+
+  -- SLA de resposta humana pós-handoff, em minutos, por unidade + corporativo.
+  sla_minutos JSONB NOT NULL DEFAULT
+    '{"casa_da_arvore":15,"park_lagos":15,"casarao":15,"casa_por_do_sol":20,"shopping_park_lagos":30}'::jsonb,
+  sla_corporativo_minutos INT NOT NULL DEFAULT 10,
+  sla_sem_unidade_minutos INT NOT NULL DEFAULT 15,
+
+  -- Palavras que disparam handoff imediato (Seção 5). Comparadas em minúsculas
+  -- por substring, então "consultor" também casa "falar com consultor".
+  palavras_reclamacao TEXT[] NOT NULL DEFAULT ARRAY[
+    'reclamação','reclamacao','insatisfeito','insatisfeita','péssimo atendimento',
+    'pessimo atendimento','decepcionado','decepcionada','quero cancelar','absurdo','descaso'
+  ],
+  palavras_pedido_humano TEXT[] NOT NULL DEFAULT ARRAY[
+    'consultor','vendedor','atendente','pessoa de verdade','ser humano','com humano',
+    'com alguém','com alguem'
+  ],
+  palavras_pedido_contrato TEXT[] NOT NULL DEFAULT ARRAY[
+    'quero fechar','fechar contrato','quero contratar','vamos fechar','bora fechar','assinar contrato'
+  ],
+
+  -- Quantas mensagens sem classificação antes de mandar pra qualificação humana.
+  tentativas_sem_classificacao_limite INT NOT NULL DEFAULT 2,
+
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT now(),
+  atualizado_por UUID REFERENCES usuarios(id),
+
+  CONSTRAINT horario_coerente CHECK (hora_fechamento > hora_abertura)
+);
+
+-- Garante a linha única na primeira migração, sem sobrescrever ajuste já feito.
+INSERT INTO configuracoes (id) VALUES (true) ON CONFLICT (id) DO NOTHING;

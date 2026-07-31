@@ -5,6 +5,7 @@ import { logger } from "../config/logger";
 import { extractFromMessage, ExtractedLeadData } from "./anthropic.service";
 import { determinarUnidadeRecomendada, UnidadeRecomendada } from "./routing.service";
 import { detectarGatilhoHandoff, calcularSlaMinutos, dentroDoHorarioComercial, GatilhoHandoff } from "./handoff.service";
+import { obterConfig } from "./config.service";
 import { sendHandoffNotificationEmail, sendHandoffFollowUpEmail } from "./email.service";
 import { notificarVendedor } from "./whatsapp.service";
 import { upsertLead, adicionarTag } from "../repositories/leads.repo";
@@ -102,7 +103,8 @@ async function processarHandoff(
     return { emAtendimentoHumano: true, gatilhoNovo: null };
   }
 
-  const decisao = detectarGatilhoHandoff(mensagem, extracted.sinal_engajamento, novasTentativas);
+  const config = await obterConfig();
+  const decisao = detectarGatilhoHandoff(mensagem, extracted.sinal_engajamento, novasTentativas, config.handoff);
   await atualizarTentativasSemClassificacao(leadId, decisao ? 0 : novasTentativas);
 
   if (!decisao) {
@@ -114,8 +116,8 @@ async function processarHandoff(
     await adicionarTag(leadId, "precisa_qualificacao_humana");
   }
 
-  const slaMinutos = calcularSlaMinutos(unidadeRecomendada, extracted.ramo);
-  const emHorarioComercial = dentroDoHorarioComercial();
+  const slaMinutos = calcularSlaMinutos(unidadeRecomendada, extracted.ramo, config.sla);
+  const emHorarioComercial = dentroDoHorarioComercial(new Date(), config.horario);
 
   try {
     await sendHandoffNotificationEmail({

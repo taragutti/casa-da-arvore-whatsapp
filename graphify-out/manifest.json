@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "src/db/schema.sql": {
-    "mtime": 1785462112.8908808,
-    "ast_hash": "e17357f1bf2f4484ec4798fc62cdb3c3",
+    "mtime": 1785529701.4685233,
+    "ast_hash": "41f40b2458ae8662492d7e7cb14b3f52",
     "semantic_hash": ""
   },
   "src/jobs/monthlyBriefing.cron.ts": {
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "src/server.ts": {
-    "mtime": 1785506242.2265065,
-    "ast_hash": "3dcd9282c610a64bada1ecd2fbf75f42",
+    "mtime": 1785529997.8802311,
+    "ast_hash": "8e045660c1df3ec9616f8c5a77e3758f",
     "semantic_hash": ""
   },
   "src/services/anthropic.service.test.ts": {
@@ -115,8 +115,8 @@
     "semantic_hash": ""
   },
   "src/services/messageProcessing.service.ts": {
-    "mtime": 1785440576.7307665,
-    "ast_hash": "f3c1f049f465a3326e0bc1723f276f6b",
+    "mtime": 1785529839.5387313,
+    "ast_hash": "ac2cdc2159b4adbff1cf782832b61a55",
     "semantic_hash": ""
   },
   "src/services/whatsapp.service.ts": {
@@ -255,8 +255,8 @@
     "semantic_hash": ""
   },
   "src/services/handoff.service.ts": {
-    "mtime": 1784993837.2174938,
-    "ast_hash": "eba828f10f7834ad024f171a0b9b5d2b",
+    "mtime": 1785529746.7565992,
+    "ast_hash": "2bc0d8d45eb21c8b794900d0d4448df0",
     "semantic_hash": ""
   },
   "src/jobs/lifecycleFollowUp.cron.ts": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "src/services/followUp.service.ts": {
-    "mtime": 1785442836.4748755,
-    "ast_hash": "2f1386820412ee62a409bd84b8efb737",
+    "mtime": 1785529825.4581914,
+    "ast_hash": "97dff33c37279f2f5f7af8b43ebaa5bb",
     "semantic_hash": ""
   },
   "src/repositories/painel.repo.ts": {
@@ -285,13 +285,13 @@
     "semantic_hash": ""
   },
   "src/routes/painel.ts": {
-    "mtime": 1785506214.3920853,
-    "ast_hash": "fbf7f485863e8cdaeeb1cfdeec77b6c0",
+    "mtime": 1785529997.8797402,
+    "ast_hash": "20836ac7ef684e179379e81116e51896",
     "semantic_hash": ""
   },
   "src/services/painel.service.ts": {
-    "mtime": 1785506225.3859282,
-    "ast_hash": "49f09902d559481722ecd50b8bcb0c62",
+    "mtime": 1785530069.9920433,
+    "ast_hash": "05abbe8102de9696cabb37e960f908cf",
     "semantic_hash": ""
   },
   "src/utils/html.ts": {
@@ -425,13 +425,53 @@
     "semantic_hash": ""
   },
   "src/services/midiasPainel.service.ts": {
-    "mtime": 1785529124.7818544,
-    "ast_hash": "6c78ecf5fbc4fe279255cafbf3d86a12",
+    "mtime": 1785530054.6234322,
+    "ast_hash": "d39920282c156d61b4ecfc1b84227fc9",
     "semantic_hash": ""
   },
   "ONDE-PARAMOS.md": {
     "mtime": 1785506748.8492243,
     "ast_hash": "300a4dec80adb0a9d5f5fed5a9064fee",
+    "semantic_hash": ""
+  },
+  "src/repositories/configuracoes.repo.ts": {
+    "mtime": 1785529777.4038367,
+    "ast_hash": "f19f70f6c873d573b0e82e16e5123fec",
+    "semantic_hash": ""
+  },
+  "src/routes/configApi.schemas.test.ts": {
+    "mtime": 1785530097.116437,
+    "ast_hash": "35bb13ae0ae9bb66916bef287a08013c",
+    "semantic_hash": ""
+  },
+  "src/routes/configApi.schemas.ts": {
+    "mtime": 1785530029.4196239,
+    "ast_hash": "9bb57a743a7adc334a4598d3415224dd",
+    "semantic_hash": ""
+  },
+  "src/routes/configApi.ts": {
+    "mtime": 1785529887.0003383,
+    "ast_hash": "19f81222efc581d27a37fea9d34d7d75",
+    "semantic_hash": ""
+  },
+  "src/services/config.service.test.ts": {
+    "mtime": 1785530113.9030733,
+    "ast_hash": "d3096619807039516c01c1c2677de6d8",
+    "semantic_hash": ""
+  },
+  "src/services/config.service.ts": {
+    "mtime": 1785529792.921037,
+    "ast_hash": "db636da46e6adee5b019343812c9d642",
+    "semantic_hash": ""
+  },
+  "src/services/configPainel.service.ts": {
+    "mtime": 1785529967.7911165,
+    "ast_hash": "179cb54561498f4bea839c06b490d21a",
+    "semantic_hash": ""
+  },
+  "src/services/handoffConfig.service.test.ts": {
+    "mtime": 1785530145.8853936,
+    "ast_hash": "ff1999430993b1faa45f9fe2957702ad",
     "semantic_hash": ""
   }
 }

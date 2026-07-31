@@ -3,14 +3,20 @@ import { followUpQueue, ReguaFollowUp } from "../queue/followUpQueue";
 import { getUltimaInteracao } from "../repositories/leads.repo";
 import { getEstadoHandoff } from "../repositories/conversationState.repo";
 import { dentroDoHorarioComercial } from "./handoff.service";
+import { obterConfig } from "./config.service";
 import { enviarComTemplateOuTexto } from "./whatsapp.service";
 
-const DELAY_MS: Record<ReguaFollowUp, number> = {
-  "2h": 2 * 60 * 60 * 1000,
-  "48h": 48 * 60 * 60 * 1000,
-  "7d": 7 * 24 * 60 * 60 * 1000,
-  "30d": 30 * 24 * 60 * 60 * 1000,
-};
+/**
+ * Prazos vêm da configuração editável (estágio 8), não mais de constante. O
+ * nome da régua ("2h", "48h"…) é só um rótulo estável usado como chave na fila
+ * e no banco — se alguém configurar a régua "2h" para 4 horas, o rótulo continua
+ * "2h" de propósito: mudá-lo invalidaria os jobs já agendados na fila, que
+ * carregam o rótulo antigo no payload.
+ */
+async function atrasoMs(regua: ReguaFollowUp): Promise<number> {
+  const { followUpMinutos } = await obterConfig();
+  return followUpMinutos[regua] * 60 * 1000;
+}
 
 /** 30d se repete enquanto o lead ficar frio — nutrição passiva (Seção 6), não é etapa final. */
 const PROXIMA_REGUA: Record<ReguaFollowUp, ReguaFollowUp> = {
@@ -58,7 +64,7 @@ export async function agendarFollowUp(leadId: string, whatsappNumber: string, re
   await followUpQueue.add(
     "follow-up",
     { leadId, whatsappNumber, regua, agendadoEm: new Date().toISOString() },
-    { delay: DELAY_MS[regua] }
+    { delay: await atrasoMs(regua) }
   );
 }
 
@@ -66,7 +72,8 @@ export async function agendarFollowUp(leadId: string, whatsappNumber: string, re
  * Processa uma régua agendada. Cancela silenciosamente (sem reagendar) se o
  * lead respondeu depois do agendamento ou se já está em atendimento humano
  * (Seção 5) — nesses casos o bot não deve falar sozinho. Fora do horário
- * comercial, reagenda a MESMA régua pra daqui a 1h em vez de pular.
+ * comercial, reagenda a MESMA régua (intervalo configurável) em vez de pular:
+ * pular faria o lead perder aquele contato da régua para sempre.
  */
 export async function processarFollowUpAgendado(
   leadId: string,
@@ -88,9 +95,16 @@ export async function processarFollowUpAgendado(
     return;
   }
 
-  if (!dentroDoHorarioComercial()) {
-    log.debug("fora do horário comercial — reagendando a mesma régua pra daqui a 1h");
-    await followUpQueue.add("follow-up", { leadId, whatsappNumber, regua, agendadoEm }, { delay: 60 * 60 * 1000 });
+  const config = await obterConfig();
+
+  if (!dentroDoHorarioComercial(new Date(), config.horario)) {
+    const minutos = config.reagendamentoForaHorarioMinutos;
+    log.debug({ minutos }, "fora do horário comercial — reagendando a mesma régua");
+    await followUpQueue.add(
+      "follow-up",
+      { leadId, whatsappNumber, regua, agendadoEm },
+      { delay: minutos * 60 * 1000 }
+    );
     return;
   }
 
@@ -111,6 +125,6 @@ export async function processarFollowUpAgendado(
   await followUpQueue.add(
     "follow-up",
     { leadId, whatsappNumber, regua: proximaRegua, agendadoEm: new Date().toISOString() },
-    { delay: DELAY_MS[proximaRegua] }
+    { delay: await atrasoMs(proximaRegua) }
   );
 }

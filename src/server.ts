@@ -16,6 +16,7 @@ import { midiaPublicaRouter } from "./routes/midiaPublica";
 import { authRouter } from "./routes/auth";
 import { garantirDiretorio, diretorioBase } from "./services/mediaStorage.service";
 import { tratarErros } from "./middleware/asyncHandler";
+import { configApiRouter } from "./routes/configApi";
 
 const app = express();
 // Guarda o corpo bruto da requisição (necessário para validar a assinatura
@@ -59,6 +60,7 @@ app.use(whatsappRouter);
 app.use(authRouter);
 app.use(painelRouter);
 app.use(leadsApiRouter);
+app.use(configApiRouter);
 app.use(midiasApiRouter);
 // Rota pública (sem autenticação) — é por ela que os servidores da Meta baixam
 // o arquivo para entregar ao cliente. Ver comentário em routes/midiaPublica.ts.

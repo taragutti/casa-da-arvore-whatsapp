@@ -214,6 +214,7 @@ export function renderizarPainelHtml(leads: LeadPainel[], autor: Autor): string 
     </div>
     <div class="usuario">
       <a class="sair" href="/painel/midias">Mídias</a>
+      <a class="sair" href="/painel/configuracoes">Configurações</a>
       <span>${escapeHtml(autor.nome)}</span>
       <form method="post" action="/logout"><button type="submit" class="sair">Sair</button></form>
     </div>

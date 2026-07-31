@@ -5,6 +5,8 @@ import { buscarLeadsParaPainel } from "../repositories/painel.repo";
 import { renderizarPainelHtml } from "../services/painel.service";
 import { contarMidiasAtivasPorEtapa, listarTodasMidias } from "../repositories/mediaLibrary.repo";
 import { renderizarPainelMidiasHtml } from "../services/midiasPainel.service";
+import { renderizarConfigHtml } from "../services/configPainel.service";
+import { buscarConfiguracoes, CONFIGURACOES_PADRAO } from "../repositories/configuracoes.repo";
 
 export const painelRouter = Router();
 
@@ -28,4 +30,18 @@ painelRouter.get("/painel/midias", comErro(exigirLogin), comErro(async (req: Req
   res
     .set("Content-Type", "text/html; charset=utf-8")
     .send(renderizarPainelMidiasHtml(itens, contagens, req.autor!));
+}));
+
+/**
+ * GET /painel/configuracoes — prazos, horário, SLA e gatilhos (estágio 8).
+ *
+ * Cai no padrão do código quando a tabela ainda não existe: mostra os valores
+ * padrão em vez de erro, porque a tela é útil para CONSULTAR a regra vigente
+ * mesmo antes de alguém decidir mudar algo.
+ */
+painelRouter.get("/painel/configuracoes", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
+  const config = (await buscarConfiguracoes()) ?? CONFIGURACOES_PADRAO;
+  res
+    .set("Content-Type", "text/html; charset=utf-8")
+    .send(renderizarConfigHtml(config, req.autor!));
 }));

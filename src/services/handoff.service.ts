@@ -15,39 +15,93 @@ export interface DecisaoHandoff {
   paraGerente: boolean;
 }
 
-const PALAVRAS_RECLAMACAO = [
-  "reclamação",
-  "reclamacao",
-  "insatisfeito",
-  "insatisfeita",
-  "péssimo atendimento",
-  "pessimo atendimento",
-  "decepcionado",
-  "decepcionada",
-  "quero cancelar",
-  "absurdo",
-  "descaso",
-];
+/**
+ * Regras de handoff que o painel pode editar (estágio 8).
+ *
+ * As funções abaixo recebem isto como parâmetro OPCIONAL, com os padrões
+ * originais. Manter as funções puras e síncronas foi deliberado: elas são o
+ * núcleo de decisão do handoff e ficam muito mais fáceis de testar sem precisar
+ * de banco. Quem tem acesso ao banco (o pipeline de mensagem) passa a
+ * configuração salva; teste e chamada direta seguem funcionando sem nada.
+ */
+export interface RegrasHandoff {
+  palavrasReclamacao: string[];
+  palavrasPedidoHumano: string[];
+  palavrasPedidoContrato: string[];
+  tentativasSemClassificacaoLimite: number;
+}
 
-const PALAVRAS_PEDIDO_HUMANO = [
-  "consultor",
-  "vendedor",
-  "atendente",
-  "pessoa de verdade",
-  "ser humano",
-  "com humano",
-  "com alguém",
-  "com alguem",
-];
+export interface RegrasSla {
+  porUnidade: Record<UnidadeRecomendada, number>;
+  corporativo: number;
+  semUnidade: number;
+}
 
-const PALAVRAS_PEDIDO_CONTRATO = [
-  "quero fechar",
-  "fechar contrato",
-  "quero contratar",
-  "vamos fechar",
-  "bora fechar",
-  "assinar contrato",
-];
+export interface RegrasHorario {
+  horaAbertura: number;
+  horaFechamento: number;
+  atendeSabado: boolean;
+  atendeDomingo: boolean;
+}
+
+/**
+ * Padrões que estavam fixos no código. Continuam sendo a fonte única: os
+ * DEFAULTs da tabela `configuracoes` repetem estes valores, e um banco recém
+ * migrado se comporta exatamente como antes.
+ */
+export const REGRAS_HANDOFF_PADRAO: RegrasHandoff = {
+  palavrasReclamacao: [
+    "reclamação",
+    "reclamacao",
+    "insatisfeito",
+    "insatisfeita",
+    "péssimo atendimento",
+    "pessimo atendimento",
+    "decepcionado",
+    "decepcionada",
+    "quero cancelar",
+    "absurdo",
+    "descaso",
+  ],
+  palavrasPedidoHumano: [
+    "consultor",
+    "vendedor",
+    "atendente",
+    "pessoa de verdade",
+    "ser humano",
+    "com humano",
+    "com alguém",
+    "com alguem",
+  ],
+  palavrasPedidoContrato: [
+    "quero fechar",
+    "fechar contrato",
+    "quero contratar",
+    "vamos fechar",
+    "bora fechar",
+    "assinar contrato",
+  ],
+  tentativasSemClassificacaoLimite: 2,
+};
+
+export const REGRAS_SLA_PADRAO: RegrasSla = {
+  porUnidade: {
+    casa_da_arvore: 15,
+    park_lagos: 15,
+    casarao: 15,
+    casa_por_do_sol: 20,
+    shopping_park_lagos: 30,
+  },
+  corporativo: 10,
+  semUnidade: 15,
+};
+
+export const REGRAS_HORARIO_PADRAO: RegrasHorario = {
+  horaAbertura: 9,
+  horaFechamento: 18,
+  atendeSabado: true,
+  atendeDomingo: false,
+};
 
 function contemAlgumTermo(mensagem: string, termos: string[]): boolean {
   const texto = mensagem.toLowerCase();
@@ -64,15 +118,16 @@ function contemAlgumTermo(mensagem: string, termos: string[]): boolean {
 export function detectarGatilhoHandoff(
   mensagem: string,
   sinal: SinalEngajamento,
-  tentativasSemClassificacao: number
+  tentativasSemClassificacao: number,
+  regras: RegrasHandoff = REGRAS_HANDOFF_PADRAO
 ): DecisaoHandoff | null {
-  if (contemAlgumTermo(mensagem, PALAVRAS_RECLAMACAO)) {
+  if (contemAlgumTermo(mensagem, regras.palavrasReclamacao)) {
     return { gatilho: "reclamacao", paraGerente: true };
   }
-  if (contemAlgumTermo(mensagem, PALAVRAS_PEDIDO_HUMANO)) {
+  if (contemAlgumTermo(mensagem, regras.palavrasPedidoHumano)) {
     return { gatilho: "pedido_humano", paraGerente: false };
   }
-  if (contemAlgumTermo(mensagem, PALAVRAS_PEDIDO_CONTRATO)) {
+  if (contemAlgumTermo(mensagem, regras.palavrasPedidoContrato)) {
     return { gatilho: "pedido_contrato", paraGerente: false };
   }
   if (sinal === "pedido_visita") {
@@ -81,33 +136,34 @@ export function detectarGatilhoHandoff(
   if (sinal === "pergunta_valor") {
     return { gatilho: "pergunta_valor", paraGerente: false };
   }
-  if (tentativasSemClassificacao >= 2) {
+  if (tentativasSemClassificacao >= regras.tentativasSemClassificacaoLimite) {
     return { gatilho: "falha_classificacao_repetida", paraGerente: false };
   }
   return null;
 }
 
-const SLA_MINUTOS_POR_UNIDADE: Record<UnidadeRecomendada, number> = {
-  casa_da_arvore: 15,
-  park_lagos: 15,
-  casarao: 15,
-  casa_por_do_sol: 20,
-  shopping_park_lagos: 30,
-};
-
-/** SLA de resposta humana pós-handoff, em minutos (Seção 5). Corporativo tem SLA próprio (10 min), que sobrepõe o da unidade. */
-export function calcularSlaMinutos(unidade: UnidadeRecomendada | null, ramo: RamoEvento | null): number {
-  if (ramo === "corporativo") return 10;
-  if (unidade == null) return 15; // fallback conservador enquanto não há unidade decidida
-  return SLA_MINUTOS_POR_UNIDADE[unidade];
+/** SLA de resposta humana pós-handoff, em minutos (Seção 5). Corporativo tem SLA próprio, que sobrepõe o da unidade. */
+export function calcularSlaMinutos(
+  unidade: UnidadeRecomendada | null,
+  ramo: RamoEvento | null,
+  regras: RegrasSla = REGRAS_SLA_PADRAO
+): number {
+  if (ramo === "corporativo") return regras.corporativo;
+  if (unidade == null) return regras.semUnidade; // fallback enquanto não há unidade decidida
+  // `?? semUnidade` cobre unidade nova adicionada no código antes de existir no
+  // JSON salvo — sem isso o SLA viria `undefined` e o e-mail mostraria "NaN min".
+  return regras.porUnidade[unidade] ?? regras.semUnidade;
 }
 
 /**
- * Horário comercial assumido como segunda a sábado, 9h-18h (Brasília) — o
- * documento de fluxo não define isso explicitamente em nenhuma seção lida;
- * ajustar aqui se a operação real for diferente.
+ * Horário comercial no fuso America/Sao_Paulo. O documento de fluxo não define
+ * isso; o padrão (seg–sáb, 9h–18h) era uma suposição, e agora é editável no
+ * painel justamente por isso.
  */
-export function dentroDoHorarioComercial(agora: Date = new Date()): boolean {
+export function dentroDoHorarioComercial(
+  agora: Date = new Date(),
+  regras: RegrasHorario = REGRAS_HORARIO_PADRAO
+): boolean {
   const partes = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Sao_Paulo",
     hour: "2-digit",
@@ -118,6 +174,7 @@ export function dentroDoHorarioComercial(agora: Date = new Date()): boolean {
   const hora = Number(partes.find((p) => p.type === "hour")?.value);
   const diaSemana = partes.find((p) => p.type === "weekday")?.value ?? "";
 
-  if (diaSemana === "Sun") return false;
-  return hora >= 9 && hora < 18;
+  if (diaSemana === "Sun" && !regras.atendeDomingo) return false;
+  if (diaSemana === "Sat" && !regras.atendeSabado) return false;
+  return hora >= regras.horaAbertura && hora < regras.horaFechamento;
 }
