@@ -10,14 +10,14 @@ import {
 import { enviarComTemplateOuTexto } from "../services/whatsapp.service";
 
 /**
- * Templates de ciclo de vida. Em 30/07/2026 NENHUM destes existe na Meta ainda
- * (a criação foi pausada no aniversario_casamento) — então hoje todos caem no
- * fallback de texto livre, que só é entregue se o cliente tiver escrito nas
- * últimas 24h. Como estas réguas disparam 1 ano após o evento, na prática elas
- * quase nunca vão entregar até os templates serem criados e aprovados.
+ * Templates de ciclo de vida. Todos APROVADOS e ativos na Meta desde
+ * 31/07/2026 — antes disso caíam no fallback de texto livre, que exige o
+ * cliente ter escrito nas últimas 24h e portanto praticamente nunca entregava
+ * (estas réguas disparam 1 ano após o evento).
  *
- * Nada a mudar no código quando isso acontecer: basta criar os templates com
- * estes nomes e o mesmo texto abaixo.
+ * Os textos abaixo precisam continuar IDÊNTICOS ao corpo aprovado na Meta:
+ * eles são o fallback, e divergir faz o cliente receber uma redação diferente
+ * da revisada dependendo de a janela de 24h estar aberta ou não.
  */
 const TEMPLATES_CICLO_DE_VIDA = {
   aniversarioCasamento: "aniversario_casamento",
