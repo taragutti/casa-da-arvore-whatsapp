@@ -108,6 +108,59 @@ export async function buscarProspeccaoCorporativa(): Promise<LeadParaCicloDeVida
   return result.rows;
 }
 
+/**
+ * Aniversário da criança daqui a 7 dias (Seção 6 do Fluxo Detalhado; Parte
+ * 10.5 do Script: "mensagem de felicitação 1 semana antes").
+ *
+ * A data vem de `dados_coletados->data_aniversario_crianca`, preenchida no
+ * ramo de recreação avulsa — a Seção 3.5 chama esse campo de "crítico" porque
+ * é justamente o gatilho de cross-sell para festa fechada.
+ *
+ * Comparar dia e mês, em vez de montar a data do ano corrente, evita o erro de
+ * 29 de fevereiro em ano não bissexto. A janela é exata (7 dias): se o job
+ * falhar num dia, aquele aniversário passa — preferível a mandar parabéns com
+ * três dias de atraso, que soa pior do que não mandar.
+ */
+export async function buscarAniversariosDeCrianca(): Promise<LeadParaCicloDeVida[]> {
+  const result = await pool.query<LeadParaCicloDeVida>(
+    `SELECT l.id, l.whatsapp_number, l.nome_cliente
+     FROM leads l
+     JOIN conversation_state cs ON cs.lead_id = l.id
+     WHERE l.status NOT IN ('fechado', 'perdido')
+       AND cs.dados_coletados->>'data_aniversario_crianca' IS NOT NULL
+       AND EXTRACT(MONTH FROM (cs.dados_coletados->>'data_aniversario_crianca')::date)
+           = EXTRACT(MONTH FROM CURRENT_DATE + 7)
+       AND EXTRACT(DAY FROM (cs.dados_coletados->>'data_aniversario_crianca')::date)
+           = EXTRACT(DAY FROM CURRENT_DATE + 7)
+       AND NOT (
+         ('aniversario_crianca_' || EXTRACT(YEAR FROM CURRENT_DATE)::int)
+         = ANY(COALESCE(l.tags, ARRAY[]::text[]))
+       )`
+  );
+  return result.rows;
+}
+
+/**
+ * Criança completando 14 anos — convite para conhecer o Casarão para os 15
+ * (Seção 6; Parte 10.5 do Script).
+ *
+ * Janela de 3 dias e tag de uma vez só, como nas demais réguas anuais: este
+ * gatilho não se repete, acontece uma vez na vida do lead.
+ */
+export async function buscarCriancasFazendo14Anos(): Promise<LeadParaCicloDeVida[]> {
+  const result = await pool.query<LeadParaCicloDeVida>(
+    `SELECT l.id, l.whatsapp_number, l.nome_cliente
+     FROM leads l
+     JOIN conversation_state cs ON cs.lead_id = l.id
+     WHERE l.status NOT IN ('fechado', 'perdido')
+       AND cs.dados_coletados->>'data_aniversario_crianca' IS NOT NULL
+       AND ((cs.dados_coletados->>'data_aniversario_crianca')::date + INTERVAL '14 years')::date
+           BETWEEN CURRENT_DATE - INTERVAL '3 days' AND CURRENT_DATE
+       AND NOT ('convite_15_anos_enviado' = ANY(COALESCE(l.tags, ARRAY[]::text[])))`
+  );
+  return result.rows;
+}
+
 /** Leads sem interação há 12 meses, ainda não arquivados — candidatos à última campanha antes do arquivamento (Seção 6). */
 export async function buscarLeadsFriosParaArquivar(): Promise<LeadParaCicloDeVida[]> {
   const result = await pool.query<LeadParaCicloDeVida>(

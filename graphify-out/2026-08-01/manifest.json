@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "src/config/env.ts": {
-    "mtime": 1785506306.4583898,
-    "ast_hash": "e7208d1635c0d1b4da29c1669c981084",
+    "mtime": 1785615003.757454,
+    "ast_hash": "ffcb3cd82ec2168cabfa747452f23464",
     "semantic_hash": ""
   },
   "src/config/logger.ts": {
@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "src/db/schema.sql": {
-    "mtime": 1785597410.5034943,
-    "ast_hash": "4230de24c28ba1a28afabc403bb3f56c",
+    "mtime": 1785614987.5865812,
+    "ast_hash": "d638543989a9a0289a5dc2f1ef9127ea",
     "semantic_hash": ""
   },
   "src/jobs/monthlyBriefing.cron.ts": {
@@ -60,8 +60,8 @@
     "semantic_hash": ""
   },
   "src/queue/processMessage.job.ts": {
-    "mtime": 1785598913.013223,
-    "ast_hash": "bf191508da4d030e31eb86bed507cfb7",
+    "mtime": 1785615225.9888437,
+    "ast_hash": "b26e668e18ec6832cf1b743c4875c869",
     "semantic_hash": ""
   },
   "src/repositories/briefings.repo.ts": {
@@ -110,13 +110,13 @@
     "semantic_hash": ""
   },
   "src/services/email.service.ts": {
-    "mtime": 1784995451.508408,
-    "ast_hash": "e9f46025c0a8b9def515803010327b2e",
+    "mtime": 1785615085.3158965,
+    "ast_hash": "03a95b01a68cf5c8ee7ef13e6f8eb9c9",
     "semantic_hash": ""
   },
   "src/services/messageProcessing.service.ts": {
-    "mtime": 1785598913.0140557,
-    "ast_hash": "a74b0b93c48c413d38cfe09d86476674",
+    "mtime": 1785615198.2796996,
+    "ast_hash": "ae02dffb021272630cb22055320e92a6",
     "semantic_hash": ""
   },
   "src/services/whatsapp.service.ts": {
@@ -215,8 +215,8 @@
     "semantic_hash": ""
   },
   "ENVIRONMENT.md": {
-    "mtime": 1785506673.04782,
-    "ast_hash": "ca5f9d874b098e6710c68db279bbda82",
+    "mtime": 1785612790.8190076,
+    "ast_hash": "6fb4d4e0174f98e438c0c79ea29f6f02",
     "semantic_hash": ""
   },
   "src/repositories/conversationState.repo.ts": {
@@ -230,8 +230,8 @@
     "semantic_hash": ""
   },
   "src/services/routing.service.ts": {
-    "mtime": 1784990933.2006361,
-    "ast_hash": "7f5933dc2f947c81c53901804535e642",
+    "mtime": 1785614752.5309668,
+    "ast_hash": "be96df9adc89599cfb9e3a50a74e2286",
     "semantic_hash": ""
   },
   "src/repositories/mediaLibrary.repo.ts": {
@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "src/services/mediaEngine.service.ts": {
-    "mtime": 1785528031.1945028,
-    "ast_hash": "64cbbac2aa662f1dd692eb4449f0b1dc",
+    "mtime": 1785615014.2015254,
+    "ast_hash": "213e14d6b2f246aeed8d2a008dc82ad1",
     "semantic_hash": ""
   },
   "src/services/handoff.service.test.ts": {
@@ -255,8 +255,8 @@
     "semantic_hash": ""
   },
   "src/services/handoff.service.ts": {
-    "mtime": 1785529746.7565992,
-    "ast_hash": "2bc0d8d45eb21c8b794900d0d4448df0",
+    "mtime": 1785615077.1882706,
+    "ast_hash": "f6f898be21a0da37d68ef0007dd42eab",
     "semantic_hash": ""
   },
   "src/jobs/lifecycleFollowUp.cron.ts": {
@@ -430,8 +430,8 @@
     "semantic_hash": ""
   },
   "ONDE-PARAMOS.md": {
-    "mtime": 1785506748.8492243,
-    "ast_hash": "300a4dec80adb0a9d5f5fed5a9064fee",
+    "mtime": 1785612795.3374238,
+    "ast_hash": "19b9bce49a33a06ba3685bce30cbd384",
     "semantic_hash": ""
   },
   "src/repositories/configuracoes.repo.ts": {
@@ -482,6 +482,31 @@
   "src/services/saudacao.service.ts": {
     "mtime": 1785597429.4399724,
     "ast_hash": "2d6641fe854b5ee0d98974e4e7ddfb33",
+    "semantic_hash": ""
+  },
+  "src/repositories/scriptState.repo.ts": {
+    "mtime": 1785614987.613736,
+    "ast_hash": "38e40334ef4c6d8b4f140e9b4375d658",
+    "semantic_hash": ""
+  },
+  "src/services/scriptEngine.service.test.ts": {
+    "mtime": 1785614807.0235035,
+    "ast_hash": "7fdb07544df3d5efa5a4a5f2c9b89f23",
+    "semantic_hash": ""
+  },
+  "src/services/scriptEngine.service.ts": {
+    "mtime": 1785615119.4694345,
+    "ast_hash": "88637c8a998070cb657d2f1f71b2870a",
+    "semantic_hash": ""
+  },
+  "src/services/scriptFluxo.ts": {
+    "mtime": 1785615119.4691277,
+    "ast_hash": "db917f39dcbfc63f98984540e3f02964",
+    "semantic_hash": ""
+  },
+  "src/services/scriptRunner.service.ts": {
+    "mtime": 1785615171.837504,
+    "ast_hash": "08381786c0274d472f66fee7dc3ca1fd",
     "semantic_hash": ""
   }
 }

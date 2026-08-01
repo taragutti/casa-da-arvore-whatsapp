@@ -4,7 +4,10 @@ import { getUltimaInteracao } from "../repositories/leads.repo";
 import { getEstadoHandoff } from "../repositories/conversationState.repo";
 import { dentroDoHorarioComercial } from "./handoff.service";
 import { obterConfig } from "./config.service";
-import { enviarComTemplateOuTexto } from "./whatsapp.service";
+import { enviarComTemplateOuTexto, sendWhatsAppMessage } from "./whatsapp.service";
+import { obterEstadoScript } from "../repositories/scriptState.repo";
+import { obterNo } from "./scriptFluxo";
+import { interpolar } from "./scriptEngine.service";
 
 /**
  * Prazos vêm da configuração editável (estágio 8), não mais de constante. O
@@ -59,6 +62,39 @@ const MENSAGENS_FOLLOW_UP: Record<ReguaFollowUp, string> = {
     "Oi! Passando pra lembrar que estamos por aqui — se quiser saber sobre novidades e datas disponíveis pra seu evento, é só responder essa mensagem. 🌳",
 };
 
+/**
+ * Janela de atendimento da Meta: fora dela, texto livre não é entregue.
+ * Só a régua de 2h cabe dentro dela com folga.
+ */
+const JANELA_SERVICO_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Convite para retomar de onde parou, quando o lead abandonou no MEIO da
+ * qualificação do script.
+ *
+ * O texto padrão da régua de 2h fala do "material que te enviei" — mas quem
+ * parou de responder no N4A nunca recebeu material nenhum, e receber essa
+ * mensagem só evidencia que o bot não está acompanhando a conversa. Repetir a
+ * pergunta pendente retoma exatamente onde ficou.
+ *
+ * Vai como texto livre de propósito: dentro da janela de 24h isso é conversa
+ * de serviço — entrega sem depender de template aprovado, e sem custo de
+ * conversa iniciada pela empresa.
+ */
+async function montarRetomadaDaPerguntaPendente(whatsappNumber: string): Promise<string[] | null> {
+  const estado = await obterEstadoScript(whatsappNumber);
+  if (!estado.noAtual) return null;
+
+  const no = obterNo(estado.noAtual);
+  if (!no) return null;
+  if (no.tipo !== "pergunta_texto" && no.tipo !== "pergunta_menu" && no.tipo !== "cupom") return null;
+
+  const perguntas = no.mensagens.map((m) => interpolar(m, estado.respostas).trim()).filter(Boolean);
+  return perguntas.length > 0 ? perguntas : null;
+}
+
+const CONVITE_RETOMADA = "Oi! Ficou faltando só isso aqui pra eu te mostrar as melhores opções 😊";
+
 /** Agenda a primeira régua (2h) logo após o envio de mídia/catálogo (Seção 6). Chamado por mediaEngine.service.ts. */
 export async function agendarFollowUp(leadId: string, whatsappNumber: string, regua: ReguaFollowUp = "2h"): Promise<void> {
   await followUpQueue.add(
@@ -106,6 +142,33 @@ export async function processarFollowUpAgendado(
       { delay: minutos * 60 * 1000 }
     );
     return;
+  }
+
+  // Conversa parada no meio da qualificação: retomar a pergunta pendente vale
+  // mais do que o texto genérico da régua. Só na 2h — nas demais a janela de
+  // 24h já fechou e texto livre não seria entregue.
+  const dentroDaJanela =
+    ultimaInteracao != null && Date.now() - ultimaInteracao.getTime() < JANELA_SERVICO_MS;
+
+  if (regua === "2h" && dentroDaJanela) {
+    const retomada = await montarRetomadaDaPerguntaPendente(whatsappNumber);
+    if (retomada) {
+      try {
+        await sendWhatsAppMessage(whatsappNumber, CONVITE_RETOMADA);
+        for (const pergunta of retomada) await sendWhatsAppMessage(whatsappNumber, pergunta);
+        log.info("retomada da qualificação enviada — conversa parada no meio do script");
+      } catch (error) {
+        log.error({ err: error }, "falha ao enviar retomada da qualificação");
+      }
+
+      const proxima = PROXIMA_REGUA[regua];
+      await followUpQueue.add(
+        "follow-up",
+        { leadId, whatsappNumber, regua: proxima, agendadoEm: new Date().toISOString() },
+        { delay: await atrasoMs(proxima) }
+      );
+      return;
+    }
   }
 
   try {

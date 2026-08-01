@@ -257,6 +257,17 @@ describe("integridade do grafo", () => {
     }
   });
 
+  it("todo nó que espera resposta tem texto — a retomada de 2h reenvia essas mensagens", () => {
+    // A régua de 2h repete a pergunta pendente para quem abandonou no meio da
+    // qualificação. Nó sem texto viraria mensagem vazia na cara do cliente.
+    for (const no of todosOsNos()) {
+      if (no.tipo === "pergunta_texto" || no.tipo === "pergunta_menu" || no.tipo === "cupom") {
+        expect(no.mensagens.length, no.id).toBeGreaterThan(0);
+        expect(no.mensagens.some((m) => m.trim().length > 0), no.id).toBe(true);
+      }
+    }
+  });
+
   it("nenhum nó que espera resposta fica sem saída", () => {
     for (const no of todosOsNos()) {
       if (no.tipo === "pergunta_texto") expect(no.proximo, no.id).toBeTruthy();

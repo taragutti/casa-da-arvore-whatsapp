@@ -4,6 +4,8 @@ import {
   buscarAniversariosCasamento,
   buscarProspeccaoCorporativa,
   buscarLeadsFriosParaArquivar,
+  buscarAniversariosDeCrianca,
+  buscarCriancasFazendo14Anos,
   arquivarLeadFrio,
   adicionarTag,
 } from "../repositories/leads.repo";
@@ -23,6 +25,12 @@ const TEMPLATES_CICLO_DE_VIDA = {
   aniversarioCasamento: "aniversario_casamento",
   prospeccaoCorporativa: "prospeccao_corporativa",
   ultimaCampanha: "ultima_campanha",
+  // Estes dois ainda NÃO existem na Meta — precisam ser submetidos com o corpo
+  // idêntico às mensagens abaixo. Até lá o envio cai em texto livre, que só
+  // entrega se o cliente tiver escrito nas últimas 24h; como estas réguas
+  // disparam meses ou anos depois, na prática não entregam.
+  aniversarioCrianca: "aniversario_crianca",
+  convite15Anos: "convite_15_anos",
 } as const;
 
 // Textos autorais — a Seção 6 define os gatilhos de ciclo de vida (cross-sell),
@@ -34,6 +42,15 @@ const MENSAGEM_ANIVERSARIO_CASAMENTO =
 const MENSAGEM_PROSPECCAO_CORPORATIVA =
   "Faz um ano do evento da sua empresa com a gente! Ficamos à disposição caso estejam planejando um novo evento — convenção, confraternização ou treinamento. Vamos conversar? 🌳";
 
+// Sem variável de propósito: template com variável exige aprovação do formato
+// com exemplo, e o nome da criança nem sempre foi extraído. Uma felicitação
+// que erra o nome é pior do que uma sem nome.
+const MENSAGEM_ANIVERSARIO_CRIANCA =
+  "Oi! Chegou a semana de aniversário aí na sua casa 🎉 Se quiser comemorar com a gente, temos datas disponíveis e condições especiais para quem já nos conhece. Quer que eu veja as opções para você?";
+
+const MENSAGEM_CONVITE_15_ANOS =
+  "Oi! Lembramos que está chegando a idade da festa de 15 anos 🎉 Nosso Casarão é referência em debutantes em Cabo Frio — se vocês já estiverem começando a planejar, é só responder que eu mando as fotos e as datas disponíveis. 🌳";
+
 const MENSAGEM_ULTIMA_CAMPANHA =
   "Faz um tempo que não conversamos! Se ainda tiver interesse em realizar seu evento com a gente, é só responder essa mensagem que retomamos a conversa com todo prazer. 🌳";
 
@@ -42,11 +59,13 @@ const MENSAGEM_ULTIMA_CAMPANHA =
  * por tempo parado: 1º aniversário de casamento, prospecção corporativa 1
  * ano após o evento, e arquivamento de leads frios há 12 meses.
  *
- * Fora do escopo desta implementação, sinalizado aqui de propósito:
- * "aniversário do cliente/criança (1 semana antes)" e "criança completando
- * 14 anos" não foram implementados — exigem data de nascimento, e o schema
- * (Seção 2 da especificação) só coleta idade no momento do evento, não data
- * de nascimento. Adicionar esse campo seria inventar um dado não pedido.
+ * Cobre os cinco gatilhos da Seção 6: aniversário da criança (1 semana
+ * antes), criança completando 14 anos, 1º aniversário de casamento,
+ * prospecção corporativa 1 ano após o evento, e arquivamento de leads frios.
+ *
+ * Os dois primeiros dependem de `data_aniversario_crianca`, coletada no ramo
+ * de recreação avulsa — sem essa data o lead simplesmente não entra na régua,
+ * que é melhor do que estimar aniversário a partir da idade informada.
  */
 export async function runLifecycleFollowUpJob(): Promise<void> {
   const log = logger.child({ job: "lifecycle-follow-up" });
@@ -85,6 +104,41 @@ export async function runLifecycleFollowUpJob(): Promise<void> {
     log.info({ leadId: lead.id }, "follow-up de prospecção corporativa (1 ano) processado");
   }
 
+  const aniversariosCrianca = await buscarAniversariosDeCrianca();
+  for (const lead of aniversariosCrianca) {
+    try {
+      await enviarComTemplateOuTexto({
+        to: lead.whatsapp_number,
+        templateName: TEMPLATES_CICLO_DE_VIDA.aniversarioCrianca,
+        variaveis: [],
+        textoFallback: MENSAGEM_ANIVERSARIO_CRIANCA,
+        contexto: { leadId: lead.id, regua: "aniversario_crianca" },
+      });
+    } catch (error) {
+      log.error({ err: error, leadId: lead.id }, "falha ao enviar felicitação de aniversário da criança");
+    }
+    // Tag por ano: a régua se repete todo aniversário, diferente das demais.
+    await adicionarTag(lead.id, `aniversario_crianca_${new Date().getFullYear()}`);
+    log.info({ leadId: lead.id }, "felicitação de aniversário da criança processada");
+  }
+
+  const criancas14Anos = await buscarCriancasFazendo14Anos();
+  for (const lead of criancas14Anos) {
+    try {
+      await enviarComTemplateOuTexto({
+        to: lead.whatsapp_number,
+        templateName: TEMPLATES_CICLO_DE_VIDA.convite15Anos,
+        variaveis: [],
+        textoFallback: MENSAGEM_CONVITE_15_ANOS,
+        contexto: { leadId: lead.id, regua: "convite_15_anos" },
+      });
+    } catch (error) {
+      log.error({ err: error, leadId: lead.id }, "falha ao enviar convite de 15 anos");
+    }
+    await adicionarTag(lead.id, "convite_15_anos_enviado");
+    log.info({ leadId: lead.id }, "convite de 15 anos (criança fez 14) processado");
+  }
+
   const leadsFrios = await buscarLeadsFriosParaArquivar();
   for (const lead of leadsFrios) {
     try {
@@ -107,6 +161,8 @@ export async function runLifecycleFollowUpJob(): Promise<void> {
     {
       aniversariosCasamento: aniversariosCasamento.length,
       prospeccoesCorporativas: prospeccoesCorporativas.length,
+      aniversariosCrianca: aniversariosCrianca.length,
+      criancas14Anos: criancas14Anos.length,
       leadsFrios: leadsFrios.length,
     },
     "job de ciclo de vida (cross-sell) concluído"

@@ -145,3 +145,21 @@ o Railway → Variables e confirmar contra esta tabela, atualizando a coluna
 - Antes de concluir que algo "não está configurado", checar o Railway, não
   só o `.env` local — os dois podem divergir e ambos são válidos para seus
   respectivos ambientes.
+
+## Templates de ciclo de vida ainda por submeter
+
+Duas réguas pós-aquisição foram implementadas em 01/08/2026 e disparam por
+data, meses ou anos depois do contato — ou seja, sempre fora da janela de 24h,
+onde só template é entregue. Os dois templates ainda **não existem na Meta**:
+
+| Template | Categoria sugerida | Corpo a submeter |
+|---|---|---|
+| `aniversario_crianca` | Marketing | "Oi! Chegou a semana de aniversário aí na sua casa 🎉 Se quiser comemorar com a gente, temos datas disponíveis e condições especiais para quem já nos conhece. Quer que eu veja as opções para você?" |
+| `convite_15_anos` | Marketing | "Oi! Lembramos que está chegando a idade da festa de 15 anos 🎉 Nosso Casarão é referência em debutantes em Cabo Frio — se vocês já estiverem começando a planejar, é só responder que eu mando as fotos e as datas disponíveis. 🌳" |
+
+O corpo precisa ficar **idêntico** ao das constantes em
+`jobs/lifecycleFollowUp.cron.ts`, que são o fallback de texto livre. Nada a
+mudar no código depois da aprovação — o envio troca sozinho.
+
+Ambas dependem de `data_aniversario_crianca`, coletada no ramo de recreação
+avulsa. Lead sem essa data não entra na régua.

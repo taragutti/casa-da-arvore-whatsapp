@@ -9,6 +9,7 @@ import { obterConfig } from "./config.service";
 import { dentroDoHorarioComercial } from "./handoff.service";
 import { notificarHandoff } from "./messageProcessing.service";
 import { nomeDaUnidade, passoDoScript } from "./scriptEngine.service";
+import { agendarFollowUp } from "./followUp.service";
 
 /**
  * Executor do script guiado: pega as ações que o motor decidiu e as realiza.
@@ -143,6 +144,23 @@ export async function executarPassoDoScript(params: ParametrosScript): Promise<v
 
     const proxima = resultado.acoes[indice + 1];
     if (proxima?.tipo === "enviar_texto") await esperar(PAUSA_ENTRE_MENSAGENS_MS);
+  }
+
+  // Régua de silêncio (Seção 6). Sem isto, quem abandona a conversa no meio da
+  // qualificação — parou de responder no N4A, por exemplo — nunca mais recebe
+  // nada: o `agendarFollowUp` original só era chamado pela régua de mídia
+  // progressiva, que o script não usa. O lead adquirido simplesmente sumia.
+  //
+  // Agendar a cada pergunta é seguro porque a régua se cancela sozinha: o job
+  // compara `ultima_interacao` com o momento do agendamento, então toda
+  // resposta nova invalida os jobs anteriores e sobra exatamente um vivo — o
+  // agendado depois da última mensagem do cliente.
+  if (resultado.estado.noAtual != null) {
+    try {
+      await agendarFollowUp(leadId, whatsappNumber);
+    } catch (error) {
+      log.error({ err: error }, "falha ao agendar follow-up da conversa em aberto");
+    }
   }
 
   log.info(
