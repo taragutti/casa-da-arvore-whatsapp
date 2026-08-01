@@ -83,6 +83,39 @@ Pendência menor: o TTL padrão de template de utilidade é **10 minutos**. Se o
 celular do vendedor estiver offline nesse tempo, a notificação é descartada em
 silêncio. Vale configurar validade maior na tela do `handoff_vendedor`.
 
+### 0. 🔴 BLOQUEIO: conta da Meta sem meio de pagamento (01/08/2026)
+
+**Nada que o sistema envie por iniciativa própria está sendo entregue.** Erro
+`131042` ("Business eligibility payment issue") em toda mensagem de template:
+
+```
+status="failed" codigoMeta=131042
+detalhe="your WhatsApp Business account currency is not configured"
+```
+
+Atinge: notificação de handoff do vendedor, follow-ups de 2h/48h/7d/30d,
+réguas de ciclo de vida e prospecção corporativa. Tudo isso é template, e
+template é conversa iniciada pela empresa — cobrada pela Meta.
+
+**Não atinge** as respostas ao cliente dentro de 24h (conversa de serviço, não
+cobrada): o script guiado inteiro entrega normalmente, confirmado com
+`delivered` no log.
+
+Como resolver (só quem tem acesso ao billing da conta consegue): definir
+país/moeda e cadastrar meio de pagamento na conta `Tia Bia`, em
+business.facebook.com → Billing Hub. Link direto no próprio erro:
+
+```
+https://business.facebook.com/billing_hub/accounts/details/?business_id=323341174915495&asset_id=1574728080666239&wizard_name=CHANGE_COUNTRY_CURRENCY&account_type=whatsapp-business-account
+```
+
+Nada a fazer no código depois — o próximo handoff entrega sozinho. Para
+confirmar, procurar `status="delivered"` no log em vez de `failed`.
+
+Por que demorou a aparecer: o envio devolvia HTTP 200 e o log dizia "vendedor
+notificado". O 200 é só "aceitei para entregar"; o desfecho vem depois, por
+webhook de status — que era descartado. Corrigido no commit `3c4ed8a`.
+
 ### 4. WhatsApp do vendedor não ativado
 
 O número definitivo é `+5522997546818`, mas **o WhatsApp dele ainda não foi
