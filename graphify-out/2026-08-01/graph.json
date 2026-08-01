@@ -769,8 +769,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_config_env",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "mediaEngine.service.ts",
       "norm_label": "env.ts"
     },
     {
@@ -780,8 +780,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_config_env_envschema",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "mediaEngine.service.ts",
       "norm_label": "envschema"
     },
     {
@@ -791,8 +791,8 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "src_config_env_parsed",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "mediaEngine.service.ts",
       "norm_label": "parsed"
     },
     {
@@ -802,8 +802,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "src_config_env_port",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "mediaEngine.service.ts",
       "norm_label": "port"
     },
     {
@@ -813,8 +813,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "src_config_env_resolverbaseurl",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "mediaEngine.service.ts",
       "norm_label": "resolverbaseurl()"
     },
     {
@@ -824,8 +824,8 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "src_config_env_env",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 23,
+      "community_name": "mediaEngine.service.ts",
       "norm_label": "env"
     },
     {
@@ -879,8 +879,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_db_client",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "client.ts"
     },
     {
@@ -890,8 +890,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_db_client_pool",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "pool"
     },
     {
@@ -945,8 +945,8 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "src_jobs_lifecyclefollowup_cron_schedulelifecyclefollowupjob",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 0,
+      "community_name": "server.ts",
       "norm_label": "schedulelifecyclefollowupjob()"
     },
     {
@@ -1286,15 +1286,15 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_queue_processmessage_job",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "processmessage.job.ts"
     },
     {
       "label": "startMessageWorker()",
       "file_type": "code",
       "source_file": "src/queue/processMessage.job.ts",
-      "source_location": "L16",
+      "source_location": "L15",
       "_origin": "ast",
       "id": "src_queue_processmessage_job_startmessageworker",
       "community": 7,
@@ -1385,8 +1385,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "src_repositories_configuracoes_repo_configuracoes_padrao",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "configuracoes_padrao"
     },
     {
@@ -1418,8 +1418,8 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "src_repositories_configuracoes_repo_buscarconfiguracoes",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "buscarconfiguracoes()"
     },
     {
@@ -1451,8 +1451,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "conversationstate.repo.ts"
     },
     {
@@ -1462,8 +1462,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_apenaspreenchidos",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "apenaspreenchidos()"
     },
     {
@@ -1473,8 +1473,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_upsertconversationstate",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "upsertconversationstate()"
     },
     {
@@ -1506,8 +1506,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_estadohandoff",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "estadohandoff"
     },
     {
@@ -1517,8 +1517,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_getestadohandoff",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "getestadohandoff()"
     },
     {
@@ -1528,8 +1528,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_atualizartentativassemclassificacao",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "atualizartentativassemclassificacao()"
     },
     {
@@ -1539,8 +1539,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "src_repositories_conversationstate_repo_marcarematendimentohumano",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "marcarematendimentohumano()"
     },
     {
@@ -1561,8 +1561,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_repositories_demandsignals_repo",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "demandsignals.repo.ts"
     },
     {
@@ -1572,8 +1572,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_repositories_demandsignals_repo_insertdemandsignal",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "insertdemandsignal()"
     },
     {
@@ -1583,8 +1583,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_repositories_leadnotes_repo",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "leadnotes.repo.ts"
     },
     {
@@ -1594,8 +1594,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_repositories_leadnotes_repo_leadnote",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "leadnote"
     },
     {
@@ -1627,8 +1627,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "src_repositories_leadnotes_repo_listarnotasporleads",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "listarnotasporleads()"
     },
     {
@@ -1649,8 +1649,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_upsertlead",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "upsertlead()"
     },
     {
@@ -1671,8 +1671,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "src_repositories_leads_repo_getultimainteracao",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "getultimainteracao()"
     },
     {
@@ -1847,8 +1847,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "src_repositories_medialibrary_repo_buscarmidias",
-      "community": 7,
-      "community_name": "scripts",
+      "community": 28,
+      "community_name": "server.ts",
       "norm_label": "buscarmidias()"
     },
     {
@@ -1858,8 +1858,8 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "src_repositories_medialibrary_repo_listartodasmidias",
-      "community": 28,
-      "community_name": "server.ts",
+      "community": 24,
+      "community_name": "email.service.ts",
       "norm_label": "listartodasmidias()"
     },
     {
@@ -1968,8 +1968,8 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "src_repositories_medialibrary_repo_contarmidiasativasporetapa",
-      "community": 28,
-      "community_name": "server.ts",
+      "community": 24,
+      "community_name": "email.service.ts",
       "norm_label": "contarmidiasativasporetapa()"
     },
     {
@@ -1979,8 +1979,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_repositories_painel_repo",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "painel.repo.ts"
     },
     {
@@ -1990,8 +1990,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_repositories_painel_repo_leadpainel",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "leadpainel"
     },
     {
@@ -2001,8 +2001,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "src_repositories_painel_repo_buscarleadsparapainel",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "buscarleadsparapainel()"
     },
     {
@@ -2122,8 +2122,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_routes_auth_authrouter",
-      "community": 23,
-      "community_name": "mediaEngine.service.ts",
+      "community": 0,
+      "community_name": "server.ts",
       "norm_label": "authrouter"
     },
     {
@@ -2155,8 +2155,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_routes_configapi_schemas_test",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "configapi.schemas.test.ts"
     },
     {
@@ -2166,8 +2166,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_routes_configapi_schemas_test_valido",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "valido"
     },
     {
@@ -2177,8 +2177,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "src_routes_configapi_schemas_test_erro",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "erro()"
     },
     {
@@ -2188,8 +2188,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_routes_configapi_schemas",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "configapi.schemas.ts"
     },
     {
@@ -2199,8 +2199,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_routes_configapi_schemas_minutos",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "minutos()"
     },
     {
@@ -2210,8 +2210,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "src_routes_configapi_schemas_palavras",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "palavras()"
     },
     {
@@ -2221,8 +2221,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "src_routes_configapi_schemas_configschema",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "configschema"
     },
     {
@@ -2232,8 +2232,8 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "src_routes_configapi_schemas_configentrada",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "configentrada"
     },
     {
@@ -2243,8 +2243,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_routes_configapi",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "configapi.ts"
     },
     {
@@ -2254,8 +2254,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_routes_configapi_configapirouter",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "configapirouter"
     },
     {
@@ -2331,8 +2331,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_routes_leadsapi_schemas_unidades",
-      "community": 26,
-      "community_name": "leads.repo.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "unidades"
     },
     {
@@ -2595,8 +2595,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_routes_painel",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 24,
+      "community_name": "email.service.ts",
       "norm_label": "painel.ts"
     },
     {
@@ -2606,8 +2606,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "src_routes_painel_painelrouter",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 24,
+      "community_name": "email.service.ts",
       "norm_label": "painelrouter"
     },
     {
@@ -2848,8 +2848,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "src_services_anthropic_service_ramoevento",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "ramoevento"
     },
     {
@@ -2859,8 +2859,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "src_services_anthropic_service_sinalengajamento",
-      "community": 3,
-      "community_name": "anthropic.service.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "sinalengajamento"
     },
     {
@@ -2925,8 +2925,8 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "src_services_anthropic_service_extractedleaddata",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "extractedleaddata"
     },
     {
@@ -3123,8 +3123,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_services_config_service",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "config.service.ts"
     },
     {
@@ -3134,8 +3134,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "src_services_config_service_invalidarcacheconfig",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 25,
+      "community_name": "messageProcessing.service.ts",
       "norm_label": "invalidarcacheconfig()"
     },
     {
@@ -3145,8 +3145,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "src_services_config_service_obterconfig",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "obterconfig()"
     },
     {
@@ -3233,8 +3233,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_services_email_service",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "email.service.ts"
     },
     {
@@ -3244,8 +3244,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "src_services_email_service_formatarbriefingemhtml",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "formatarbriefingemhtml()"
     },
     {
@@ -3255,8 +3255,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "src_services_email_service_enviarviaresend",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "enviarviaresend()"
     },
     {
@@ -3266,8 +3266,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "src_services_email_service_sendbriefingemail",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "sendbriefingemail()"
     },
     {
@@ -3277,8 +3277,8 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "src_services_email_service_gatilho_labels",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "gatilho_labels"
     },
     {
@@ -3288,8 +3288,8 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "src_services_email_service_handoffnotificationparams",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "handoffnotificationparams"
     },
     {
@@ -3299,8 +3299,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "src_services_email_service_destinatariohandoff",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "destinatariohandoff()"
     },
     {
@@ -3310,8 +3310,8 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "src_services_email_service_sendhandoffnotificationemail",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "sendhandoffnotificationemail()"
     },
     {
@@ -3321,8 +3321,8 @@
       "source_location": "L147",
       "_origin": "ast",
       "id": "src_services_email_service_sendhandofffollowupemail",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "sendhandofffollowupemail()"
     },
     {
@@ -3343,8 +3343,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "src_services_followup_service_atrasoms",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "atrasoms()"
     },
     {
@@ -3398,8 +3398,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "src_services_followup_service_processarfollowupagendado",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "processarfollowupagendado()"
     },
     {
@@ -3431,8 +3431,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_services_handoff_service_gatilhohandoff",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "gatilhohandoff"
     },
     {
@@ -4113,96 +4113,96 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_services_messageprocessing_service",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "messageprocessing.service.ts"
     },
     {
       "label": "PALAVRAS_RELEVANTES",
       "file_type": "code",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L21",
+      "source_location": "L20",
       "_origin": "ast",
       "id": "src_services_messageprocessing_service_palavras_relevantes",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "palavras_relevantes"
     },
     {
       "label": "isMensagemRelevante()",
       "file_type": "code",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L37",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "src_services_messageprocessing_service_ismensagemrelevante",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "ismensagemrelevante()"
     },
     {
       "label": "apenasDigitos()",
       "file_type": "code",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L42",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "src_services_messageprocessing_service_apenasdigitos",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "apenasdigitos()"
     },
     {
       "label": "isNumeroDaEquipe()",
       "file_type": "code",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L55",
+      "source_location": "L54",
       "_origin": "ast",
       "id": "src_services_messageprocessing_service_isnumerodaequipe",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "isnumerodaequipe()"
     },
     {
       "label": "ResultadoHandoff",
       "file_type": "code",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L60",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "src_services_messageprocessing_service_resultadohandoff",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 1,
+      "community_name": "monthlyBriefing.cron.ts",
       "norm_label": "resultadohandoff"
     },
     {
       "label": "ProcessResult",
       "file_type": "code",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L66",
+      "source_location": "L65",
       "_origin": "ast",
       "id": "src_services_messageprocessing_service_processresult",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "processresult"
     },
     {
       "label": "processarHandoff()",
       "file_type": "code",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L91",
+      "source_location": "L84",
       "_origin": "ast",
       "id": "src_services_messageprocessing_service_processarhandoff",
-      "community": 25,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "processarhandoff()"
     },
     {
       "label": "processIncomingMessage()",
       "file_type": "code",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L191",
+      "source_location": "L184",
       "_origin": "ast",
       "id": "src_services_messageprocessing_service_processincomingmessage",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
+      "community": 26,
+      "community_name": "leads.repo.ts",
       "norm_label": "processincomingmessage()"
     },
     {
@@ -4657,61 +4657,6 @@
       "norm_label": "determinarunidadecasamento()"
     },
     {
-      "label": "saudacao.service.test.ts",
-      "file_type": "code",
-      "source_file": "src/services/saudacao.service.test.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_services_saudacao_service_test",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
-      "norm_label": "saudacao.service.test.ts"
-    },
-    {
-      "label": "saudacao.service.ts",
-      "file_type": "code",
-      "source_file": "src/services/saudacao.service.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_services_saudacao_service",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
-      "norm_label": "saudacao.service.ts"
-    },
-    {
-      "label": "periodoDoDia()",
-      "file_type": "code",
-      "source_file": "src/services/saudacao.service.ts",
-      "source_location": "L28",
-      "_origin": "ast",
-      "id": "src_services_saudacao_service_periodododia",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
-      "norm_label": "periodododia()"
-    },
-    {
-      "label": "montarSaudacao()",
-      "file_type": "code",
-      "source_file": "src/services/saudacao.service.ts",
-      "source_location": "L42",
-      "_origin": "ast",
-      "id": "src_services_saudacao_service_montarsaudacao",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
-      "norm_label": "montarsaudacao()"
-    },
-    {
-      "label": "registrarSaudacaoSeNecessario()",
-      "file_type": "code",
-      "source_file": "src/services/saudacao.service.ts",
-      "source_location": "L56",
-      "_origin": "ast",
-      "id": "src_services_saudacao_service_registrarsaudacaosenecessario",
-      "community": 33,
-      "community_name": "messageProcessing.service.ts",
-      "norm_label": "registrarsaudacaosenecessario()"
-    },
-    {
       "label": "session.service.ts",
       "file_type": "code",
       "source_file": "src/services/session.service.ts",
@@ -5015,8 +4960,8 @@
       "source_location": "L483",
       "_origin": "ast",
       "id": "src_services_whatsapp_service_montarmensagemconfirmacao",
-      "community": 0,
-      "community_name": "server.ts",
+      "community": 7,
+      "community_name": "scripts",
       "norm_label": "montarmensagemconfirmacao()"
     },
     {
@@ -8400,7 +8345,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L108",
+      "source_location": "L101",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -8412,7 +8357,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L210",
+      "source_location": "L203",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processincomingmessage",
@@ -8620,18 +8565,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/saudacao.service.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_saudacao_service",
-      "target": "src_db_client",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -8748,18 +8681,6 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
-      "target": "src_db_client_pool",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/saudacao.service.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_saudacao_service",
       "target": "src_db_client_pool",
       "confidence_score": 1.0
     },
@@ -10481,7 +10402,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/queue/processMessage.job.ts",
-      "source_location": "L16",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_queue_processmessage_job",
@@ -10553,30 +10474,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/queue/processMessage.job.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_queue_processmessage_job",
-      "target": "src_services_saudacao_service",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/queue/processMessage.job.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_queue_processmessage_job",
-      "target": "src_services_saudacao_service_montarsaudacao",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/queue/processMessage.job.ts",
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
@@ -10626,7 +10523,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/queue/processMessage.job.ts",
-      "source_location": "L55",
+      "source_location": "L42",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_queue_processmessage_job_startmessageworker",
@@ -10638,7 +10535,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/queue/processMessage.job.ts",
-      "source_location": "L80",
+      "source_location": "L67",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_queue_processmessage_job_startmessageworker",
@@ -10650,7 +10547,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/queue/processMessage.job.ts",
-      "source_location": "L24",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_queue_processmessage_job_startmessageworker",
@@ -10662,19 +10559,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/queue/processMessage.job.ts",
-      "source_location": "L31",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_queue_processmessage_job_startmessageworker",
-      "target": "src_services_saudacao_service_montarsaudacao"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/queue/processMessage.job.ts",
-      "source_location": "L68",
+      "source_location": "L55",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_queue_processmessage_job_startmessageworker",
@@ -10686,7 +10571,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/queue/processMessage.job.ts",
-      "source_location": "L31",
+      "source_location": "L60",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_queue_processmessage_job_startmessageworker",
@@ -11445,7 +11330,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L14",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -11469,7 +11354,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L14",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -11482,7 +11367,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L247",
+      "source_location": "L226",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processincomingmessage",
@@ -11589,7 +11474,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L14",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -11601,7 +11486,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L99",
+      "source_location": "L92",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -11613,7 +11498,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L14",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -11625,7 +11510,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L104",
+      "source_location": "L97",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -11637,7 +11522,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L14",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -11649,7 +11534,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L121",
+      "source_location": "L114",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -11708,7 +11593,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L13",
+      "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -11720,7 +11605,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L13",
+      "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -11733,7 +11618,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L246",
+      "source_location": "L225",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processincomingmessage",
@@ -12111,7 +11996,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L12",
+      "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -12123,7 +12008,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L12",
+      "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -12136,7 +12021,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L245",
+      "source_location": "L224",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processincomingmessage",
@@ -12147,7 +12032,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L12",
+      "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -12159,7 +12044,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L123",
+      "source_location": "L116",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -14939,7 +14824,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L235",
+      "source_location": "L214",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processincomingmessage",
@@ -15167,7 +15052,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L9",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -15215,7 +15100,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L9",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -15227,7 +15112,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L113",
+      "source_location": "L106",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -15585,7 +15470,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L10",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -15705,7 +15590,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L10",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -15717,7 +15602,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L130",
+      "source_location": "L123",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -15741,7 +15626,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L10",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -15753,7 +15638,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L106",
+      "source_location": "L99",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -16203,7 +16088,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L63",
+      "source_location": "L62",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_resultadohandoff",
@@ -16299,7 +16184,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L114",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -16335,7 +16220,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L126",
+      "source_location": "L119",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -16371,7 +16256,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L127",
+      "source_location": "L120",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -17288,7 +17173,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L42",
+      "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -17299,7 +17184,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L37",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -17310,7 +17195,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L55",
+      "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -17321,7 +17206,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L21",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -17332,7 +17217,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L91",
+      "source_location": "L84",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -17343,7 +17228,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L191",
+      "source_location": "L184",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -17354,7 +17239,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L66",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -17365,7 +17250,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L60",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -17413,31 +17298,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_messageprocessing_service",
-      "target": "src_services_saudacao_service",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_messageprocessing_service",
-      "target": "src_services_saudacao_service_registrarsaudacaosenecessario",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L11",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -17449,7 +17310,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L11",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service",
@@ -17462,7 +17323,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_ismensagemrelevante",
@@ -17473,7 +17334,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L212",
+      "source_location": "L205",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processincomingmessage",
@@ -17485,7 +17346,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L57",
+      "source_location": "L56",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_isnumerodaequipe",
@@ -17497,7 +17358,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L197",
+      "source_location": "L190",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processincomingmessage",
@@ -17509,7 +17370,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L150",
+      "source_location": "L143",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processarhandoff",
@@ -17521,7 +17382,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L249",
+      "source_location": "L228",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processincomingmessage",
@@ -17534,23 +17395,11 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L238",
+      "source_location": "L217",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_services_messageprocessing_service_processincomingmessage",
       "target": "src_services_routing_service_determinarunidaderecomendada"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/services/messageProcessing.service.ts",
-      "source_location": "L221",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_messageprocessing_service_processincomingmessage",
-      "target": "src_services_saudacao_service_registrarsaudacaosenecessario"
     },
     {
       "relation": "contains",
@@ -18451,87 +18300,6 @@
       "_origin": "ast",
       "source": "src_services_routing_service_determinarunidaderecomendada",
       "target": "src_services_routing_service_determinarunidadeinfantil",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/saudacao.service.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_saudacao_service_test",
-      "target": "src_services_saudacao_service",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/saudacao.service.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_saudacao_service_test",
-      "target": "src_services_saudacao_service_montarsaudacao",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/saudacao.service.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_saudacao_service_test",
-      "target": "src_services_saudacao_service_periodododia",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/saudacao.service.ts",
-      "source_location": "L42",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_saudacao_service",
-      "target": "src_services_saudacao_service_montarsaudacao",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/saudacao.service.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_saudacao_service",
-      "target": "src_services_saudacao_service_periodododia",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/saudacao.service.ts",
-      "source_location": "L56",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_saudacao_service",
-      "target": "src_services_saudacao_service_registrarsaudacaosenecessario",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/services/saudacao.service.ts",
-      "source_location": "L43",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_services_saudacao_service_montarsaudacao",
-      "target": "src_services_saudacao_service_periodododia",
       "confidence_score": 1.0
     },
     {
@@ -20233,5 +20001,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "074dc47422c4f9f3c54bbf0e5edcac607a3d7e23"
+  "built_at_commit": "d8e155dc3116b745db507c9930ef2c8930eba75c"
 }

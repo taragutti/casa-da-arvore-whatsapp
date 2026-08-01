@@ -5,6 +5,7 @@ import { logger } from "../config/logger";
 import { extractFromMessage, ExtractedLeadData } from "./anthropic.service";
 import { determinarUnidadeRecomendada, UnidadeRecomendada } from "./routing.service";
 import { detectarGatilhoHandoff, calcularSlaMinutos, dentroDoHorarioComercial, GatilhoHandoff } from "./handoff.service";
+import { registrarSaudacaoSeNecessario } from "./saudacao.service";
 import { obterConfig } from "./config.service";
 import { sendHandoffNotificationEmail, sendHandoffFollowUpEmail } from "./email.service";
 import { notificarVendedor } from "./whatsapp.service";
@@ -63,7 +64,13 @@ export interface ResultadoHandoff {
 }
 
 export type ProcessResult =
-  | { status: "ignorado"; motivo: string }
+  /**
+   * `saudar` sai daqui em vez de a saudação ser enviada lá dentro porque esta
+   * função serve tanto ao webhook do WhatsApp quanto ao endpoint genérico de
+   * ingestão — e só o primeiro deve responder ao cliente. Quem chama é que
+   * sabe se existe conversa de WhatsApp para responder.
+   */
+  | { status: "ignorado"; motivo: string; saudar?: boolean }
   | {
       status: "processado";
       leadId: string;
@@ -204,8 +211,22 @@ export async function processIncomingMessage(
 
   if (!isMensagemRelevante(mensagem)) {
     await pool.query(`UPDATE raw_messages SET processado = true WHERE id = $1`, [rawMessageId]);
-    log.info("mensagem ignorada — sem termos relevantes");
-    return { status: "ignorado", motivo: "mensagem sem termos relevantes" };
+
+    // Sem termos relevantes não dá pra qualificar nada — mas ficar mudo é pior:
+    // "oi" e "bom dia" são a abertura de conversa mais comum, e o silêncio faz
+    // o cliente concluir que o número está morto. Uma apresentação convida a
+    // dizer o que precisa, e aí a mensagem seguinte já entra no fluxo normal.
+    let saudar = false;
+    try {
+      saudar = await registrarSaudacaoSeNecessario(whatsappNumber);
+    } catch (error) {
+      // Falha aqui não pode escalar: a mensagem já foi marcada como processada
+      // e não havia nada a extrair dela de qualquer forma.
+      log.error({ err: error }, "falha ao verificar saudação de primeiro contato");
+    }
+
+    log.info({ saudar }, "mensagem ignorada — sem termos relevantes");
+    return { status: "ignorado", motivo: "mensagem sem termos relevantes", saudar };
   }
 
   log.debug("mensagem relevante — iniciando extração via IA");

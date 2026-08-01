@@ -237,3 +237,19 @@ CREATE TABLE IF NOT EXISTS configuracoes (
 
 -- Garante a linha única na primeira migração, sem sobrescrever ajuste já feito.
 INSERT INTO configuracoes (id) VALUES (true) ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- Saudações já enviadas
+--
+-- Quem escreve "oi" ainda não é lead: não há evento, data nem nada a qualificar.
+-- Criar lead aqui encheria o painel de registros vazios vindos de engano e
+-- spam. Por isso o controle fica em tabela própria, com a chave sendo o número
+-- — não depende de lead existir.
+--
+-- Existe para a saudação não se repetir: sem ela, quem manda "oi", "bom dia" e
+-- "tudo bem?" em sequência receberia três apresentações idênticas.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS saudacoes_enviadas (
+  whatsapp_number TEXT PRIMARY KEY,
+  enviada_em TIMESTAMPTZ NOT NULL DEFAULT now()
+);

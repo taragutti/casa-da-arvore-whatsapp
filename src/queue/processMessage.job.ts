@@ -5,6 +5,7 @@ import { MESSAGE_QUEUE_NAME, MessageJobData } from "./messageQueue";
 import { processIncomingMessage } from "../services/messageProcessing.service";
 import { sendWhatsAppMessage, montarMensagemConfirmacao } from "../services/whatsapp.service";
 import { processarMidiaProgressiva, enviarMidiaDeEspera } from "../services/mediaEngine.service";
+import { montarSaudacao } from "../services/saudacao.service";
 
 /**
  * Worker que roda fora do caminho da requisição HTTP (Etapa 5): toda a parte
@@ -21,6 +22,18 @@ export function startMessageWorker() {
 
       log.debug("job retirado da fila — iniciando processamento");
       const result = await processIncomingMessage(whatsappNumber, mensagem, payloadBruto);
+
+      // Primeiro contato sem termo relevante ("oi", "bom dia"): apresenta-se em
+      // vez de ficar mudo. Só no webhook do WhatsApp — o endpoint genérico de
+      // ingestão não tem conversa para responder.
+      if (origem === "whatsapp_teste" && result.status === "ignorado" && result.saudar) {
+        try {
+          await sendWhatsAppMessage(whatsappNumber, montarSaudacao());
+          log.info("saudação de primeiro contato enviada");
+        } catch (error) {
+          log.error({ err: error }, "falha ao enviar saudação de primeiro contato");
+        }
+      }
 
       if (origem === "whatsapp_teste" && result.status === "processado") {
         if (result.handoff.emAtendimentoHumano) {
