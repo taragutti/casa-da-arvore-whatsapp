@@ -31,9 +31,10 @@ vivem em dois lugares possíveis:
 | `WHATSAPP_ACCESS_TOKEN` | Railway (?) — **confirmar local exato** | ✅ funcionando — token **definitivo** (não expira em 24h) | vazio no `.env` local — mesma observação acima |
 | `WHATSAPP_PHONE_NUMBER_ID` | Railway (?) — **confirmar local exato** | ✅ funcionando | vazio no `.env` local — mesma observação acima |
 | `PAINEL_USERNAME` / `PAINEL_PASSWORD` | Railway | ✅ ok | definidas em 25/07/2026; painel acessível em `/painel` com HTTP Basic Auth |
-| `VENDEDOR_WHATSAPP_NUMBER` | Railway | ✅ configurada, envio não validado em produção | `+5522997546818` (definida 30/07/2026) |
+| `VENDEDOR_WHATSAPP_NUMBER` | Railway | ⚠️ **valor temporário de teste** | `+5522974026786` (definido em 01/08/2026). O número definitivo é `+5522997546818`, mas **o WhatsApp dele ainda não foi ativado** — por isso os testes finais rodam no de teste. **Reverter para `+5522997546818` quando o WhatsApp do vendedor estiver de pé.** Vale pros dois lados: é pra onde o handoff notifica e é o único número que `isNumeroDaEquipe()` não trata como lead |
 | `VENDEDOR_HANDOFF_TEMPLATE_NAME` | Railway | ✅ configurada | `handoff_vendedor` (definida 30/07/2026). Enquanto o template não for aprovado, o código cai pra texto livre automaticamente |
 | `MEDIA_STORAGE_DIR` | Railway | ⚠️ **pendente** | precisa apontar para o ponto de montagem do volume (ex.: `/dados/midia`). Ver "Volume de mídia" abaixo — sem isso os arquivos somem a cada deploy |
+| `SCRIPT_FLUXO_ATIVO` | Railway | ⚠️ **desligada** (`false`) | liga o script guiado (menus numerados, escada de qualificação). Antes de ligar: rodar `railway run node scripts/migrate.js` para criar a tabela `script_state`. Com ela ligada, o filtro de relevância é ignorado e o handoff passa a ser decidido pelo script, não pela IA |
 | `PUBLIC_BASE_URL` | não configurada | ✅ opcional | se ausente, usa `RAILWAY_PUBLIC_DOMAIN` (injetada pela plataforma). Só definir se o app passar a atender por domínio próprio |
 
 ## Volume de mídia (biblioteca de mídia, Seção 4)
@@ -75,18 +76,32 @@ recusa por problema do próprio template (erros 132xxx) — então **nada precis
 ser alterado no código quando um template for aprovado**, é automático. Os
 nomes abaixo já estão mapeados.
 
-Status em **30/07/2026**:
+Status em **01/08/2026** (conferido pela Graph API, WABA `Tia Bia`
+`1574728080666239` — todos `APPROVED`, todos `pt_BR`):
 
 | Template | Categoria | Status | Usado por |
 |---|---|---|---|
-| `followup_2h` | Marketing | ✅ Ativo | régua de silêncio, 2h |
-| `followup_48h` | Marketing | ✅ Ativo | régua de silêncio, 48h |
-| `followup_7d` | Marketing | ✅ Ativo | régua de silêncio, 7 dias |
-| `followup_30d` | Marketing | ✅ Ativo | nutrição, 30 dias |
-| `handoff_vendedor` | Utilidade | ⏳ Em análise | notificação do vendedor no handoff |
-| `aniversario_casamento` | Marketing | ⏳ Em análise | ciclo de vida, 1º ano de casamento |
-| `prospeccao_corporativa` | Marketing | ⏳ Em análise | ciclo de vida, 1 ano após evento corporativo |
-| `ultima_campanha` | Marketing | ⏳ Em análise | última campanha antes de arquivar lead frio |
+| `followup_2h` | Marketing | ✅ Aprovado | régua de silêncio, 2h |
+| `followup_48h` | Marketing | ✅ Aprovado | régua de silêncio, 48h |
+| `followup_7d` | Marketing | ✅ Aprovado | régua de silêncio, 7 dias |
+| `followup_30d` | Marketing | ✅ Aprovado | nutrição, 30 dias |
+| `handoff_vendedor` | Utilidade | ✅ Aprovado (01/08/2026) | notificação do vendedor no handoff |
+| `aniversario_casamento` | Marketing | ✅ Aprovado (01/08/2026) | ciclo de vida, 1º ano de casamento |
+| `prospeccao_corporativa` | Marketing | ✅ Aprovado (01/08/2026) | ciclo de vida, 1 ano após evento corporativo |
+| `ultima_campanha` | Marketing | ✅ Aprovado (01/08/2026) | última campanha antes de arquivar lead frio |
+
+Corpo aprovado do `handoff_vendedor` confere com `CORPO_TEMPLATE_HANDOFF`
+(10 variáveis, mesma ordem) — nenhum ajuste de código necessário.
+
+Como reconferir sem abrir o navegador (leitura pura, token vem do Railway):
+
+```
+railway run --service sparkling-forgiveness -- node -e '
+  const u=new URL("https://graph.facebook.com/v21.0/1574728080666239/message_templates");
+  u.searchParams.set("fields","name,status,category,language");
+  u.searchParams.set("access_token",process.env.WHATSAPP_ACCESS_TOKEN);
+  fetch(u).then(r=>r.json()).then(d=>console.table(d.data));'
+```
 
 Onde conferir/alterar: **business.facebook.com → Gerenciador do WhatsApp →
 Modelos de mensagem → Gerenciar modelos** (cuidado com o filtro de data, que

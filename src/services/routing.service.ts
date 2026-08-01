@@ -25,7 +25,7 @@ export function determinarUnidadeRecomendada(
     case "15_anos":
       return "casarao";
     case "casamento":
-      return determinarUnidadeCasamento(dadosRamo);
+      return determinarUnidadeCasamento(dadosRamo, numeroConvidados);
     case "corporativo":
       return "casarao";
     case "recreacao_avulsa":
@@ -50,11 +50,28 @@ function determinarUnidadeInfantil(
   return "casa_da_arvore"; // 100 a 200 ou mais de 200, qualquer faixa de investimento
 }
 
+/**
+ * Capacidade máxima da Casa Pôr do Sol. Acima disso, mesmo com preferência por
+ * vista para o mar, o único caminho é o Casarão (Script_Bot_Atendimento.docx,
+ * N6C/N8C) — mandar um casamento de 250 pessoas para um espaço de 150 seria
+ * gerar uma frustração garantida na visita.
+ */
+const CAPACIDADE_POR_DO_SOL = 150;
+
 /** Ramo C — Casamento (Seção 3.3): roteamento por sinal de preferência de espaço/origem do casal. */
-function determinarUnidadeCasamento(dadosRamo: DadosPorRamo): UnidadeRecomendada | null {
+function determinarUnidadeCasamento(
+  dadosRamo: DadosPorRamo,
+  numeroConvidados: number | null
+): UnidadeRecomendada | null {
   const { preferencia_espaco, origem_casal } = dadosRamo;
 
   if (preferencia_espaco === "vista_mar" || origem_casal === "outra_cidade" || origem_casal === "exterior") {
+    // O teto só é aplicado quando o número é conhecido: sem esse dado, manter
+    // a recomendação por preferência é melhor do que devolver null e jogar
+    // todo casamento de fora para decisão humana.
+    if (numeroConvidados != null && numeroConvidados > CAPACIDADE_POR_DO_SOL) {
+      return "casarao";
+    }
     return "casa_por_do_sol";
   }
 

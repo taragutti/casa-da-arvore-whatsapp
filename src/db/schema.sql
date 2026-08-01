@@ -253,3 +253,22 @@ CREATE TABLE IF NOT EXISTS saudacoes_enviadas (
   whatsapp_number TEXT PRIMARY KEY,
   enviada_em TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ============================================================================
+-- 11. script_state: onde cada conversa parou no script de atendimento
+--     (Script_Bot_Atendimento.docx).
+--
+-- A chave é o NÚMERO, não o lead_id, pelo mesmo motivo de saudacoes_enviadas:
+-- a conversa começa em "oi", antes de existir qualquer lead. Amarrar o estado
+-- do fluxo ao lead faria o script não conseguir nem fazer a primeira pergunta.
+--
+-- `no_atual` nulo significa "conversa não começou ou já terminou" — nos dois
+-- casos a próxima mensagem entra pelo N0.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS script_state (
+  whatsapp_number TEXT PRIMARY KEY,
+  no_atual TEXT,
+  respostas JSONB NOT NULL DEFAULT '{}',
+  fallbacks_consecutivos INTEGER NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

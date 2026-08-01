@@ -32,5 +32,11 @@
   "30": "mediaLote.service.test.ts",
   "31": "mediaEspera.service.test.ts",
   "32": "midiasApi.test.ts",
-  "33": "messageProcessing.service.ts"
+  "33": "messageProcessing.service.ts",
+  "34": "scriptEngine.service.ts",
+  "35": "scriptEngine.service.test.ts",
+  "36": "scripts",
+  "37": "package.json",
+  "38": "GatilhoHandoff",
+  "39": "node-cron"
 }

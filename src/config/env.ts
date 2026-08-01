@@ -64,6 +64,19 @@ const envSchema = z.object({
   // (injetado automaticamente) e, fora dele, em localhost.
   PUBLIC_BASE_URL: z.string().optional(),
   RAILWAY_PUBLIC_DOMAIN: z.string().optional(),
+
+  // Liga o script de atendimento guiado (Script_Bot_Atendimento.docx): o bot
+  // passa a CONDUZIR a conversa por nós e menus, em vez de só reagir ao que o
+  // cliente escreveu.
+  //
+  // Nasce desligada de propósito. É a mudança mais visível que o sistema já
+  // teve do lado do cliente — muda o que ele lê na primeira mensagem — e ligar
+  // junto com o deploy não deixaria janela para conferir o roteiro em conversa
+  // real antes de valer para todo mundo.
+  SCRIPT_FLUXO_ATIVO: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "src/db/schema.sql": {
-    "mtime": 1785529701.4685233,
-    "ast_hash": "41f40b2458ae8662492d7e7cb14b3f52",
+    "mtime": 1785597410.5034943,
+    "ast_hash": "4230de24c28ba1a28afabc403bb3f56c",
     "semantic_hash": ""
   },
   "src/jobs/monthlyBriefing.cron.ts": {
@@ -60,8 +60,8 @@
     "semantic_hash": ""
   },
   "src/queue/processMessage.job.ts": {
-    "mtime": 1785523017.916325,
-    "ast_hash": "3c491c0b93cc751ce4a65016f000c0ef",
+    "mtime": 1785598913.013223,
+    "ast_hash": "bf191508da4d030e31eb86bed507cfb7",
     "semantic_hash": ""
   },
   "src/repositories/briefings.repo.ts": {
@@ -115,8 +115,8 @@
     "semantic_hash": ""
   },
   "src/services/messageProcessing.service.ts": {
-    "mtime": 1785529839.5387313,
-    "ast_hash": "ac2cdc2159b4adbff1cf782832b61a55",
+    "mtime": 1785598913.0140557,
+    "ast_hash": "a74b0b93c48c413d38cfe09d86476674",
     "semantic_hash": ""
   },
   "src/services/whatsapp.service.ts": {
@@ -472,6 +472,16 @@
   "src/services/handoffConfig.service.test.ts": {
     "mtime": 1785530145.8853936,
     "ast_hash": "ff1999430993b1faa45f9fe2957702ad",
+    "semantic_hash": ""
+  },
+  "src/services/saudacao.service.test.ts": {
+    "mtime": 1785598937.4177973,
+    "ast_hash": "f2557e57a15b353ecc9939cca6845d60",
+    "semantic_hash": ""
+  },
+  "src/services/saudacao.service.ts": {
+    "mtime": 1785597429.4399724,
+    "ast_hash": "2d6641fe854b5ee0d98974e4e7ddfb33",
     "semantic_hash": ""
   }
 }

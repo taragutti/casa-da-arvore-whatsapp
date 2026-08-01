@@ -94,7 +94,15 @@ async function processarHandoff(
   mensagem: string,
   extracted: ExtractedLeadData,
   unidadeRecomendada: UnidadeRecomendada | null,
-  log: Logger
+  log: Logger,
+  /**
+   * Quando o script guiado está ativo, quem decide o handoff são os nós dele —
+   * e não a classificação da IA. Sem esta chave os dois decidiriam ao mesmo
+   * tempo: o cliente perguntaria "quanto custa?" no meio da qualificação, a IA
+   * marcaria `pergunta_valor`, e o lead iria pro vendedor no exato caso que o
+   * script foi feito para evitar.
+   */
+  detectarPorIa: boolean
 ): Promise<ResultadoHandoff> {
   const estadoAnterior = await getEstadoHandoff(leadId);
   const semClassificacaoAgora = extracted.ramo == null && extracted.tipo_evento == null;
@@ -110,6 +118,11 @@ async function processarHandoff(
     return { emAtendimentoHumano: true, gatilhoNovo: null };
   }
 
+  if (!detectarPorIa) {
+    await atualizarTentativasSemClassificacao(leadId, novasTentativas);
+    return { emAtendimentoHumano: false, gatilhoNovo: null };
+  }
+
   const config = await obterConfig();
   const decisao = detectarGatilhoHandoff(mensagem, extracted.sinal_engajamento, novasTentativas, config.handoff);
   await atualizarTentativasSemClassificacao(leadId, decisao ? 0 : novasTentativas);
@@ -118,8 +131,44 @@ async function processarHandoff(
     return { emAtendimentoHumano: false, gatilhoNovo: null };
   }
 
+  await notificarHandoff({
+    whatsappNumber,
+    leadId,
+    mensagem,
+    extracted,
+    unidadeRecomendada,
+    gatilho: decisao.gatilho,
+    paraGerente: decisao.paraGerente,
+    log,
+  });
+
+  return { emAtendimentoHumano: true, gatilhoNovo: decisao.gatilho };
+}
+
+/**
+ * Marca o lead como em atendimento humano e avisa o vendedor (e-mail +
+ * WhatsApp).
+ *
+ * Vive separada de `processarHandoff` porque existem dois caminhos que chegam
+ * ao mesmo lugar: a detecção por IA (endpoint genérico de ingestão) e o script
+ * guiado, que decide o handoff pelos próprios nós. Duplicar a notificação nos
+ * dois seria a receita para um deles esquecer de avisar o vendedor.
+ */
+export async function notificarHandoff(params: {
+  whatsappNumber: string;
+  leadId: string;
+  mensagem: string;
+  extracted: ExtractedLeadData;
+  unidadeRecomendada: UnidadeRecomendada | null;
+  gatilho: GatilhoHandoff;
+  paraGerente: boolean;
+  log: Logger;
+}): Promise<void> {
+  const { whatsappNumber, leadId, mensagem, extracted, unidadeRecomendada, gatilho, paraGerente, log } = params;
+  const config = await obterConfig();
+
   await marcarEmAtendimentoHumano(leadId);
-  if (decisao.gatilho === "falha_classificacao_repetida") {
+  if (gatilho === "falha_classificacao_repetida" || gatilho === "precisa_qualificacao_humana") {
     await adicionarTag(leadId, "precisa_qualificacao_humana");
   }
 
@@ -132,15 +181,15 @@ async function processarHandoff(
       nomeCliente: extracted.nome_cliente,
       ramo: extracted.ramo,
       unidadeRecomendada,
-      gatilho: decisao.gatilho,
-      paraGerente: decisao.paraGerente,
+      gatilho,
+      paraGerente,
       slaMinutos,
       dentroDoHorarioComercial: emHorarioComercial,
       resumoPedido: extracted.resumo_pedido,
       mensagemOriginal: mensagem,
     });
   } catch (error) {
-    log.error({ err: error, gatilho: decisao.gatilho }, "falha ao notificar handoff por e-mail");
+    log.error({ err: error, gatilho }, "falha ao notificar handoff por e-mail");
   }
 
   // Notificação no WhatsApp do vendedor, em paralelo ao e-mail (Seção 5). Pode
@@ -158,8 +207,8 @@ async function processarHandoff(
       orcamentoMencionado: extracted.orcamento_mencionado,
       resumoPedido: extracted.resumo_pedido,
       objecaoOuDuvida: extracted.objecao_ou_duvida,
-      gatilho: decisao.gatilho,
-      paraGerente: decisao.paraGerente,
+      gatilho,
+      paraGerente,
       slaMinutos,
       dentroDoHorarioComercial: emHorarioComercial,
       mensagemOriginal: mensagem,
@@ -168,13 +217,12 @@ async function processarHandoff(
     log.info("vendedor notificado no WhatsApp");
   } catch (error) {
     log.error(
-      { err: error, gatilho: decisao.gatilho },
+      { err: error, gatilho },
       "falha ao notificar vendedor no WhatsApp — verifique a janela de 24h da Meta; e-mail segue como canal de registro"
     );
   }
 
-  log.info({ gatilho: decisao.gatilho, paraGerente: decisao.paraGerente }, "handoff disparado");
-  return { emAtendimentoHumano: true, gatilhoNovo: decisao.gatilho };
+  log.info({ gatilho, paraGerente }, "handoff disparado");
 }
 
 /**
@@ -188,10 +236,22 @@ async function processarHandoff(
  * (Etapa 8): dá pra filtrar todos os eventos de UMA mensagem específica com
  * `grep <rawMessageId>` no log, do recebimento até o resultado final.
  */
+export interface OpcoesProcessamento {
+  /**
+   * Com o script guiado ativo, TODA mensagem precisa ser processada: o cliente
+   * responde "2" a um menu, e "2" não tem termo relevante nenhum. Manter o
+   * filtro ligado faria o fluxo travar na primeira resposta curta.
+   */
+  exigirRelevancia?: boolean;
+  /** Ver `detectarPorIa` em processarHandoff. */
+  detectarHandoffPorIa?: boolean;
+}
+
 export async function processIncomingMessage(
   whatsappNumber: string,
   mensagem: string,
-  payloadBruto: unknown
+  payloadBruto: unknown,
+  opcoes: OpcoesProcessamento = {}
 ): Promise<ProcessResult> {
   // Antes de qualquer gravação: mensagem da própria equipe não vira lead.
   if (isNumeroDaEquipe(whatsappNumber)) {
@@ -209,7 +269,7 @@ export async function processIncomingMessage(
 
   log.info("mensagem recebida e gravada em raw_messages");
 
-  if (!isMensagemRelevante(mensagem)) {
+  if (opcoes.exigirRelevancia !== false && !isMensagemRelevante(mensagem)) {
     await pool.query(`UPDATE raw_messages SET processado = true WHERE id = $1`, [rawMessageId]);
 
     // Sem termos relevantes não dá pra qualificar nada — mas ficar mudo é pior:
@@ -246,7 +306,15 @@ export async function processIncomingMessage(
     await insertDemandSignal(leadId, mensagem, extracted);
     await upsertConversationState(leadId, extracted.ramo, extracted.dados_ramo);
 
-    const handoff = await processarHandoff(whatsappNumber, leadId, mensagem, extracted, unidadeRecomendada, log);
+    const handoff = await processarHandoff(
+      whatsappNumber,
+      leadId,
+      mensagem,
+      extracted,
+      unidadeRecomendada,
+      log,
+      opcoes.detectarHandoffPorIa !== false
+    );
 
     await pool.query(`UPDATE raw_messages SET processado = true WHERE id = $1`, [rawMessageId]);
 

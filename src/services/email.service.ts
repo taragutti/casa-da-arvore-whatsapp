@@ -88,6 +88,13 @@ const GATILHO_LABELS: Record<GatilhoHandoff, string> = {
   pedido_visita: "Pedido de visita",
   pergunta_valor: "Pergunta sobre valor final / desconto",
   falha_classificacao_repetida: "IA não conseguiu entender a mensagem (2+ vezes seguidas)",
+  fim_da_qualificacao: "Qualificação concluída pelo bot — lead pronto para o consultor",
+  corporativo_ficha_tecnica: "Corporativo — ficha técnica enviada (handoff imediato)",
+  evento_fora_do_padrao: "Evento fora dos 5 tipos principais",
+  roteamento_indefinido: "Dados insuficientes para o bot escolher a unidade",
+  pergunta_valor_final: "Pergunta sobre valor final",
+  pedido_desconto: "Pedido de desconto",
+  precisa_qualificacao_humana: "Bot não entendeu o cliente 2x seguidas",
 };
 
 export interface HandoffNotificationParams {

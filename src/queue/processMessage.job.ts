@@ -6,6 +6,8 @@ import { processIncomingMessage } from "../services/messageProcessing.service";
 import { sendWhatsAppMessage, montarMensagemConfirmacao } from "../services/whatsapp.service";
 import { processarMidiaProgressiva, enviarMidiaDeEspera } from "../services/mediaEngine.service";
 import { montarSaudacao } from "../services/saudacao.service";
+import { executarPassoDoScript } from "../services/scriptRunner.service";
+import { env } from "../config/env";
 
 /**
  * Worker que roda fora do caminho da requisição HTTP (Etapa 5): toda a parte
@@ -21,7 +23,43 @@ export function startMessageWorker() {
       const log = logger.child({ jobId: job.id, whatsappNumber, origem });
 
       log.debug("job retirado da fila — iniciando processamento");
-      const result = await processIncomingMessage(whatsappNumber, mensagem, payloadBruto);
+
+      // Com o script guiado ativo o pipeline muda em dois pontos: nenhuma
+      // mensagem é descartada por falta de termo relevante (o cliente responde
+      // "2" a um menu), e o handoff passa a ser decidido pelos nós do script em
+      // vez da classificação da IA. Ver OpcoesProcessamento.
+      const scriptAtivo = origem === "whatsapp_teste" && env.SCRIPT_FLUXO_ATIVO;
+      const result = await processIncomingMessage(
+        whatsappNumber,
+        mensagem,
+        payloadBruto,
+        scriptAtivo ? { exigirRelevancia: false, detectarHandoffPorIa: false } : {}
+      );
+
+      if (scriptAtivo) {
+        if (result.status === "processado") {
+          if (result.handoff.emAtendimentoHumano) {
+            // Regra 9.4: lead já entregue ao consultor não volta pro fluxo do
+            // bot. O script fica mudo até alguém devolver a conversa no painel.
+            log.debug("lead em atendimento humano — script não responde");
+          } else {
+            try {
+              await executarPassoDoScript({
+                whatsappNumber,
+                mensagem,
+                leadId: result.leadId,
+                extracted: result.dadosExtraidos,
+                unidadeRecomendada: result.unidadeRecomendada,
+                log,
+              });
+            } catch (error) {
+              log.error({ err: error }, "falha ao executar passo do script guiado");
+            }
+          }
+        }
+
+        return result;
+      }
 
       // Primeiro contato sem termo relevante ("oi", "bom dia"): apresenta-se em
       // vez de ficar mudo. Só no webhook do WhatsApp — o endpoint genérico de

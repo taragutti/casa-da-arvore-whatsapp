@@ -7,7 +7,18 @@ export type GatilhoHandoff =
   | "pedido_contrato"
   | "pedido_visita"
   | "pergunta_valor"
-  | "falha_classificacao_repetida";
+  | "falha_classificacao_repetida"
+  // Motivos que só o script guiado produz (Script_Bot_Atendimento.docx). Ficam
+  // no mesmo tipo de propósito: o vendedor recebe a mesma notificação venha o
+  // handoff de onde vier, e o Record de labels no e-mail obriga, em tempo de
+  // compilação, a dar nome a qualquer motivo novo.
+  | "fim_da_qualificacao"
+  | "corporativo_ficha_tecnica"
+  | "evento_fora_do_padrao"
+  | "roteamento_indefinido"
+  | "pergunta_valor_final"
+  | "pedido_desconto"
+  | "precisa_qualificacao_humana";
 
 export interface DecisaoHandoff {
   gatilho: GatilhoHandoff;

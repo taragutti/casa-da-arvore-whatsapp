@@ -68,23 +68,16 @@ que é quase sempre a primeira pergunta do cliente. Ou seja, a maioria dos leads
 vai pro vendedor **antes** da régua de mídia avançar — o que torna esta
 pendência menos crítica do que parece. A etapa 1 é a que mais importa.
 
-### 3. Templates da Meta — conferir status
+### 3. Templates da Meta — ✅ resolvido em 01/08/2026
 
-Última verificação (30/07): os 4 de follow-up **aprovados e em uso**; os 4
-abaixo estavam **"Em análise"**. Vale reconferir em
-business.facebook.com → Gerenciador do WhatsApp → Modelos de mensagem →
-Gerenciar modelos (cuidado com o filtro de data, que esconde modelos).
+Verificado pela Graph API: **os 8 templates estão `APPROVED`**, em `pt_BR`.
+Os 4 que estavam "Em análise" em 30/07 (`handoff_vendedor`,
+`aniversario_casamento`, `prospeccao_corporativa`, `ultima_campanha`) saíram.
 
-| Template | Categoria | Status em 30/07 |
-|---|---|---|
-| `followup_2h` / `48h` / `7d` / `30d` | Marketing | ✅ Ativo, em uso |
-| `handoff_vendedor` | Utilidade | ⏳ Em análise |
-| `aniversario_casamento` | Marketing | ⏳ Em análise |
-| `prospeccao_corporativa` | Marketing | ⏳ Em análise |
-| `ultima_campanha` | Marketing | ⏳ Em análise |
-
-**Nada a fazer no código quando aprovarem** — o envio troca sozinho. Enquanto
-não aprovam, cai em texto livre (só entrega dentro da janela de 24h).
+Nada a fazer no código — o envio já usava template com fallback automático, e o
+corpo aprovado do `handoff_vendedor` bate com `CORPO_TEMPLATE_HANDOFF`. Na
+prática: a notificação do vendedor e as réguas agora **entregam fora da janela
+de 24h**. O comando pra reconferir está em ENVIRONMENT.md.
 
 Pendência menor: o TTL padrão de template de utilidade é **10 minutos**. Se o
 celular do vendedor estiver offline nesse tempo, a notificação é descartada em
@@ -92,8 +85,18 @@ silêncio. Vale configurar validade maior na tela do `handoff_vendedor`.
 
 ### 4. WhatsApp do vendedor não ativado
 
-`+5522997546818`. Não precisa de configuração nenhuma no Meta — a conta está em
-modo `LIVE`, então basta ter WhatsApp comum funcionando no número.
+O número definitivo é `+5522997546818`, mas **o WhatsApp dele ainda não foi
+ativado** — é a pendência real aqui. Não precisa de configuração nenhuma no
+Meta: a conta está em modo `LIVE`, basta ter WhatsApp comum funcionando no
+número.
+
+Enquanto isso, `VENDEDOR_WHATSAPP_NUMBER` está apontando para o número de
+**teste** `+5522974026786` (definido em 01/08/2026 no Railway e no `.env`
+local), pra destravar os testes finais.
+
+**Quando o 6818 estiver ativo:** trocar a variável de volta no Railway e no
+`.env`, e atualizar ENVIRONMENT.md. É a única mudança necessária — não há nada
+disso no código.
 
 ## Ambiente local
 

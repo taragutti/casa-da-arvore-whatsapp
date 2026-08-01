@@ -129,6 +129,49 @@ async function enviarLoteDeFotos(
 }
 
 /**
+ * Material completo de uma unidade, para os nós de apresentação do script
+ * (N7A, N5B, N9C, N5D): catálogo, fotos e vídeo de uma vez.
+ *
+ * Difere da régua progressiva de propósito. Na régua, o material é dosado ao
+ * longo da conversa para medir engajamento; aqui o cliente já respondeu a
+ * escada de qualificação inteira e o documento manda entregar tudo. Racionar
+ * material depois de sete perguntas respondidas seria só atrito.
+ *
+ * Etapa que não tem mídia cadastrada é pulada sem erro: unidade com catálogo e
+ * sem vídeo entrega o catálogo, em vez de não entregar nada.
+ */
+export async function enviarMaterialDaUnidade(
+  whatsappNumber: string,
+  unidade: UnidadeRecomendada,
+  ramo: RamoEvento | null,
+  dadosRamo: DadosPorRamo,
+  numeroConvidados: number | null
+): Promise<{ enviadas: number; semMidia: EtapaMidia[] }> {
+  const perfilLead = inferirPerfilLead(ramo, dadosRamo, numeroConvidados);
+  const semMidia: EtapaMidia[] = [];
+  let enviadas = 0;
+
+  // Ordem do documento: catálogo primeiro, depois fotos e vídeo.
+  for (const etapa of [4, 3, 2] as EtapaMidia[]) {
+    try {
+      const resultado = await enviarEtapaMidia(whatsappNumber, unidade, etapa, perfilLead);
+      if (resultado === "enviado") enviadas++;
+      if (resultado === "sem_midia") semMidia.push(etapa);
+    } catch (error) {
+      // Uma etapa que falha não pode impedir as outras: o cliente receber o
+      // catálogo sem as fotos é muito melhor do que não receber nada.
+      logger.error({ err: error, unidade, etapa }, "falha ao enviar etapa do material completo");
+    }
+  }
+
+  if (semMidia.length > 0) {
+    logger.warn({ unidade, semMidia }, "material incompleto — etapas sem mídia cadastrada no painel");
+  }
+
+  return { enviadas, semMidia };
+}
+
+/**
  * Distinguir "não tem material" de "tentou e falhou" é essencial: a primeira
  * situação deve PULAR para a etapa seguinte (a régua não pode congelar por
  * material que nunca foi cadastrado), a segunda NÃO — falha de rede é
