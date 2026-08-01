@@ -47,6 +47,45 @@ whatsappRouter.get("/webhooks/whatsapp", (req: Request, res: Response) => {
  * resposta em menos de 5s) e só enfileira (Etapa 5) — quem extrai via IA,
  * grava no banco e manda a confirmação de volta é o worker.
  */
+interface StatusEntrega {
+  id?: string;
+  status?: string;
+  recipient_id?: string;
+  errors?: { code?: number; title?: string; message?: string; error_data?: { details?: string } }[];
+}
+
+/**
+ * Loga o desfecho real de cada mensagem que enviamos.
+ *
+ * `failed` sai em nível de erro com o código da Meta, que é o que diz a causa
+ * de verdade — 131026 é "não entregável" (número sem WhatsApp, ou resolvido
+ * para outro wa_id), 131047 é janela de 24h fechada, 132xxx é problema de
+ * template. Sem isso, "não chegou no celular" fica sendo adivinhação.
+ *
+ * `recipient_id` é o wa_id que a Meta usou: comparar com o número que
+ * mandamos revela na hora o problema do nono dígito em DDD baixo.
+ */
+function registrarStatusDeEntrega(statuses: StatusEntrega[] | undefined): void {
+  for (const status of statuses ?? []) {
+    const base = {
+      messageId: status.id,
+      destinatario: status.recipient_id,
+      status: status.status,
+    };
+
+    if (status.status === "failed") {
+      const erro = status.errors?.[0];
+      logger.error(
+        { ...base, codigoMeta: erro?.code, titulo: erro?.title, detalhe: erro?.error_data?.details ?? erro?.message },
+        "mensagem NÃO entregue pelo WhatsApp"
+      );
+      continue;
+    }
+
+    logger.info(base, "status de entrega recebido");
+  }
+}
+
 whatsappRouter.post("/webhooks/whatsapp", async (req: Request, res: Response) => {
   const signature = req.header("x-hub-signature-256");
   const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
@@ -63,6 +102,13 @@ whatsappRouter.post("/webhooks/whatsapp", async (req: Request, res: Response) =>
     for (const entry of entries) {
       for (const change of entry.changes ?? []) {
         if (change.field !== "messages") continue;
+
+        // Eventos de entrega (sent/delivered/read/failed) vêm no MESMO campo
+        // "messages", em `value.statuses`. Eram descartados aqui, e essa foi a
+        // razão de a notificação do vendedor "sumir" sem deixar rastro: o envio
+        // devolvia 200, o log dizia notificado, e o motivo real da não entrega
+        // chegava neste webhook e era ignorado.
+        registrarStatusDeEntrega(change.value?.statuses);
 
         const messages: WhatsAppMessage[] = change.value?.messages ?? [];
         for (const message of messages) {

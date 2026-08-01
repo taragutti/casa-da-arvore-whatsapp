@@ -2,6 +2,41 @@ import { env } from "../config/env";
 import { logger } from "../config/logger";
 
 /**
+ * Registra o que a Meta respondeu num envio aceito.
+ *
+ * Existe por um caso concreto que custou horas: a notificação do vendedor
+ * voltava 200, o log dizia "vendedor notificado", e nada chegava no aparelho.
+ * O 200 significa apenas "aceitei para entregar" — a entrega em si vem depois,
+ * por webhook de status.
+ *
+ * Os dois campos que importam:
+ * - `wa_id` é o número que a Meta REALMENTE resolveu. Em número brasileiro de
+ *   DDD baixo ele costuma vir sem o nono dígito; se sair diferente do que
+ *   mandamos, é aí que a mensagem se perde.
+ * - `messageId` é o que amarra este envio ao status (`delivered`/`failed`) que
+ *   chega depois no webhook.
+ */
+async function registrarEnvioAceito(response: Response, destino: string, contexto: Record<string, unknown>): Promise<void> {
+  try {
+    const corpo = (await response.clone().json()) as {
+      contacts?: { input?: string; wa_id?: string }[];
+      messages?: { id?: string }[];
+    };
+
+    const waId = corpo.contacts?.[0]?.wa_id;
+    const enviado = destino.replace(/^\+/, "");
+
+    logger.info(
+      { ...contexto, destino: enviado, waId, messageId: corpo.messages?.[0]?.id, waIdDiferente: !!waId && waId !== enviado },
+      "envio aceito pela Meta"
+    );
+  } catch (error) {
+    // Diagnóstico não pode derrubar envio que já deu certo.
+    logger.debug({ err: error }, "não foi possível ler o corpo da resposta de envio");
+  }
+}
+
+/**
  * Envia uma mensagem de texto via WhatsApp Business Cloud API (Meta).
  * Usado só no caminho do número de teste (routes/whatsapp.ts) — a automação
  * de produção existente já cuida das respostas por conta própria.
@@ -33,6 +68,8 @@ export async function sendWhatsAppMessage(to: string, body: string): Promise<voi
     const detalhe = await response.text();
     throw new Error(`Falha ao enviar mensagem via WhatsApp (${response.status}): ${detalhe}`);
   }
+
+  await registrarEnvioAceito(response, to, { canal: "texto" });
 }
 
 type TipoMidiaWhatsApp = "image" | "video" | "document";
@@ -168,6 +205,8 @@ export async function sendWhatsAppTemplate(
     const detalhe = await response.text();
     throw new WhatsAppTemplateError(templateName, response.status, detalhe);
   }
+
+  await registrarEnvioAceito(response, to, { canal: "template", templateName });
 }
 
 /**
