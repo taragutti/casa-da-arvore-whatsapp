@@ -34,7 +34,7 @@ vivem em dois lugares possíveis:
 | `VENDEDOR_WHATSAPP_NUMBER` | Railway | ⚠️ **valor temporário de teste** | `+5522974026786` (definido em 01/08/2026). O número definitivo é `+5522997546818`, mas **o WhatsApp dele ainda não foi ativado** — por isso os testes finais rodam no de teste. **Reverter para `+5522997546818` quando o WhatsApp do vendedor estiver de pé.** Vale pros dois lados: é pra onde o handoff notifica e é o único número que `isNumeroDaEquipe()` não trata como lead |
 | `VENDEDOR_HANDOFF_TEMPLATE_NAME` | Railway | ✅ configurada | `handoff_vendedor` (definida 30/07/2026). Enquanto o template não for aprovado, o código cai pra texto livre automaticamente |
 | `MEDIA_STORAGE_DIR` | Railway | ⚠️ **pendente** | precisa apontar para o ponto de montagem do volume (ex.: `/dados/midia`). Ver "Volume de mídia" abaixo — sem isso os arquivos somem a cada deploy |
-| `SCRIPT_FLUXO_ATIVO` | Railway | ⚠️ **desligada** (`false`) | liga o script guiado (menus numerados, escada de qualificação). Antes de ligar: rodar `railway run node scripts/migrate.js` para criar a tabela `script_state`. Com ela ligada, o filtro de relevância é ignorado e o handoff passa a ser decidido pelo script, não pela IA |
+| `SCRIPT_FLUXO_ATIVO` | Railway | ✅ **ligada** (`true`, 01/08/2026) | script guiado em produção, validado em conversa real. Tabela `script_state` já criada. Com ela ligada, o filtro de relevância é ignorado (toda mensagem vira lead) e o handoff é decidido pelos nós do script, não pela classificação da IA |
 | `PUBLIC_BASE_URL` | não configurada | ✅ opcional | se ausente, usa `RAILWAY_PUBLIC_DOMAIN` (injetada pela plataforma). Só definir se o app passar a atender por domínio próprio |
 
 ## Volume de mídia (biblioteca de mídia, Seção 4)
