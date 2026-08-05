@@ -56,6 +56,18 @@ export interface RegrasHorario {
 }
 
 /**
+ * Número de WhatsApp do vendedor humano que recebe o handoff, por unidade.
+ * Dois vendedores reais dividindo por tipo de evento: `padrao` cobre unidade
+ * ainda indefinida (ramo "outro", ou casamento sem preferência informada) —
+ * nesse caso não há como escolher pela unidade, então cai no vendedor
+ * comercial em vez de arriscar palpite.
+ */
+export interface RegrasVendedor {
+  porUnidade: Record<UnidadeRecomendada, string>;
+  padrao: string;
+}
+
+/**
  * Padrões que estavam fixos no código. Continuam sendo a fonte única: os
  * DEFAULTs da tabela `configuracoes` repetem estes valores, e um banco recém
  * migrado se comporta exatamente como antes.
@@ -114,6 +126,17 @@ export const REGRAS_HORARIO_PADRAO: RegrasHorario = {
   atendeDomingo: false,
 };
 
+export const REGRAS_VENDEDOR_PADRAO: RegrasVendedor = {
+  porUnidade: {
+    casa_da_arvore: "+5522974052903",
+    park_lagos: "+5522974052903",
+    shopping_park_lagos: "+5522974052903",
+    casarao: "+5522997249462",
+    casa_por_do_sol: "+5522997249462",
+  },
+  padrao: "+5522997249462",
+};
+
 function contemAlgumTermo(mensagem: string, termos: string[]): boolean {
   const texto = mensagem.toLowerCase();
   return termos.some((termo) => texto.includes(termo));
@@ -164,6 +187,22 @@ export function calcularSlaMinutos(
   // `?? semUnidade` cobre unidade nova adicionada no código antes de existir no
   // JSON salvo — sem isso o SLA viria `undefined` e o e-mail mostraria "NaN min".
   return regras.porUnidade[unidade] ?? regras.semUnidade;
+}
+
+/**
+ * Número do vendedor que recebe o handoff no WhatsApp, por unidade (mesmo
+ * molde de `calcularSlaMinutos`: unidade decide, corporativo não precisa de
+ * regra própria porque `determinarUnidadeRecomendada` já resolve corporativo
+ * e 15 anos para "casarao" antes de chegar aqui).
+ */
+export function determinarNumeroVendedor(
+  unidade: UnidadeRecomendada | null,
+  regras: RegrasVendedor = REGRAS_VENDEDOR_PADRAO
+): string {
+  if (unidade == null) return regras.padrao;
+  // `?? padrao` cobre unidade nova adicionada no código antes de existir no
+  // JSON salvo — mesma proteção que o SLA já tem contra "unidade sem regra".
+  return regras.porUnidade[unidade] ?? regras.padrao;
 }
 
 /**

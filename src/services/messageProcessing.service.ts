@@ -1,10 +1,15 @@
 import type { Logger } from "pino";
 import { pool } from "../db/client";
-import { env } from "../config/env";
 import { logger } from "../config/logger";
 import { extractFromMessage, ExtractedLeadData } from "./anthropic.service";
 import { determinarUnidadeRecomendada, UnidadeRecomendada } from "./routing.service";
-import { detectarGatilhoHandoff, calcularSlaMinutos, dentroDoHorarioComercial, GatilhoHandoff } from "./handoff.service";
+import {
+  detectarGatilhoHandoff,
+  calcularSlaMinutos,
+  determinarNumeroVendedor,
+  dentroDoHorarioComercial,
+  GatilhoHandoff,
+} from "./handoff.service";
 import { registrarSaudacaoSeNecessario } from "./saudacao.service";
 import { obterConfig } from "./config.service";
 import { sendHandoffNotificationEmail, sendHandoffFollowUpEmail } from "./email.service";
@@ -44,17 +49,23 @@ function apenasDigitos(numero: string): string {
 }
 
 /**
- * O número do vendedor é da equipe, não é lead. Sem este filtro, qualquer
- * mensagem dele que contenha uma palavra relevante (ex.: "tem festa hoje?")
- * criaria um lead com o próprio número do vendedor, dispararia confirmação
- * automática, régua de mídia e follow-up em cima dele.
+ * Os números dos vendedores são da equipe, não são lead. Sem este filtro,
+ * qualquer mensagem deles que contenha uma palavra relevante (ex.: "tem festa
+ * hoje?") criaria um lead com o próprio número do vendedor, dispararia
+ * confirmação automática, régua de mídia e follow-up em cima dele.
  *
  * Isso importa na prática porque o contorno da janela de 24h da Meta depende
  * do vendedor mandar mensagem pro bot todo dia (ver ENVIRONMENT.md).
+ *
+ * Checa contra TODOS os números configurados (o padrão + um por unidade) —
+ * são dois vendedores reais, não um só, e a lista vem do banco (editável em
+ * `/painel/configuracoes`) em vez de env var fixa.
  */
-export function isNumeroDaEquipe(whatsappNumber: string): boolean {
-  if (!env.VENDEDOR_WHATSAPP_NUMBER) return false;
-  return apenasDigitos(whatsappNumber) === apenasDigitos(env.VENDEDOR_WHATSAPP_NUMBER);
+export async function isNumeroDaEquipe(whatsappNumber: string): Promise<boolean> {
+  const config = await obterConfig();
+  const digitos = apenasDigitos(whatsappNumber);
+  const numerosDaEquipe = [config.vendedor.padrao, ...Object.values(config.vendedor.porUnidade)];
+  return numerosDaEquipe.some((numero) => apenasDigitos(numero) === digitos);
 }
 
 export interface ResultadoHandoff {
@@ -173,6 +184,7 @@ export async function notificarHandoff(params: {
   }
 
   const slaMinutos = calcularSlaMinutos(unidadeRecomendada, extracted.ramo, config.sla);
+  const numeroVendedor = determinarNumeroVendedor(unidadeRecomendada, config.vendedor);
   const emHorarioComercial = dentroDoHorarioComercial(new Date(), config.horario);
 
   try {
@@ -197,6 +209,7 @@ export async function notificarHandoff(params: {
   // continua sendo o canal confiável e a falha aqui não interrompe o handoff.
   try {
     await notificarVendedor({
+      numeroVendedor,
       whatsappCliente: whatsappNumber,
       nomeCliente: extracted.nome_cliente,
       email: extracted.email,
@@ -214,10 +227,10 @@ export async function notificarHandoff(params: {
       mensagemOriginal: mensagem,
       dadosRamo: extracted.dados_ramo as unknown as Record<string, unknown>,
     });
-    log.info("vendedor notificado no WhatsApp");
+    log.info({ numeroVendedor, unidadeRecomendada }, "vendedor notificado no WhatsApp");
   } catch (error) {
     log.error(
-      { err: error, gatilho },
+      { err: error, gatilho, numeroVendedor, unidadeRecomendada },
       "falha ao notificar vendedor no WhatsApp — verifique a janela de 24h da Meta; e-mail segue como canal de registro"
     );
   }
@@ -254,7 +267,7 @@ export async function processIncomingMessage(
   opcoes: OpcoesProcessamento = {}
 ): Promise<ProcessResult> {
   // Antes de qualquer gravação: mensagem da própria equipe não vira lead.
-  if (isNumeroDaEquipe(whatsappNumber)) {
+  if (await isNumeroDaEquipe(whatsappNumber)) {
     logger.info({ whatsappNumber }, "mensagem do número da equipe (vendedor) — ignorada, não é lead");
     return { status: "ignorado", motivo: "número da equipe, não é lead" };
   }

@@ -10,6 +10,16 @@ const valido = {
     corporativo: 10,
     semUnidade: 15,
   },
+  vendedor: {
+    porUnidade: {
+      casa_da_arvore: "+5522974052903",
+      park_lagos: "+5522974052903",
+      shopping_park_lagos: "+5522974052903",
+      casarao: "+5522997249462",
+      casa_por_do_sol: "+5522997249462",
+    },
+    padrao: "+5522997249462",
+  },
   handoff: {
     palavrasReclamacao: ["absurdo"],
     palavrasPedidoHumano: ["consultor"],
@@ -85,5 +95,19 @@ describe("validação da configuração de workflow", () => {
   it("recusa limite de tentativas fora da faixa útil", () => {
     expect(erro({ ...valido, handoff: { ...valido.handoff, tentativasSemClassificacaoLimite: 0 } })).toBeTruthy();
     expect(erro({ ...valido, handoff: { ...valido.handoff, tentativasSemClassificacaoLimite: 99 } })).toBeTruthy();
+  });
+
+  it("recusa número de vendedor fora do formato internacional", () => {
+    const msg = erro({ ...valido, vendedor: { ...valido.vendedor, padrao: "22997249462" } });
+    expect(msg).toMatch(/formato internacional/i);
+  });
+
+  it("completa vendedor de unidade ausente com o padrão, em vez de deixar undefined", () => {
+    const r = configSchema.parse({
+      ...valido,
+      vendedor: { ...valido.vendedor, porUnidade: { casarao: "+5522911112222" } },
+    });
+    expect(r.vendedor.porUnidade.casarao).toBe("+5522911112222");
+    expect(r.vendedor.porUnidade.casa_da_arvore).toBe("+5522974052903");
   });
 });

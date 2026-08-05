@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { UNIDADES } from "./leadsApi.schemas";
-import { REGRAS_SLA_PADRAO } from "../services/handoff.service";
+import { REGRAS_SLA_PADRAO, REGRAS_VENDEDOR_PADRAO } from "../services/handoff.service";
 
 /**
  * Limites de sanidade, não burocracia: cada um evita uma configuração que
@@ -22,6 +22,18 @@ const minutos = (rotulo: string) =>
  * com maiúscula ou espaço sobrando simplesmente nunca casaria, e a tela não
  * teria como avisar que a palavra "não funciona".
  */
+/**
+ * Formato internacional que o resto do código já assume em toda parte que
+ * lida com WhatsApp (ex.: `+5522997546818`) — código do país + DDD + número,
+ * sem espaço, parêntese ou hífen. Recusar aqui evita salvar um número que o
+ * envio à Meta rejeitaria só na hora do handoff real.
+ */
+const telefoneWhatsapp = (rotulo: string) =>
+  z
+    .string({ message: `${rotulo}: informe um número de WhatsApp` })
+    .trim()
+    .regex(/^\+\d{12,13}$/, `${rotulo}: use o formato internacional, ex: +5522997546818`);
+
 const palavras = (rotulo: string) =>
   z
     .array(z.string())
@@ -66,6 +78,14 @@ export const configSchema = z
         .transform((parcial) => ({ ...REGRAS_SLA_PADRAO.porUnidade, ...parcial })),
       corporativo: minutos("SLA corporativo"),
       semUnidade: minutos("SLA sem unidade"),
+    }),
+    vendedor: z.object({
+      // Mesma tolerância a payload parcial que o SLA já tem: unidade nova
+      // adicionada no código antes de a tela recarregar não vira `undefined`.
+      porUnidade: z
+        .record(z.enum(UNIDADES), telefoneWhatsapp("Vendedor da unidade"))
+        .transform((parcial) => ({ ...REGRAS_VENDEDOR_PADRAO.porUnidade, ...parcial })),
+      padrao: telefoneWhatsapp("Vendedor padrão (unidade indefinida)"),
     }),
     handoff: z.object({
       palavrasReclamacao: palavras("Palavras de reclamação"),

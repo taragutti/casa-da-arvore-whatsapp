@@ -4,9 +4,11 @@ import {
   RegrasHandoff,
   RegrasHorario,
   RegrasSla,
+  RegrasVendedor,
   REGRAS_HANDOFF_PADRAO,
   REGRAS_HORARIO_PADRAO,
   REGRAS_SLA_PADRAO,
+  REGRAS_VENDEDOR_PADRAO,
 } from "../services/handoff.service";
 import { ReguaFollowUp } from "../queue/followUpQueue";
 
@@ -16,6 +18,7 @@ export interface Configuracoes {
   reagendamentoForaHorarioMinutos: number;
   horario: RegrasHorario;
   sla: RegrasSla;
+  vendedor: RegrasVendedor;
   handoff: RegrasHandoff;
   atualizadoEm: Date | null;
   atualizadoPorNome: string | null;
@@ -27,6 +30,7 @@ export const CONFIGURACOES_PADRAO: Configuracoes = {
   reagendamentoForaHorarioMinutos: 60,
   horario: REGRAS_HORARIO_PADRAO,
   sla: REGRAS_SLA_PADRAO,
+  vendedor: REGRAS_VENDEDOR_PADRAO,
   handoff: REGRAS_HANDOFF_PADRAO,
   atualizadoEm: null,
   atualizadoPorNome: null,
@@ -45,6 +49,8 @@ interface LinhaConfig {
   sla_minutos: Record<string, number>;
   sla_corporativo_minutos: number;
   sla_sem_unidade_minutos: number;
+  vendedor_whatsapp_por_unidade: Record<string, string>;
+  vendedor_whatsapp_padrao: string;
   palavras_reclamacao: string[];
   palavras_pedido_humano: string[];
   palavras_pedido_contrato: string[];
@@ -75,6 +81,13 @@ function daLinha(l: LinhaConfig): Configuracoes {
       corporativo: l.sla_corporativo_minutos,
       semUnidade: l.sla_sem_unidade_minutos,
     },
+    vendedor: {
+      porUnidade: {
+        ...REGRAS_VENDEDOR_PADRAO.porUnidade,
+        ...l.vendedor_whatsapp_por_unidade,
+      } as Record<UnidadeRecomendada, string>,
+      padrao: l.vendedor_whatsapp_padrao,
+    },
     handoff: {
       palavrasReclamacao: l.palavras_reclamacao,
       palavrasPedidoHumano: l.palavras_pedido_humano,
@@ -101,6 +114,7 @@ export interface AtualizacaoConfig {
   reagendamentoForaHorarioMinutos: number;
   horario: RegrasHorario;
   sla: RegrasSla;
+  vendedor: RegrasVendedor;
   handoff: RegrasHandoff;
 }
 
@@ -112,10 +126,11 @@ export async function salvarConfiguracoes(dados: AtualizacaoConfig, usuarioId: s
        id, followup_2h_minutos, followup_48h_minutos, followup_7d_minutos, followup_30d_minutos,
        reagendamento_fora_horario_minutos, hora_abertura, hora_fechamento, atende_sabado, atende_domingo,
        sla_minutos, sla_corporativo_minutos, sla_sem_unidade_minutos,
+       vendedor_whatsapp_por_unidade, vendedor_whatsapp_padrao,
        palavras_reclamacao, palavras_pedido_humano, palavras_pedido_contrato,
        tentativas_sem_classificacao_limite, atualizado_em, atualizado_por
      ) VALUES (
-       true, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13, $14, $15, $16, now(), $17
+       true, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13::jsonb, $14, $15, $16, $17, $18, now(), $19
      )
      ON CONFLICT (id) DO UPDATE SET
        followup_2h_minutos = EXCLUDED.followup_2h_minutos,
@@ -130,6 +145,8 @@ export async function salvarConfiguracoes(dados: AtualizacaoConfig, usuarioId: s
        sla_minutos = EXCLUDED.sla_minutos,
        sla_corporativo_minutos = EXCLUDED.sla_corporativo_minutos,
        sla_sem_unidade_minutos = EXCLUDED.sla_sem_unidade_minutos,
+       vendedor_whatsapp_por_unidade = EXCLUDED.vendedor_whatsapp_por_unidade,
+       vendedor_whatsapp_padrao = EXCLUDED.vendedor_whatsapp_padrao,
        palavras_reclamacao = EXCLUDED.palavras_reclamacao,
        palavras_pedido_humano = EXCLUDED.palavras_pedido_humano,
        palavras_pedido_contrato = EXCLUDED.palavras_pedido_contrato,
@@ -150,6 +167,8 @@ export async function salvarConfiguracoes(dados: AtualizacaoConfig, usuarioId: s
       JSON.stringify(dados.sla.porUnidade),
       dados.sla.corporativo,
       dados.sla.semUnidade,
+      JSON.stringify(dados.vendedor.porUnidade),
+      dados.vendedor.padrao,
       dados.handoff.palavrasReclamacao,
       dados.handoff.palavrasPedidoHumano,
       dados.handoff.palavrasPedidoContrato,

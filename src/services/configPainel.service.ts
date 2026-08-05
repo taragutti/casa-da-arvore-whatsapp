@@ -47,6 +47,14 @@ function campoMinutos(id: string, rotulo: string, valor: number, ajuda = ""): st
   </div>`;
 }
 
+function campoTelefone(id: string, rotulo: string, valor: string): string {
+  return `
+  <div class="campo">
+    <label for="${id}">${escapeHtml(rotulo)}</label>
+    <input type="text" id="${id}" value="${escapeHtml(valor)}" placeholder="+5522900000000" class="tel">
+  </div>`;
+}
+
 function listaPalavras(id: string, rotulo: string, termos: string[], ajuda: string): string {
   return `
   <div class="campo">
@@ -84,6 +92,8 @@ export function renderizarConfigHtml(config: Configuracoes, autor: Autor): strin
     .linha-campo { display: flex; align-items: center; gap: 7px; }
     input[type=number] { width: 96px; padding: 7px 9px; border: 1px solid #cfd8d0; border-radius: 6px;
                          font-size: 14px; font-family: inherit; }
+    input.tel { width: 100%; padding: 7px 9px; border: 1px solid #cfd8d0; border-radius: 6px;
+                font-size: 14px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     textarea { width: 100%; padding: 8px 9px; border: 1px solid #cfd8d0; border-radius: 6px; font-size: 13px;
                font-family: ui-monospace, SFMono-Regular, Menlo, monospace; resize: vertical; }
     .unid { color: #888; font-size: 13px; }
@@ -189,6 +199,18 @@ export function renderizarConfigHtml(config: Configuracoes, autor: Autor): strin
     </div>
 
     <div class="bloco">
+      <h2>Vendedor que recebe o handoff</h2>
+      <p class="desc">Número de WhatsApp que recebe a notificação de cada lead passado para humano, por unidade.
+        Formato internacional, com "+" e código do país (ex: <code>+5522997546818</code>).</p>
+      <div class="grade">
+        ${unidades
+          .map((u) => campoTelefone(`vend_${u}`, LABEL_UNIDADE[u], config.vendedor.porUnidade[u]))
+          .join("")}
+        ${campoTelefone("vend_padrao", "Unidade ainda indefinida", config.vendedor.padrao)}
+      </div>
+    </div>
+
+    <div class="bloco">
       <h2>Gatilhos de passagem para humano</h2>
       <p class="desc">Uma palavra por linha. A comparação ignora maiúsculas e busca <b>parte</b> da mensagem:
         "consultor" também casa "quero falar com consultor". Salvamos em minúsculas e sem repetição.</p>
@@ -285,6 +307,14 @@ ${(Object.keys(LABEL_UNIDADE) as UnidadeRecomendada[])
         },
         corporativo: num("sla_corp"),
         semUnidade: num("sla_sem")
+      },
+      vendedor: {
+        porUnidade: {
+${(Object.keys(LABEL_UNIDADE) as UnidadeRecomendada[])
+  .map((u) => `          "${u}": document.getElementById("vend_${u}").value.trim()`)
+  .join(",\n")}
+        },
+        padrao: document.getElementById("vend_padrao").value.trim()
       },
       handoff: {
         palavrasReclamacao: linhas("p_reclamacao"),

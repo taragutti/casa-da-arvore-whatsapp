@@ -9,6 +9,7 @@ import {
 
 function resumoBase(overrides: Partial<ResumoLeadParaVendedor> = {}): ResumoLeadParaVendedor {
   return {
+    numeroVendedor: "+5522997249462",
     whatsappCliente: "+5522999999999",
     nomeCliente: "Maria",
     email: null,

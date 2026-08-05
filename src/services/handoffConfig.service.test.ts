@@ -2,9 +2,11 @@ import { describe, it, expect } from "vitest";
 import {
   detectarGatilhoHandoff,
   calcularSlaMinutos,
+  determinarNumeroVendedor,
   dentroDoHorarioComercial,
   REGRAS_HANDOFF_PADRAO,
   REGRAS_SLA_PADRAO,
+  REGRAS_VENDEDOR_PADRAO,
   REGRAS_HORARIO_PADRAO,
 } from "./handoff.service";
 
@@ -63,6 +65,39 @@ describe("configuração alterada muda o comportamento do handoff", () => {
   it("unidade sem SLA salvo cai no valor de 'sem unidade', não em NaN", () => {
     const sla = { ...REGRAS_SLA_PADRAO, porUnidade: {} as never, semUnidade: 22 };
     expect(calcularSlaMinutos("casarao", "casamento", sla)).toBe(22);
+  });
+
+  describe("determinarNumeroVendedor", () => {
+    it("casarão e casa pôr do sol vão pro vendedor comercial", () => {
+      expect(determinarNumeroVendedor("casarao")).toBe(REGRAS_VENDEDOR_PADRAO.porUnidade.casarao);
+      expect(determinarNumeroVendedor("casa_por_do_sol")).toBe(REGRAS_VENDEDOR_PADRAO.porUnidade.casa_por_do_sol);
+    });
+
+    it("casa da árvore, park lagos e shopping park lagos vão pro vendedor de infantil", () => {
+      expect(determinarNumeroVendedor("casa_da_arvore")).toBe(REGRAS_VENDEDOR_PADRAO.porUnidade.casa_da_arvore);
+      expect(determinarNumeroVendedor("park_lagos")).toBe(REGRAS_VENDEDOR_PADRAO.porUnidade.park_lagos);
+      expect(determinarNumeroVendedor("shopping_park_lagos")).toBe(
+        REGRAS_VENDEDOR_PADRAO.porUnidade.shopping_park_lagos
+      );
+    });
+
+    it("unidade ainda indefinida cai no vendedor padrão", () => {
+      expect(determinarNumeroVendedor(null)).toBe(REGRAS_VENDEDOR_PADRAO.padrao);
+    });
+
+    it("vendedor configurado por unidade é usado no lugar do padrão", () => {
+      const vendedor = {
+        ...REGRAS_VENDEDOR_PADRAO,
+        porUnidade: { ...REGRAS_VENDEDOR_PADRAO.porUnidade, casarao: "+5522911112222" },
+      };
+      expect(determinarNumeroVendedor("casarao", vendedor)).toBe("+5522911112222");
+      expect(determinarNumeroVendedor("casarao")).toBe(REGRAS_VENDEDOR_PADRAO.porUnidade.casarao); // padrão intacto
+    });
+
+    it("unidade sem vendedor salvo cai no padrão, não em undefined", () => {
+      const vendedor = { ...REGRAS_VENDEDOR_PADRAO, porUnidade: {} as never, padrao: "+5522933334444" };
+      expect(determinarNumeroVendedor("casarao", vendedor)).toBe("+5522933334444");
+    });
   });
 
   describe("horário de atendimento", () => {

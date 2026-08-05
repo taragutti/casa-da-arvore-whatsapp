@@ -31,11 +31,36 @@ vivem em dois lugares possíveis:
 | `WHATSAPP_ACCESS_TOKEN` | Railway (?) — **confirmar local exato** | ✅ funcionando — token **definitivo** (não expira em 24h) | vazio no `.env` local — mesma observação acima |
 | `WHATSAPP_PHONE_NUMBER_ID` | Railway (?) — **confirmar local exato** | ✅ funcionando | vazio no `.env` local — mesma observação acima |
 | `PAINEL_USERNAME` / `PAINEL_PASSWORD` | Railway | ✅ ok | definidas em 25/07/2026; painel acessível em `/painel` com HTTP Basic Auth |
-| `VENDEDOR_WHATSAPP_NUMBER` | Railway | ⚠️ **valor temporário de teste** | `+5522974026786` (definido em 01/08/2026). O número definitivo é `+5522997546818`, mas **o WhatsApp dele ainda não foi ativado** — por isso os testes finais rodam no de teste. **Reverter para `+5522997546818` quando o WhatsApp do vendedor estiver de pé.** Vale pros dois lados: é pra onde o handoff notifica e é o único número que `isNumeroDaEquipe()` não trata como lead |
 | `VENDEDOR_HANDOFF_TEMPLATE_NAME` | Railway | ✅ configurada | `handoff_vendedor` (definida 30/07/2026). Enquanto o template não for aprovado, o código cai pra texto livre automaticamente |
 | `MEDIA_STORAGE_DIR` | Railway | ⚠️ **pendente** | precisa apontar para o ponto de montagem do volume (ex.: `/dados/midia`). Ver "Volume de mídia" abaixo — sem isso os arquivos somem a cada deploy |
 | `SCRIPT_FLUXO_ATIVO` | Railway | ✅ **ligada** (`true`, 01/08/2026) | script guiado em produção, validado em conversa real. Tabela `script_state` já criada. Com ela ligada, o filtro de relevância é ignorado (toda mensagem vira lead) e o handoff é decidido pelos nós do script, não pela classificação da IA |
 | `PUBLIC_BASE_URL` | não configurada | ✅ opcional | se ausente, usa `RAILWAY_PUBLIC_DOMAIN` (injetada pela plataforma). Só definir se o app passar a atender por domínio próprio |
+
+## Vendedor que recebe o handoff (dois vendedores, por unidade)
+
+`VENDEDOR_WHATSAPP_NUMBER` (env var única) **deixou de existir em 05/08/2026**.
+O handoff agora nasce com **dois vendedores reais**, escolhidos pela unidade
+recomendada (mesmo eixo que já decide o SLA):
+
+| Vendedor | Número | Unidades |
+|---|---|---|
+| Comercial (casamento, 15 anos, corporativo) | `+5522997249462` | `casarao`, `casa_por_do_sol` |
+| Festa infantil / recreação | `+5522974052903` | `casa_da_arvore`, `park_lagos`, `shopping_park_lagos` |
+
+Configurado no banco (tabela `configuracoes`, colunas `vendedor_whatsapp_por_unidade`
+e `vendedor_whatsapp_padrao`), editável em **`/painel/configuracoes`** sem
+precisar de deploy — mesmo padrão do SLA por unidade (estágio 8). Lógica em
+`determinarNumeroVendedor()` (`src/services/handoff.service.ts`); os valores
+acima são o `DEFAULT` da migração, aplicado à linha única já existente em
+produção assim que `node scripts/migrate.js` rodar de novo.
+
+`isNumeroDaEquipe()` (`messageProcessing.service.ts`) passou a checar contra
+**todos** os números configurados (os dois vendedores + o padrão), lendo do
+banco — antes comparava só com a env var única.
+
+Confirmado em 05/08/2026: o WhatsApp comum dos dois números já está ativo —
+diferente do vendedor antigo (`+5522997546818`), que segue sem WhatsApp
+ativado e não é mais usado pelo handoff.
 
 ## Volume de mídia (biblioteca de mídia, Seção 4)
 

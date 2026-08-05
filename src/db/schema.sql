@@ -235,6 +235,20 @@ CREATE TABLE IF NOT EXISTS configuracoes (
   CONSTRAINT horario_coerente CHECK (hora_fechamento > hora_abertura)
 );
 
+-- Números de WhatsApp do vendedor que recebe o handoff, por unidade (dois
+-- vendedores reais dividindo por tipo de evento: um para Casarão/Casa Pôr do
+-- Sol — casamento, 15 anos, corporativo —, outro para Casa da Árvore/Park
+-- Lagos/Shopping Park Lagos — festa infantil e recreação avulsa).
+-- ALTER em vez de coluna na CREATE TABLE acima: a tabela já existe em
+-- produção desde o estágio 8, e schema.sql é reaplicado por inteiro a cada
+-- deploy — só ALTER ... IF NOT EXISTS chega em quem já tem a tabela.
+ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS vendedor_whatsapp_por_unidade JSONB NOT NULL DEFAULT
+  '{"casa_da_arvore":"+5522974052903","park_lagos":"+5522974052903","shopping_park_lagos":"+5522974052903","casarao":"+5522997249462","casa_por_do_sol":"+5522997249462"}'::jsonb;
+-- Unidade ainda indefinida (ramo "outro", ou roteamento de casamento sem
+-- preferência informada) cai aqui — hoje o mesmo vendedor comercial que
+-- recebe casarão/casa pôr do sol.
+ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS vendedor_whatsapp_padrao TEXT NOT NULL DEFAULT '+5522997249462';
+
 -- Garante a linha única na primeira migração, sem sobrescrever ajuste já feito.
 INSERT INTO configuracoes (id) VALUES (true) ON CONFLICT (id) DO NOTHING;
 

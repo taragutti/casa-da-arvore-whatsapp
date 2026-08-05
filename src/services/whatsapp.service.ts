@@ -244,6 +244,8 @@ export async function enviarComTemplateOuTexto(params: {
 }
 
 export interface ResumoLeadParaVendedor {
+  /** Já resolvido por `determinarNumeroVendedor` (unidade → vendedor certo). */
+  numeroVendedor: string;
   whatsappCliente: string;
   nomeCliente: string | null;
   email: string | null;
@@ -475,6 +477,10 @@ export function montarVariaveisTemplateVendedor(r: ResumoLeadParaVendedor): stri
 /**
  * Notifica o vendedor no WhatsApp sobre um lead em handoff (Seção 5).
  *
+ * O destino (`resumo.numeroVendedor`) já vem resolvido por unidade — dois
+ * vendedores reais dividindo por tipo de evento — configurável em
+ * `/painel/configuracoes`, não mais uma env var fixa.
+ *
  * Usa template aprovado quando VENDEDOR_HANDOFF_TEMPLATE_NAME está definido
  * (entrega garantida, independente da janela de 24h da Meta); senão cai pra
  * texto livre, que só é entregue se o vendedor tiver mandado mensagem pro bot
@@ -490,12 +496,7 @@ export function montarVariaveisTemplateVendedor(r: ResumoLeadParaVendedor): stri
  * fallback — retentar como texto livre não resolveria e só mascararia a causa.
  */
 export async function notificarVendedor(resumo: ResumoLeadParaVendedor): Promise<void> {
-  if (!env.VENDEDOR_WHATSAPP_NUMBER) {
-    logger.warn("VENDEDOR_WHATSAPP_NUMBER não configurado — handoff notificado só por e-mail.");
-    return;
-  }
-
-  const destino = env.VENDEDOR_WHATSAPP_NUMBER;
+  const destino = resumo.numeroVendedor;
   const templateName = env.VENDEDOR_HANDOFF_TEMPLATE_NAME;
 
   if (!templateName) {

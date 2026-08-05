@@ -17,15 +17,15 @@ const envSchema = z.object({
   // se não configurado.
   HANDOFF_NOTIFICATION_EMAIL: z.string().optional(),
 
-  // Número de WhatsApp do vendedor que recebe o lead no handoff (Seção 5),
-  // em formato internacional (ex: +5522997546818). Se não configurado, o
-  // handoff continua notificando só por e-mail.
+  // O número de WhatsApp do vendedor que recebe o lead no handoff (Seção 5)
+  // MUDOU de env var fixa para configuração no banco (dois vendedores reais,
+  // um por grupo de unidades) — ver RegrasVendedor em handoff.service.ts e a
+  // tela /painel/configuracoes. Editável sem deploy.
   //
-  // ATENÇÃO: enviar pra este número é uma mensagem iniciada pela empresa —
+  // ATENÇÃO: enviar pra esses números é uma mensagem iniciada pela empresa —
   // a Meta só permite texto livre dentro de 24h da última mensagem que o
   // vendedor mandou pro número do bot. Fora dessa janela, o envio falha
   // (logado, sem quebrar o pipeline) até existir um template aprovado.
-  VENDEDOR_WHATSAPP_NUMBER: z.string().optional(),
 
   // Nome do template aprovado na Meta pra notificação de handoff. Quando
   // definido, a notificação do vendedor sai por template (funciona fora da

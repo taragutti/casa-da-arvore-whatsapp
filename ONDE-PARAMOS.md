@@ -1,4 +1,4 @@
-# Onde paramos — 31/07/2026
+# Onde paramos — 05/08/2026
 
 Registro de estado para retomar sem reconstruir contexto. Atualizar ao fim de
 cada sessão de trabalho.
@@ -14,8 +14,31 @@ cada sessão de trabalho.
 | 5 | Histórico de atividades | ⚠️ notas por lead; `raw_messages`/`demand_signals` fora |
 | 6 | API | ✅ escrita de leads e notas |
 | 7 | Frontend | ✅ painel com ações, login/logout, gestão de mídias (31/07) |
-| 8 | Workflows | ⚠️ funciona, mas só configurável mexendo em código |
+| 8 | Workflows | ✅ prazos, horário, SLA, vendedor por unidade e gatilhos editáveis em `/painel/configuracoes` (31/07, vendedor em 05/08) |
 | 9 | Agentes de IA | ✅ maduro |
+
+O único buraco de código restante é o **estágio 3**. O 5 é parcial por escolha.
+
+## Script guiado ligado em produção (01/08)
+
+`SCRIPT_FLUXO_ATIVO=true` no Railway desde 01/08, validado em conversa real.
+Muda duas coisas no comportamento: o filtro de relevância é ignorado (toda
+mensagem vira lead) e o handoff passa a ser decidido pelos nós do script, não
+pela classificação da IA.
+
+Junto com isso, em 01/08 foram fechados os três buracos do pós-aquisição
+(Seção 6 / Parte 10 do Script), commit `e734e6b`:
+
+- **Regressão corrigida:** com o script ativo, nenhum follow-up era agendado —
+  `agendarFollowUp` só era chamado pelo caminho de mídia progressiva, que o
+  script não usa. Quem abandonava a conversa no meio da qualificação nunca mais
+  recebia nada.
+- A régua de 2h agora repete a **pergunta pendente** em vez de falar do
+  "material que te enviei" para quem nunca recebeu material.
+- Implementados os dois gatilhos de ciclo de vida que faltavam: **aniversário
+  da criança** (1 semana antes) e **criança completando 14 anos** (convite pro
+  Casarão). Ambos dependem de `data_aniversario_crianca`; lead sem essa data
+  não entra na régua.
 
 ## Pendências abertas — valem mais que os estágios restantes
 
@@ -83,6 +106,16 @@ Pendência menor: o TTL padrão de template de utilidade é **10 minutos**. Se o
 celular do vendedor estiver offline nesse tempo, a notificação é descartada em
 silêncio. Vale configurar validade maior na tela do `handoff_vendedor`.
 
+**Ficaram faltando dois, criados em 01/08:** `aniversario_crianca` e
+`convite_15_anos` **ainda não existem na Meta** — precisam ser submetidos como
+Marketing. Corpo exato a submeter está em ENVIRONMENT.md, seção "Templates de
+ciclo de vida ainda por submeter"; tem que bater **letra por letra** com as
+constantes em `jobs/lifecycleFollowUp.cron.ts`, que são o fallback de texto
+livre. Nada a mudar no código depois da aprovação — o envio troca sozinho.
+
+Sem eles, essas duas réguas na prática não entregam: disparam meses ou anos
+depois do contato, sempre fora da janela de 24h, onde só template passa.
+
 ### 0. 🔴 BLOQUEIO: conta da Meta sem meio de pagamento (01/08/2026)
 
 **Nada que o sistema envie por iniciativa própria está sendo entregue.** Erro
@@ -116,20 +149,22 @@ Por que demorou a aparecer: o envio devolvia HTTP 200 e o log dizia "vendedor
 notificado". O 200 é só "aceitei para entregar"; o desfecho vem depois, por
 webhook de status — que era descartado. Corrigido no commit `3c4ed8a`.
 
-### 4. WhatsApp do vendedor não ativado
+### 4. Dois vendedores por unidade (05/08/2026) — ✅ resolvido
 
-O número definitivo é `+5522997546818`, mas **o WhatsApp dele ainda não foi
-ativado** — é a pendência real aqui. Não precisa de configuração nenhuma no
-Meta: a conta está em modo `LIVE`, basta ter WhatsApp comum funcionando no
-número.
+Superou a pendência antiga de vendedor único (`+5522997546818`, que nunca teve
+o WhatsApp ativado e não é mais usado pelo handoff). O handoff agora tem
+**dois vendedores reais**, com WhatsApp confirmado ativo, escolhidos pela
+unidade recomendada (ver ENVIRONMENT.md, seção "Vendedor que recebe o
+handoff"):
 
-Enquanto isso, `VENDEDOR_WHATSAPP_NUMBER` está apontando para o número de
-**teste** `+5522974026786` (definido em 01/08/2026 no Railway e no `.env`
-local), pra destravar os testes finais.
+| Vendedor | Número | Unidades |
+|---|---|---|
+| Comercial | `+5522997249462` | Casarão, Casa Pôr do Sol |
+| Festa infantil / recreação | `+5522974052903` | Casa da Árvore, Park Lagos, Shopping Park Lagos |
 
-**Quando o 6818 estiver ativo:** trocar a variável de volta no Railway e no
-`.env`, e atualizar ENVIRONMENT.md. É a única mudança necessária — não há nada
-disso no código.
+Configurável em `/painel/configuracoes`, sem deploy. Vale a pena confirmar em
+conversa real assim que possível (mandar "quanto custa?" simulando cada ramo e
+checar `status="delivered"` no log), mas não é mais bloqueio conhecido.
 
 ## Ambiente local
 
@@ -215,6 +250,29 @@ Registradas para não serem desfeitas por engano:
 - **Limites de tamanho/formato validados no upload, não no envio** — um vídeo de
   20MB entraria na biblioteca sem erro e só falharia semanas depois, no meio de
   uma conversa real, com o log longe da causa.
+- **O runner agenda a régua a cada pergunta pendente, sem checar duplicata** —
+  parece bug e não é: a régua se cancela sozinha comparando `ultima_interacao`
+  com o momento do agendamento, então cada resposta nova invalida os jobs
+  anteriores e sobra exatamente um vivo. Deduplicar na entrada exigiria estado
+  extra para o mesmo resultado.
+- **Retomada da pergunta pendente vai como texto livre, não template** — dentro
+  da janela de 24h isso é conversa de serviço: entrega sem depender de
+  aprovação e sem custo de conversa iniciada pela empresa (que hoje está
+  bloqueada pelo billing). Por isso só vale na régua de 2h; nas demais a janela
+  já fechou.
+- **Templates de aniversário sem variável de nome** — template com variável
+  exige aprovar o formato com exemplo, e o nome da criança nem sempre foi
+  extraído. Felicitação que erra o nome é pior que felicitação sem nome.
+- **Réguas de data comparam dia e mês separados, não montam a data do ano
+  corrente** — montar `2027-02-29` estoura em ano não bissexto.
+- **Tag de idempotência por ano no aniversário, única no convite de 15 anos** —
+  o aniversário se repete todo ano; fazer 14 anos acontece uma vez.
+- **Vendedor do handoff é config de banco por unidade, não env var** (05/08) —
+  são dois vendedores reais, não um. Mesmo eixo que já decide o SLA
+  (`UnidadeRecomendada`), então corporativo e 15 anos herdam o vendedor do
+  Casarão de graça (roteamento já resolve os dois pra lá). `isNumeroDaEquipe()`
+  virou async porque passou a ler a config em vez de comparar com uma env var
+  síncrona.
 
 ## Escopo deliberadamente não implementado
 
@@ -222,7 +280,10 @@ Não são esquecimentos:
 
 - **"3 mensagens de dúvida seguidas → handoff sugerido"** (Seção 5) — o
   documento não define o que conta como "mensagem de dúvida".
-- **"Aniversário do cliente/criança" e "criança completando 14 anos"** (Seção 6)
-  — exigem data de nascimento, e o schema só coleta idade no momento do evento.
 - **Textos de follow-up e ciclo de vida são autorais** — a Seção 6 define os
   gatilhos, não a redação. Revisar o tom antes de confiar em produção.
+
+Saiu desta lista em 01/08: "aniversário da criança" e "criança completando 14
+anos" estavam aqui como fora de escopo por suposta falta de data de nascimento
+no schema. Era leitura errada — `data_aniversario_crianca` já existia no ramo
+de recreação avulsa. Ambos implementados.
