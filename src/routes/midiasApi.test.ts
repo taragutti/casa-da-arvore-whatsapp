@@ -61,12 +61,14 @@ vi.mock("../db/client", () => ({
   },
 }));
 
-// Autenticação é testada em outro lugar; aqui interessa o comportamento da rota.
+// Autenticação e permissão são testadas em outro lugar; aqui interessa o
+// comportamento da rota — por isso o autor simulado já entra como admin.
 vi.mock("../middleware/auth", () => ({
   exigirLogin: (req: express.Request, _res: express.Response, next: express.NextFunction) => {
-    req.autor = { usuarioId: "u-1", nome: "Teste", compartilhado: false };
+    req.autor = { usuarioId: "u-1", nome: "Teste", compartilhado: false, papel: "admin", unidades: [] };
     next();
   },
+  exigirAdmin: (_req: express.Request, _res: express.Response, next: express.NextFunction) => next(),
 }));
 
 let base: string;

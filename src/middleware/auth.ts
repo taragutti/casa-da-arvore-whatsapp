@@ -3,7 +3,13 @@ import { Request, Response, NextFunction } from "express";
 import { env } from "../config/env";
 import { logger } from "../config/logger";
 import { lerSessao } from "../services/session.service";
-import { buscarPorId, existeUsuarioAtivo, Usuario } from "../repositories/usuarios.repo";
+import {
+  buscarPorId,
+  existeUsuarioAtivo,
+  listarUnidadesDoUsuario,
+  PapelUsuario,
+} from "../repositories/usuarios.repo";
+import { UnidadeRecomendada } from "../services/routing.service";
 
 export const COOKIE_SESSAO = "casa_sessao";
 
@@ -13,6 +19,10 @@ export interface Autor {
   nome: string;
   /** true quando entrou pela credencial compartilhada de bootstrap, não por conta individual. */
   compartilhado: boolean;
+  /** Bootstrap sempre entra como 'admin' — é o modo que existe justamente para configurar o sistema pela primeira vez. */
+  papel: PapelUsuario;
+  /** Só relevante para papel 'atendente' (estágio 3); admin não é filtrado por unidade. */
+  unidades: UnidadeRecomendada[];
 }
 
 declare module "express-serve-static-core" {
@@ -49,7 +59,11 @@ async function identificar(req: Request): Promise<Autor | null> {
   // Usuário desativado depois do login: a sessão existe mas o acesso acabou.
   if (!usuario || !usuario.ativo) return null;
 
-  return { usuarioId: usuario.id, nome: usuario.nome, compartilhado: false };
+  // Unidades só importam pra atendente — buscar pra admin seria consulta
+  // descartada em toda requisição, e admin nunca é filtrado por unidade.
+  const unidades = usuario.papel === "atendente" ? await listarUnidadesDoUsuario(usuario.id) : [];
+
+  return { usuarioId: usuario.id, nome: usuario.nome, compartilhado: false, papel: usuario.papel, unidades };
 }
 
 /**
@@ -109,7 +123,45 @@ function autenticarBootstrap(req: Request): Autor | null {
     return null;
   }
 
-  return { usuarioId: null, nome: "acesso compartilhado (bootstrap)", compartilhado: true };
+  return { usuarioId: null, nome: "acesso compartilhado (bootstrap)", compartilhado: true, papel: "admin", unidades: [] };
+}
+
+/**
+ * Exige papel 'admin' (estágio 3). Sempre encadeado DEPOIS de `exigirLogin` —
+ * assume que `req.autor` já foi preenchido, então não repete a checagem de
+ * sessão.
+ */
+export function exigirAdmin(req: Request, res: Response, next: NextFunction): void {
+  if (req.autor?.papel === "admin") {
+    next();
+    return;
+  }
+  responderProibido(req, res);
+}
+
+/**
+ * Regra de visibilidade do estágio 3: admin sempre pode; atendente só pode em
+ * lead da(s) unidade(s) dele — mas lead sem unidade decidida ainda (`null`)
+ * fica liberado pra todo atendente, senão ninguém trabalharia nele até a
+ * qualificação chegar lá.
+ */
+export function autorPodeAcessarUnidade(autor: Autor, unidade: UnidadeRecomendada | null): boolean {
+  if (autor.papel === "admin") return true;
+  if (unidade === null) return true;
+  return autor.unidades.includes(unidade);
+}
+
+/**
+ * Diferente de "não autenticado": aqui a sessão é válida, só falta permissão.
+ * Navegador vai para o painel com aviso; chamada de API recebe 403 em JSON.
+ */
+function responderProibido(req: Request, res: Response): void {
+  const querHtml = req.accepts(["html", "json"]) === "html";
+  if (querHtml && req.method === "GET") {
+    res.redirect(302, "/painel?erro=sem_permissao");
+    return;
+  }
+  res.status(403).json({ erro: "Sem permissão para esta ação." });
 }
 
 /**

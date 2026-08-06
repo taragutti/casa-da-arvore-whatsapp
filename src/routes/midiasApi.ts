@@ -1,6 +1,6 @@
 import express, { Router, Request, Response } from "express";
 import { logger } from "../config/logger";
-import { exigirLogin } from "../middleware/auth";
+import { exigirLogin, exigirAdmin } from "../middleware/auth";
 import { comErro } from "../middleware/asyncHandler";
 import {
   ETAPAS_MIDIA,
@@ -36,7 +36,7 @@ export const midiasApiRouter = Router();
 const corpoBinario = express.raw({ type: () => true, limit: LIMITE_MAXIMO_BYTES });
 
 /** GET /api/midias — biblioteca completa, inclusive itens desativados. */
-midiasApiRouter.get("/api/midias", comErro(exigirLogin), comErro(async (_req: Request, res: Response) => {
+midiasApiRouter.get("/api/midias", comErro(exigirLogin), comErro(exigirAdmin), comErro(async (_req: Request, res: Response) => {
   res.json(await listarTodasMidias());
 }));
 
@@ -51,6 +51,7 @@ midiasApiRouter.get("/api/midias", comErro(exigirLogin), comErro(async (_req: Re
 midiasApiRouter.post(
   "/api/midias",
   comErro(exigirLogin),
+  comErro(exigirAdmin),
   corpoBinario,
   comErro(async (req: Request, res: Response) => {
     const query = uploadQuerySchema.safeParse(req.query);
@@ -117,7 +118,7 @@ midiasApiRouter.post(
 );
 
 /** PATCH /api/midias/:codigo — ativa ou desativa sem apagar o arquivo. */
-midiasApiRouter.patch("/api/midias/:codigo", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
+midiasApiRouter.patch("/api/midias/:codigo", comErro(exigirLogin), comErro(exigirAdmin), comErro(async (req: Request, res: Response) => {
   const codigo = codigoParamSchema.safeParse(req.params.codigo);
   if (!codigo.success) {
     res.status(400).json({ erro: codigo.error.issues[0]?.message });
@@ -143,7 +144,7 @@ midiasApiRouter.patch("/api/midias/:codigo", comErro(exigirLogin), comErro(async
 }));
 
 /** DELETE /api/midias/:codigo — remove registro e arquivo. */
-midiasApiRouter.delete("/api/midias/:codigo", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
+midiasApiRouter.delete("/api/midias/:codigo", comErro(exigirLogin), comErro(exigirAdmin), comErro(async (req: Request, res: Response) => {
   const codigo = codigoParamSchema.safeParse(req.params.codigo);
   if (!codigo.success) {
     res.status(400).json({ erro: codigo.error.issues[0]?.message });

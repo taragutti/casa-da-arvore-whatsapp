@@ -213,8 +213,13 @@ export function renderizarPainelHtml(leads: LeadPainel[], autor: Autor): string 
       <p class="sub">${leads.length} lead(s) · ${emAtendimento} em atendimento humano · mostrando os 200 mais recentes</p>
     </div>
     <div class="usuario">
-      <a class="sair" href="/painel/midias">Mídias</a>
-      <a class="sair" href="/painel/configuracoes">Configurações</a>
+      ${
+        autor.papel === "admin"
+          ? `<a class="sair" href="/painel/midias">Mídias</a>
+             <a class="sair" href="/painel/configuracoes">Configurações</a>
+             <a class="sair" href="/painel/usuarios">Usuários</a>`
+          : ""
+      }
       <span>${escapeHtml(autor.nome)}</span>
       <form method="post" action="/logout"><button type="submit" class="sair">Sair</button></form>
     </div>

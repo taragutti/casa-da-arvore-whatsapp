@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { exigirLogin } from "../middleware/auth";
+import { exigirLogin, exigirAdmin } from "../middleware/auth";
 import { comErro } from "../middleware/asyncHandler";
 import { buscarLeadsParaPainel } from "../repositories/painel.repo";
 import { renderizarPainelHtml } from "../services/painel.service";
@@ -7,15 +7,25 @@ import { contarMidiasAtivasPorEtapa, listarTodasMidias } from "../repositories/m
 import { renderizarPainelMidiasHtml } from "../services/midiasPainel.service";
 import { renderizarConfigHtml } from "../services/configPainel.service";
 import { buscarConfiguracoes, CONFIGURACOES_PADRAO } from "../repositories/configuracoes.repo";
+import { listarUsuariosComUnidades } from "../repositories/usuarios.repo";
+import { renderizarUsuariosHtml } from "../services/usuariosPainel.service";
 
 export const painelRouter = Router();
 
-/** GET /painel — painel mínimo de visibilidade sobre os campos de CRM consolidados (Seção 7). */
+/**
+ * GET /painel — painel mínimo de visibilidade sobre os campos de CRM
+ * consolidados (Seção 7).
+ *
+ * Atendente (estágio 3) só vê leads da(s) unidade(s) vinculada(s) a ele; admin
+ * vê tudo, sempre. Lead sem unidade decidida ainda continua visível a todo
+ * atendente — ver `buscarLeadsParaPainel`.
+ */
 painelRouter.get("/painel", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
-  const leads = await buscarLeadsParaPainel();
+  const autor = req.autor!;
+  const leads = await buscarLeadsParaPainel(autor.papel === "atendente" ? autor.unidades : undefined);
   res
     .set("Content-Type", "text/html; charset=utf-8")
-    .send(renderizarPainelHtml(leads, req.autor!));
+    .send(renderizarPainelHtml(leads, autor));
 }));
 
 /**
@@ -25,7 +35,7 @@ painelRouter.get("/painel", comErro(exigirLogin), comErro(async (req: Request, r
  * dado nenhum, e carregar 200 leads para quem só quer trocar uma foto seria
  * desperdício em toda visita.
  */
-painelRouter.get("/painel/midias", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
+painelRouter.get("/painel/midias", comErro(exigirLogin), comErro(exigirAdmin), comErro(async (req: Request, res: Response) => {
   const [itens, contagens] = await Promise.all([listarTodasMidias(), contarMidiasAtivasPorEtapa()]);
   res
     .set("Content-Type", "text/html; charset=utf-8")
@@ -39,9 +49,21 @@ painelRouter.get("/painel/midias", comErro(exigirLogin), comErro(async (req: Req
  * padrão em vez de erro, porque a tela é útil para CONSULTAR a regra vigente
  * mesmo antes de alguém decidir mudar algo.
  */
-painelRouter.get("/painel/configuracoes", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
+painelRouter.get("/painel/configuracoes", comErro(exigirLogin), comErro(exigirAdmin), comErro(async (req: Request, res: Response) => {
   const config = (await buscarConfiguracoes()) ?? CONFIGURACOES_PADRAO;
   res
     .set("Content-Type", "text/html; charset=utf-8")
     .send(renderizarConfigHtml(config, req.autor!));
+}));
+
+/**
+ * GET /painel/usuarios — gestão de contas e papéis (estágio 3, admin-only).
+ * Tela nova: até aqui, criar/desativar usuário só existia via
+ * `npm run criar-usuario` no terminal.
+ */
+painelRouter.get("/painel/usuarios", comErro(exigirLogin), comErro(exigirAdmin), comErro(async (req: Request, res: Response) => {
+  const usuarios = await listarUsuariosComUnidades();
+  res
+    .set("Content-Type", "text/html; charset=utf-8")
+    .send(renderizarUsuariosHtml(usuarios, req.autor!));
 }));

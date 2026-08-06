@@ -1,13 +1,31 @@
 import { Router, Request, Response } from "express";
 import { logger } from "../config/logger";
-import { exigirLogin } from "../middleware/auth";
+import { exigirLogin, autorPodeAcessarUnidade } from "../middleware/auth";
 import { comErro } from "../middleware/asyncHandler";
-import { atualizarLead, leadExiste } from "../repositories/leads.repo";
+import { atualizarLead, buscarUnidadeEfetivaDoLead } from "../repositories/leads.repo";
 import { devolverAoBot } from "../repositories/conversationState.repo";
 import { inserirNota, listarNotas } from "../repositories/leadNotes.repo";
 import { idParamSchema, atualizacaoSchema, notaSchema } from "./leadsApi.schemas";
 
 export const leadsApiRouter = Router();
+
+/**
+ * Carrega o lead pra checagem de existência + permissão numa só consulta.
+ * Responde 404/403 e retorna `null` quando a rota deve parar aqui — o
+ * chamador só segue quando o retorno não é `null`.
+ */
+async function autorizarAcessoAoLead(req: Request, res: Response, leadId: string): Promise<boolean> {
+  const lead = await buscarUnidadeEfetivaDoLead(leadId);
+  if (!lead) {
+    res.status(404).json({ erro: "lead não encontrado" });
+    return false;
+  }
+  if (!autorPodeAcessarUnidade(req.autor!, lead.unidade)) {
+    res.status(403).json({ erro: "Sem permissão para este lead." });
+    return false;
+  }
+  return true;
+}
 
 /**
  * PATCH /api/leads/:id — atualização manual pelo vendedor/gerente (estágio 6).
@@ -30,10 +48,7 @@ leadsApiRouter.patch("/api/leads/:id", comErro(exigirLogin), comErro(async (req:
     return;
   }
 
-  if (!(await leadExiste(leadId))) {
-    res.status(404).json({ erro: "lead não encontrado" });
-    return;
-  }
+  if (!(await autorizarAcessoAoLead(req, res, leadId))) return;
 
   const { status, unidade_confirmada, devolver_ao_bot } = parsed.data;
 
@@ -79,10 +94,7 @@ leadsApiRouter.post("/api/leads/:id/notas", comErro(exigirLogin), comErro(async 
     return;
   }
 
-  if (!(await leadExiste(leadId))) {
-    res.status(404).json({ erro: "lead não encontrado" });
-    return;
-  }
+  if (!(await autorizarAcessoAoLead(req, res, leadId))) return;
 
   // Autoria vem da SESSÃO, não do corpo da requisição: se o cliente pudesse
   // escolher o autor, a nota não provaria nada sobre quem a escreveu.
@@ -100,6 +112,9 @@ leadsApiRouter.get("/api/leads/:id/notas", comErro(exigirLogin), comErro(async (
     res.status(400).json({ erro: idResult.error.issues[0]?.message });
     return;
   }
+  const leadId = idResult.data;
 
-  res.json(await listarNotas(idResult.data));
+  if (!(await autorizarAcessoAoLead(req, res, leadId))) return;
+
+  res.json(await listarNotas(leadId));
 }));

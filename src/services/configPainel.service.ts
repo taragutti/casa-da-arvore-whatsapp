@@ -129,6 +129,7 @@ export function renderizarConfigHtml(config: Configuracoes, autor: Autor): strin
     <div class="usuario">
       <a class="voltar" href="/painel">← Leads</a>
       <a class="voltar" href="/painel/midias">Mídias</a>
+      <a class="voltar" href="/painel/usuarios">Usuários</a>
       <span>${escapeHtml(autor.nome)}</span>
       <form method="post" action="/logout"><button type="submit" class="sair">Sair</button></form>
     </div>

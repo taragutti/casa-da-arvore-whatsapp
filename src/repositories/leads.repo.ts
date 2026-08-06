@@ -229,3 +229,17 @@ export async function leadExiste(leadId: string): Promise<boolean> {
   const result = await pool.query(`SELECT 1 FROM leads WHERE id = $1`, [leadId]);
   return (result.rowCount ?? 0) > 0;
 }
+
+/**
+ * Unidade efetiva do lead (confirmada, senão recomendada) pra checagem de
+ * permissão do estágio 3 — atendente só age em lead da(s) unidade(s) dele.
+ * `null` de retorno diferencia "não existe" de "existe mas sem unidade
+ * decidida ainda" (que o autor.repo trata como visível a todo atendente).
+ */
+export async function buscarUnidadeEfetivaDoLead(leadId: string): Promise<{ unidade: UnidadeRecomendada | null } | null> {
+  const result = await pool.query<{ unidade: UnidadeRecomendada | null }>(
+    `SELECT COALESCE(unidade_confirmada, unidade_recomendada) AS unidade FROM leads WHERE id = $1`,
+    [leadId]
+  );
+  return result.rows[0] ?? null;
+}

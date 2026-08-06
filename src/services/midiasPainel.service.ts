@@ -235,6 +235,7 @@ export function renderizarPainelMidiasHtml(
     <div class="usuario">
       <a class="voltar" href="/painel">← Leads</a>
       <a class="voltar" href="/painel/configuracoes">Configurações</a>
+      <a class="voltar" href="/painel/usuarios">Usuários</a>
       <span>${escapeHtml(autor.nome)}</span>
       <form method="post" action="/logout"><button type="submit" class="sair">Sair</button></form>
     </div>

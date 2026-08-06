@@ -1,5 +1,6 @@
 import { pool } from "../db/client";
 import { LeadNote, listarNotasPorLeads } from "./leadNotes.repo";
+import { UnidadeRecomendada } from "../services/routing.service";
 
 export interface LeadPainel {
   id: string;
@@ -32,8 +33,14 @@ export interface LeadPainel {
  *
  * As notas vêm numa segunda query em lote (não por lead) para não fazer 200
  * consultas ao montar a página.
+ *
+ * `unidadesPermitidas` implementa a visibilidade por unidade do estágio 3:
+ * omitido (admin) não filtra nada; array (atendente) restringe aos leads cuja
+ * unidade efetiva (confirmada, senão recomendada) está na lista — e SEMPRE
+ * inclui leads sem unidade decidida ainda, pra nenhum lead ficar sem ninguém
+ * vendo ele só porque a qualificação não chegou lá.
  */
-export async function buscarLeadsParaPainel(): Promise<LeadPainel[]> {
+export async function buscarLeadsParaPainel(unidadesPermitidas?: UnidadeRecomendada[]): Promise<LeadPainel[]> {
   const result = await pool.query<Omit<LeadPainel, "notas">>(
     `SELECT
        l.id, l.whatsapp_number, l.nome_cliente, l.email, l.tipo_evento, l.data_evento,
@@ -42,8 +49,12 @@ export async function buscarLeadsParaPainel(): Promise<LeadPainel[]> {
        cs.ramo, cs.etapa_atual, cs.dados_coletados, cs.em_atendimento_humano
      FROM leads l
      LEFT JOIN conversation_state cs ON cs.lead_id = l.id
+     WHERE $1::unidade_enum[] IS NULL
+        OR COALESCE(l.unidade_confirmada, l.unidade_recomendada) = ANY($1)
+        OR COALESCE(l.unidade_confirmada, l.unidade_recomendada) IS NULL
      ORDER BY l.ultima_interacao DESC
-     LIMIT 200`
+     LIMIT 200`,
+    [unidadesPermitidas ?? null]
   );
 
   const notasPorLead = await listarNotasPorLeads(result.rows.map((l) => l.id));

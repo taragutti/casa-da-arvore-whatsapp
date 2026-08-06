@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { logger } from "../config/logger";
-import { exigirLogin } from "../middleware/auth";
+import { exigirLogin, exigirAdmin } from "../middleware/auth";
 import { comErro } from "../middleware/asyncHandler";
 import { buscarConfiguracoes, salvarConfiguracoes, CONFIGURACOES_PADRAO } from "../repositories/configuracoes.repo";
 import { invalidarCacheConfig } from "../services/config.service";
@@ -11,6 +11,7 @@ export const configApiRouter = Router();
 configApiRouter.get(
   "/api/configuracoes",
   comErro(exigirLogin),
+  comErro(exigirAdmin),
   comErro(async (_req: Request, res: Response) => {
     res.json((await buscarConfiguracoes()) ?? CONFIGURACOES_PADRAO);
   })
@@ -19,6 +20,7 @@ configApiRouter.get(
 configApiRouter.put(
   "/api/configuracoes",
   comErro(exigirLogin),
+  comErro(exigirAdmin),
   comErro(async (req: Request, res: Response) => {
     const parsed = configSchema.safeParse(req.body);
     if (!parsed.success) {

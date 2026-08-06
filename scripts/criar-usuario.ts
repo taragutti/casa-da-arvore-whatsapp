@@ -68,9 +68,13 @@ async function main() {
   const confirmacao = await perguntarSenha("Confirme a senha: ");
   if (senha !== confirmacao) throw new Error("As senhas não coincidem.");
 
-  const usuario = await criarUsuario(email, nome, await hashSenha(senha));
-  console.log(`\n✓ Usuário criado: ${usuario.nome} <${usuario.email}>`);
-  console.log("  Entre em /login com esse e-mail e senha.\n");
+  // Sempre 'admin': este script é o caminho de bootstrap/emergência (funciona
+  // sem ninguém logado ainda). Contas de atendente, com unidade vinculada,
+  // se criam por /painel/usuarios — que só existe depois que um admin entra.
+  const usuario = await criarUsuario(email, nome, await hashSenha(senha), "admin");
+  console.log(`\n✓ Usuário criado (admin): ${usuario.nome} <${usuario.email}>`);
+  console.log("  Entre em /login com esse e-mail e senha.");
+  console.log("  Contas de atendente: crie pela tela /painel/usuarios, já logado.\n");
 }
 
 main()

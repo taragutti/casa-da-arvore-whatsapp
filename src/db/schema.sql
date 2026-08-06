@@ -148,6 +148,29 @@ CREATE TABLE IF NOT EXISTS usuarios (
 
 CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(lower(email));
 
+-- Permissões (estágio 3). Dois papéis: 'admin' administra o sistema
+-- (configurações, biblioteca de mídia, outros usuários); 'atendente' só
+-- trabalha leads. DEFAULT 'admin' preserva o comportamento atual pra quem já
+-- tinha conta antes deste campo existir — ninguém perde acesso sem querer.
+DO $$ BEGIN
+  CREATE TYPE papel_usuario_enum AS ENUM ('admin', 'atendente');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS papel papel_usuario_enum NOT NULL DEFAULT 'admin';
+
+-- Unidades que um atendente representa — só tem sentido pra papel
+-- 'atendente' (admin vê tudo, independente do que estiver aqui). Lead sem
+-- unidade decidida ainda (unidade_recomendada e unidade_confirmada nulos)
+-- continua visível a todo atendente: escondê-lo de todo mundo até a unidade
+-- ser decidida deixaria o lead sem ninguém trabalhando nele.
+CREATE TABLE IF NOT EXISTS usuario_unidades (
+  usuario_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  unidade unidade_enum NOT NULL,
+  PRIMARY KEY (usuario_id, unidade)
+);
+
 -- 8. lead_notes: observações escritas por quem atende (vendedor/gerente).
 --    Append-only de propósito: nota é registro do que se sabia naquele
 --    momento, não campo editável — e é a primeira peça de um histórico

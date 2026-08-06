@@ -12,6 +12,7 @@ import { whatsappRouter } from "./routes/whatsapp";
 import { painelRouter } from "./routes/painel";
 import { leadsApiRouter } from "./routes/leadsApi";
 import { midiasApiRouter } from "./routes/midiasApi";
+import { usuariosApiRouter } from "./routes/usuariosApi";
 import { midiaPublicaRouter } from "./routes/midiaPublica";
 import { authRouter } from "./routes/auth";
 import { garantirDiretorio, diretorioBase } from "./services/mediaStorage.service";
@@ -62,6 +63,7 @@ app.use(painelRouter);
 app.use(leadsApiRouter);
 app.use(configApiRouter);
 app.use(midiasApiRouter);
+app.use(usuariosApiRouter);
 // Rota pública (sem autenticação) — é por ela que os servidores da Meta baixam
 // o arquivo para entregar ao cliente. Ver comentário em routes/midiaPublica.ts.
 app.use(midiaPublicaRouter);
