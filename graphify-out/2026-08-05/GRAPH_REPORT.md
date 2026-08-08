@@ -1,11 +1,11 @@
 # Graph Report - CASA DA ARVORE FLUXO CRM  (2026-08-05)
 
 ## Corpus Check
-- 107 files · ~74,700 words
+- 107 files · ~73,372 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 735 nodes · 1546 edges · 41 communities (34 shown, 7 thin omitted)
+- 731 nodes · 1540 edges · 43 communities (36 shown, 7 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 3 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
@@ -52,6 +52,8 @@
 - package.json
 - GatilhoHandoff
 - node-cron
+- painel.ts
+- configPainel.service.ts
 - usuariosApi.test.ts
 
 ## God Nodes (most connected - your core abstractions)
@@ -81,23 +83,23 @@
 ## Import Cycles
 - None detected.
 
-## Communities (41 total, 7 thin omitted)
+## Communities (43 total, 7 thin omitted)
 
 ### Community 0 - "server.ts"
-Cohesion: 0.07
-Nodes (42): env, envSchema, parsed, PORT, logger, redisApp, checkDbConnection(), scheduleLifecycleFollowUpJob() (+34 more)
+Cohesion: 0.06
+Nodes (45): env, envSchema, parsed, PORT, redisApp, checkDbConnection(), comErro(), tratarErros() (+37 more)
 
 ### Community 1 - "monthlyBriefing.cron.ts"
-Cohesion: 0.19
-Nodes (18): mesAnterior(), pad2(), periodoDeString(), PeriodoRange, runMonthlyBriefingJob(), scheduleMonthlyBriefingJob(), DemandSignalRow, findDemandSignalsBetween() (+10 more)
+Cohesion: 0.14
+Nodes (25): mesAnterior(), pad2(), periodoDeString(), PeriodoRange, runMonthlyBriefingJob(), scheduleMonthlyBriefingJob(), DemandSignalRow, findDemandSignalsBetween() (+17 more)
 
 ### Community 2 - "What You Must Do When Invoked"
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
 ### Community 3 - "anthropic.service.ts"
-Cohesion: 0.13
-Nodes (23): main(), MENSAGENS_DE_TESTE, extractFromMessage(), FormatoFesta15Anos, FORMATOS_15_ANOS, GatilhoEmocional, GATILHOS_EMOCIONAIS, getClient() (+15 more)
+Cohesion: 0.10
+Nodes (28): main(), MENSAGENS_DE_TESTE, DadosPorRamo, extractFromMessage(), FormatoFesta15Anos, FORMATOS_15_ANOS, GatilhoEmocional, GATILHOS_EMOCIONAIS (+20 more)
 
 ### Community 4 - "compilerOptions"
 Cohesion: 0.09
@@ -112,8 +114,8 @@ Cohesion: 0.12
 Nodes (17): devDependencies, pino-pretty, tsx, @types/express, @types/node, @types/node-cron, @types/pg, typescript (+9 more)
 
 ### Community 7 - "scripts"
-Cohesion: 0.08
-Nodes (51): startMessageWorker(), getEtapaMidiaAtual(), registrarEnvioMidia(), getUltimaInteracao(), buscarMidias(), obterEstadoScript(), salvarEstadoScript(), obterConfig() (+43 more)
+Cohesion: 0.06
+Nodes (74): logger, pool, startMessageWorker(), apenasPreenchidos(), atualizarTentativasSemClassificacao(), EstadoHandoff, getEstadoHandoff(), getEtapaMidiaAtual() (+66 more)
 
 ### Community 8 - "Casa da Árvore — Automação Comercial e Inteligência de Demanda"
 Cohesion: 0.09
@@ -144,32 +146,32 @@ Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ### Community 23 - "mediaEngine.service.ts"
-Cohesion: 0.07
-Nodes (46): main(), perguntar(), perguntarSenha(), rl, saida, SaidaSilenciavel, autenticarBootstrap(), Autor (+38 more)
+Cohesion: 0.08
+Nodes (42): main(), perguntar(), perguntarSenha(), rl, saida, SaidaSilenciavel, autenticarBootstrap(), Autor (+34 more)
 
 ### Community 24 - "email.service.ts"
-Cohesion: 0.07
-Nodes (53): CategoriaMidia, TipoMidia, RamoEvento, campoMinutos(), campoTelefone(), LABEL_UNIDADE, listaPalavras(), porExtenso() (+45 more)
+Cohesion: 0.16
+Nodes (21): CategoriaMidia, TipoMidia, LoginPageParams, renderizarLoginHtml(), cardMidia(), ContagemEtapa, etapaDoItem(), ETAPAS (+13 more)
 
 ### Community 25 - "messageProcessing.service.ts"
-Cohesion: 0.12
-Nodes (22): ReguaFollowUp, AtualizacaoConfig, Configuracoes, LinhaConfig, ConfigEntrada, configSchema, valido, buscarConfiguracoes (+14 more)
+Cohesion: 0.09
+Nodes (32): ReguaFollowUp, AtualizacaoConfig, buscarConfiguracoes(), Configuracoes, CONFIGURACOES_PADRAO, daLinha(), LinhaConfig, salvarConfiguracoes() (+24 more)
 
 ### Community 26 - "leads.repo.ts"
 Cohesion: 0.05
 Nodes (40): FIM_RECREACAO, N0_COMERCIAL, N0_FORA_HORARIO, N1, N10C, N2A, N2B, N2C (+32 more)
 
 ### Community 28 - "server.ts"
-Cohesion: 0.07
-Nodes (39): buscarMidiaPorCodigo(), definirMidiaAtiva(), gerarProximoCodigo(), inserirMidia(), listarTodasMidias(), MediaItem, MediaItemAdmin, removerMidia() (+31 more)
+Cohesion: 0.13
+Nodes (19): buscarMidiaPorCodigo(), definirMidiaAtiva(), gerarProximoCodigo(), inserirMidia(), MediaItem, MediaItemAdmin, removerMidia(), SIGLA_CATEGORIA (+11 more)
 
 ### Community 29 - "Onde paramos — 31/07/2026"
 Cohesion: 0.13
 Nodes (14): 0. 🔴 BLOQUEIO: conta da Meta sem meio de pagamento (01/08/2026, reconfirmado 05/08), 1. Primeiro usuário em produção — ✅ já existia, verificado em 05/08/2026, 2. `media_library` e volume de mídia — ✅ já resolvidos, verificado em 05/08/2026, 3. Templates da Meta — ✅ resolvido em 01/08/2026, 4. Dois vendedores por unidade (05/08/2026) — ✅ resolvido, Ambiente local, Decisões de arquitetura que não são óbvias no código, Escopo deliberadamente não implementado (+6 more)
 
 ### Community 30 - "mediaLote.service.test.ts"
-Cohesion: 0.09
-Nodes (33): pool, apenasPreenchidos(), atualizarTentativasSemClassificacao(), devolverAoBot(), EstadoHandoff, getEstadoHandoff(), marcarEmAtendimentoHumano(), upsertConversationState() (+25 more)
+Cohesion: 0.20
+Nodes (7): agendarFollowUp, buscarMidias, enviarDocumento, enviarImagem, enviarTexto, getEtapaMidiaAtual, registrarEnvioMidia
 
 ### Community 31 - "mediaEspera.service.test.ts"
 Cohesion: 0.25
@@ -180,16 +182,16 @@ Cohesion: 0.40
 Nodes (3): DIRETORIO, FOTO, linhas
 
 ### Community 33 - "messageProcessing.service.ts"
-Cohesion: 0.15
-Nodes (20): runLifecycleFollowUpJob(), TEMPLATES_CICLO_DE_VIDA, adicionarTag(), arquivarLeadFrio(), AtualizacaoLead, atualizarLead(), buscarAniversariosCasamento(), buscarAniversariosDeCrianca() (+12 more)
+Cohesion: 0.11
+Nodes (28): runLifecycleFollowUpJob(), scheduleLifecycleFollowUpJob(), TEMPLATES_CICLO_DE_VIDA, autorPodeAcessarUnidade(), devolverAoBot(), inserirNota(), LeadNote, listarNotas() (+20 more)
 
 ### Community 34 - "scriptEngine.service.ts"
 Cohesion: 0.11
-Nodes (20): casarOpcao(), CONVIDADOS_POR_FAIXA, convidadosDaFaixa(), EstadoScript, Faq, INVESTIMENTO_POR_FAIXA, investimentoDaFaixa(), NoQuePergunta (+12 more)
+Nodes (20): GatilhoHandoff, ResultadoHandoff, CONVIDADOS_POR_FAIXA, convidadosDaFaixa(), EstadoScript, Faq, Interrupcao, INVESTIMENTO_POR_FAIXA (+12 more)
 
 ### Community 35 - "scriptEngine.service.test.ts"
 Cohesion: 0.16
-Nodes (17): Acao, avancar(), contem(), ContextoScript, detectarFaq(), detectarInterrupcao(), deveFazerN7C(), esperaResposta() (+9 more)
+Nodes (18): Acao, avancar(), casarOpcao(), contem(), detectarFaq(), detectarInterrupcao(), deveFazerN7C(), esperaResposta() (+10 more)
 
 ### Community 36 - "scripts"
 Cohesion: 0.20
@@ -200,32 +202,40 @@ Cohesion: 0.33
 Nodes (5): description, name, private, type, version
 
 ### Community 38 - "GatilhoHandoff"
-Cohesion: 0.67
-Nodes (3): GatilhoHandoff, ResultadoHandoff, Interrupcao
+Cohesion: 0.29
+Nodes (11): blocoDadosColetados(), blocoNotas(), cardLead(), formatarData(), formatarValor(), LABEL_RAMO, LABEL_STATUS, LABEL_UNIDADE (+3 more)
+
+### Community 40 - "painel.ts"
+Cohesion: 0.29
+Nodes (8): contarMidiasAtivasPorEtapa(), listarTodasMidias(), painelRouter, checkboxesUnidade(), LABEL_UNIDADE, linhaUsuario(), renderizarUsuariosHtml(), UNIDADES
+
+### Community 41 - "configPainel.service.ts"
+Cohesion: 0.39
+Nodes (7): campoMinutos(), campoTelefone(), LABEL_UNIDADE, listaPalavras(), porExtenso(), REGUAS, renderizarConfigHtml()
 
 ### Community 42 - "usuariosApi.test.ts"
-Cohesion: 0.25
-Nodes (5): CRIAR_ATENDENTE, LinhaUsuario, unidadesPorUsuario, usuarios, usuariosComNotas
+Cohesion: 0.33
+Nodes (4): CRIAR_ATENDENTE, LinhaUsuario, unidadesPorUsuario, usuarios
 
 ## Knowledge Gaps
-- **264 isolated node(s):** `name`, `version`, `description`, `private`, `type` (+259 more)
+- **263 isolated node(s):** `name`, `version`, `description`, `private`, `type` (+258 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `UnidadeRecomendada` connect `messageProcessing.service.ts` to `messageProcessing.service.ts`, `scriptEngine.service.ts`, `scripts`, `mediaEngine.service.ts`, `email.service.ts`, `leads.repo.ts`, `server.ts`, `mediaLote.service.test.ts`?**
+- **Why does `UnidadeRecomendada` connect `messageProcessing.service.ts` to `messageProcessing.service.ts`, `monthlyBriefing.cron.ts`, `anthropic.service.ts`, `scriptEngine.service.ts`, `scripts`, `painel.ts`, `configPainel.service.ts`, `mediaEngine.service.ts`, `email.service.ts`, `leads.repo.ts`, `server.ts`?**
   _High betweenness centrality (0.055) - this node is a cross-community bridge._
-- **Why does `logger` connect `server.ts` to `messageProcessing.service.ts`, `monthlyBriefing.cron.ts`, `anthropic.service.ts`, `scripts`, `mediaEngine.service.ts`, `email.service.ts`, `server.ts`, `mediaLote.service.test.ts`?**
+- **Why does `logger` connect `scripts` to `server.ts`, `messageProcessing.service.ts`, `monthlyBriefing.cron.ts`, `anthropic.service.ts`, `mediaEngine.service.ts`, `messageProcessing.service.ts`, `server.ts`?**
   _High betweenness centrality (0.048) - this node is a cross-community bridge._
+- **Why does `escapeHtml()` connect `email.service.ts` to `GatilhoHandoff`, `configPainel.service.ts`, `painel.ts`, `monthlyBriefing.cron.ts`?**
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _264 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _263 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `server.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.07115384615384615 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05913461538461538 - nodes in this community are weakly interconnected._
+- **Should `monthlyBriefing.cron.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.13978494623655913 - nodes in this community are weakly interconnected._
 - **Should `What You Must Do When Invoked` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._
-- **Should `anthropic.service.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
-- **Should `compilerOptions` be split into smaller, more focused modules?**
-  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._

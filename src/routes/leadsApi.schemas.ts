@@ -30,3 +30,12 @@ export const atualizacaoSchema = z
 export const notaSchema = z.object({
   texto: z.string().trim().min(1, "texto da nota é obrigatório").max(2000),
 });
+
+/**
+ * Mensagem do chat do painel pro cliente. 4096 é o limite de corpo de texto
+ * da própria Cloud API — validar aqui devolve erro legível em vez de deixar a
+ * Meta rejeitar com código obscuro.
+ */
+export const mensagemConversaSchema = z.object({
+  texto: z.string().trim().min(1, "mensagem vazia").max(4096, "mensagem longa demais para o WhatsApp (máx. 4096)"),
+});

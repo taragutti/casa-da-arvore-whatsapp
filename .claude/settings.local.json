@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(railway status *)",
+      "Bash(graphify query *)",
+      "Bash(npm test *)",
+      "Bash(graphify update *)",
+      "Bash(npx tsc *)",
+      "Bash(docker volume *)",
+      "Bash(npm run *)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s --max-time 8 http://localhost:3000/health)",
+      "Bash(curl -s --max-time 8 -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/painel)",
+      "Bash(curl -s --max-time 8 http://localhost:3000/painel)",
+      "Bash(curl -s --max-time 10 -o /dev/null -w \"sem credencial: HTTP %{http_code}\\\\n\" http://localhost:3000/painel)",
+      "Bash(curl -s --max-time 10 -u \"admin:local-dev-only\" -o /tmp/painel-local.html -w \"com credencial: HTTP %{http_code}  %{size_download} bytes\\\\n\" http://localhost:3000/painel)",
+      "Bash(python3 -c ' *)",
+      "Read(//tmp/**)"
+    ]
+  }
+}

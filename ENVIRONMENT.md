@@ -101,8 +101,8 @@ recusa por problema do próprio template (erros 132xxx) — então **nada precis
 ser alterado no código quando um template for aprovado**, é automático. Os
 nomes abaixo já estão mapeados.
 
-Status em **01/08/2026** (conferido pela Graph API, WABA `Tia Bia`
-`1574728080666239` — todos `APPROVED`, todos `pt_BR`):
+Status em **05/08/2026** (conferido pela Graph API, WABA `Tia Bia`
+`1574728080666239`, `pt_BR`):
 
 | Template | Categoria | Status | Usado por |
 |---|---|---|---|
@@ -114,6 +114,8 @@ Status em **01/08/2026** (conferido pela Graph API, WABA `Tia Bia`
 | `aniversario_casamento` | Marketing | ✅ Aprovado (01/08/2026) | ciclo de vida, 1º ano de casamento |
 | `prospeccao_corporativa` | Marketing | ✅ Aprovado (01/08/2026) | ciclo de vida, 1 ano após evento corporativo |
 | `ultima_campanha` | Marketing | ✅ Aprovado (01/08/2026) | última campanha antes de arquivar lead frio |
+| `aniversario_crianca` | Marketing | ⏳ Em análise (submetido 05/08/2026) | ciclo de vida, aniversário da criança |
+| `convite_15_anos` | Marketing | ⏳ Em análise (submetido 05/08/2026) | ciclo de vida, criança completando 14 anos |
 
 Corpo aprovado do `handoff_vendedor` confere com `CORPO_TEMPLATE_HANDOFF`
 (10 variáveis, mesma ordem) — nenhum ajuste de código necessário.
@@ -143,13 +145,29 @@ Regras da Meta que já custaram uma rejeição aqui, registradas pra não repeti
 Os testes em `whatsapp.service.test.ts` cobrem essas regras — se alguém mudar
 o corpo do template e esquecer de resubmeter na Meta, um teste falha.
 
-### Validade da mensagem (TTL)
+### Validade da mensagem (TTL) — não é pendência, verificado em 05/08/2026
 
-Templates de utilidade têm validade padrão de **10 minutos** na Meta: se o
-WhatsApp não conseguir entregar nesse prazo (celular desligado, sem sinal), a
-mensagem é descartada silenciosamente. Como o SLA de handoff é de 15 a 30
-minutos, vale configurar um período de validade maior na tela do template —
-notificação de lead atrasada ainda serve, perdida não.
+Nota anterior deste documento dizia que template de Utilidade tinha validade
+padrão de 10 minutos. **Estava errado** — 10 minutos é o padrão da categoria
+**Autenticação**; `handoff_vendedor` é **Utilidade**, cujo padrão real na Meta
+é **30 dias**. Confirmado ao vivo pela Graph API: o template não tem
+`message_send_ttl_seconds` customizado, está no padrão da categoria.
+
+Como 30 dias é muito maior que o SLA de handoff (15–30 min), não há risco de
+descarte silencioso por TTL hoje — nada a configurar. Se algum dia for preciso
+mudar isso mesmo assim: `message_send_ttl_seconds` é definido na CRIAÇÃO do
+template (`POST /message_templates`), não no envio da mensagem — editar um
+template já aprovado manda ele de volta para `PENDING` na Meta.
+
+Comando pra reconferir (mesmo token do Railway):
+
+```
+railway run --service sparkling-forgiveness -- node -e '
+  const u=new URL("https://graph.facebook.com/v21.0/1574728080666239/message_templates");
+  u.searchParams.set("fields","name,category,message_send_ttl_seconds");
+  u.searchParams.set("access_token",process.env.WHATSAPP_ACCESS_TOKEN);
+  fetch(u).then(r=>r.json()).then(d=>console.table(d.data));'
+```
 
 ## Pendência aberta
 
@@ -171,20 +189,26 @@ o Railway → Variables e confirmar contra esta tabela, atualizando a coluna
   só o `.env` local — os dois podem divergir e ambos são válidos para seus
   respectivos ambientes.
 
-## Templates de ciclo de vida ainda por submeter
+## Templates de ciclo de vida — submetidos em 05/08/2026, aguardando aprovação
 
 Duas réguas pós-aquisição foram implementadas em 01/08/2026 e disparam por
 data, meses ou anos depois do contato — ou seja, sempre fora da janela de 24h,
-onde só template é entregue. Os dois templates ainda **não existem na Meta**:
+onde só template é entregue. Os dois templates foram submetidos via Graph API
+em 05/08/2026 (categoria Marketing, `pt_BR`, sem variável) e estão `PENDING`:
 
-| Template | Categoria sugerida | Corpo a submeter |
+| Template | ID na Meta | Corpo submetido |
 |---|---|---|
-| `aniversario_crianca` | Marketing | "Oi! Chegou a semana de aniversário aí na sua casa 🎉 Se quiser comemorar com a gente, temos datas disponíveis e condições especiais para quem já nos conhece. Quer que eu veja as opções para você?" |
-| `convite_15_anos` | Marketing | "Oi! Lembramos que está chegando a idade da festa de 15 anos 🎉 Nosso Casarão é referência em debutantes em Cabo Frio — se vocês já estiverem começando a planejar, é só responder que eu mando as fotos e as datas disponíveis. 🌳" |
+| `aniversario_crianca` | `27671533369135699` | "Oi! Chegou a semana de aniversário aí na sua casa 🎉 Se quiser comemorar com a gente, temos datas disponíveis e condições especiais para quem já nos conhece. Quer que eu veja as opções para você?" |
+| `convite_15_anos` | `1376744327928347` | "Oi! Lembramos que está chegando a idade da festa de 15 anos 🎉 Nosso Casarão é referência em debutantes em Cabo Frio — se vocês já estiverem começando a planejar, é só responder que eu mando as fotos e as datas disponíveis. 🌳" |
 
-O corpo precisa ficar **idêntico** ao das constantes em
-`jobs/lifecycleFollowUp.cron.ts`, que são o fallback de texto livre. Nada a
-mudar no código depois da aprovação — o envio troca sozinho.
+O corpo é **idêntico** às constantes `MENSAGEM_ANIVERSARIO_CRIANCA` /
+`MENSAGEM_CONVITE_15_ANOS` em `jobs/lifecycleFollowUp.cron.ts`, que são o
+fallback de texto livre — se alguém editar uma constante, resubmeter aqui
+também, ou os dois canais divergem. Nada a mudar no código quando a Meta
+aprovar — o envio troca sozinho de texto livre para template.
 
 Ambas dependem de `data_aniversario_crianca`, coletada no ramo de recreação
 avulsa. Lead sem essa data não entra na régua.
+
+Pra reconferir status sem abrir o navegador (mesmo comando da tabela acima,
+já traz esses dois na lista quando o status mudar de `PENDING`).

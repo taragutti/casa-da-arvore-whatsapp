@@ -39,5 +39,7 @@
   "37": "package.json",
   "38": "GatilhoHandoff",
   "39": "node-cron",
+  "40": "painel.ts",
+  "41": "configPainel.service.ts",
   "42": "usuariosApi.test.ts"
 }

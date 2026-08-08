@@ -9,6 +9,11 @@ import { renderizarConfigHtml } from "../services/configPainel.service";
 import { buscarConfiguracoes, CONFIGURACOES_PADRAO } from "../repositories/configuracoes.repo";
 import { listarUsuariosComUnidades } from "../repositories/usuarios.repo";
 import { renderizarUsuariosHtml } from "../services/usuariosPainel.service";
+import { autorPodeAcessarUnidade } from "../middleware/auth";
+import { buscarUnidadeEfetivaDoLead } from "../repositories/leads.repo";
+import { buscarLeadParaConversa } from "../repositories/conversa.repo";
+import { renderizarConversaHtml } from "../services/conversaPainel.service";
+import { idParamSchema } from "./leadsApi.schemas";
 
 export const painelRouter = Router();
 
@@ -66,4 +71,42 @@ painelRouter.get("/painel/usuarios", comErro(exigirLogin), comErro(exigirAdmin),
   res
     .set("Content-Type", "text/html; charset=utf-8")
     .send(renderizarUsuariosHtml(usuarios, req.autor!));
+}));
+
+/**
+ * GET /painel/leads/:id/conversa — tela de chat do handover (caminho 2): o
+ * atendente vê o histórico bot↔cliente e responde pelo número da Tia Bia.
+ *
+ * exigirLogin sem exigirAdmin de propósito: atendente é exatamente quem usa
+ * esta tela. A visibilidade por unidade é a mesma da API (estágio 3) — sem a
+ * checagem aqui, a atendente da unidade A abriria a conversa de um lead da
+ * unidade B digitando a URL.
+ */
+painelRouter.get("/painel/leads/:id/conversa", comErro(exigirLogin), comErro(async (req: Request, res: Response) => {
+  const idResult = idParamSchema.safeParse(req.params.id);
+  if (!idResult.success) {
+    res.status(400).send("id de lead inválido");
+    return;
+  }
+  const leadId = idResult.data;
+
+  const unidade = await buscarUnidadeEfetivaDoLead(leadId);
+  if (!unidade) {
+    res.status(404).send("lead não encontrado");
+    return;
+  }
+  if (!autorPodeAcessarUnidade(req.autor!, unidade.unidade)) {
+    res.status(403).send("Sem permissão para este lead.");
+    return;
+  }
+
+  const lead = await buscarLeadParaConversa(leadId);
+  if (!lead) {
+    res.status(404).send("lead não encontrado");
+    return;
+  }
+
+  res
+    .set("Content-Type", "text/html; charset=utf-8")
+    .send(renderizarConversaHtml(lead, req.autor!));
 }));

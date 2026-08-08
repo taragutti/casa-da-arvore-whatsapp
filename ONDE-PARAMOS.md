@@ -1,7 +1,68 @@
-# Onde paramos — 05/08/2026
+# Onde paramos — 08/08/2026
 
 Registro de estado para retomar sem reconstruir contexto. Atualizar ao fim de
 cada sessão de trabalho.
+
+## Handover dentro da conversa do bot (08/08) — DOIS caminhos
+
+Depois do handoff, o vendedor não precisa mais chamar o cliente do próprio
+número. Dois caminhos, ambos saindo pelo número da Tia Bia (pro cliente é uma
+conversa só):
+
+1. **Relay pelo WhatsApp do vendedor** — ele escreve pro número do bot e o bot
+   repassa; mensagem nova do cliente é encaminhada pro WhatsApp dele.
+2. **Chat no painel** — botão "💬 Conversa" em cada card de lead abre
+   `/painel/leads/:id/conversa`: histórico completo bot↔cliente (com autor:
+   Tia Bia/vendedor/painel) e caixa de resposta. Polling de 5s, Enter envia.
+   Enviar do painel marca o lead como atendimento humano na hora; "Devolver ao
+   bot" desfaz. Atendente só abre lead da unidade dele (mesma regra do
+   estágio 3, checada também na URL direta). Erro de janela de 24h fechada
+   volta como mensagem legível pro atendente — ele SABE que não entregou.
+
+Pro histórico existir, TODO envio da empresa passou a ser gravado em
+`mensagens_enviadas` (texto, template como `[template nome]`, mídia como
+`[foto enviada]...`), com `origem` bot/vendedor/painel — gravação não-fatal,
+depois do aceite da Meta. Entrada do cliente já ficava em `raw_messages`.
+
+Comandos do vendedor (mensagem inteira começando com `#`):
+
+| Comando | Efeito |
+|---|---|
+| texto normal | vai pro cliente selecionado (✱) |
+| `#leads` / `#lista` | lista os atendimentos abertos dele |
+| `#1`, `#2`... | troca o cliente selecionado |
+| `#fim` | encerra o atendimento (lead segue em atendimento humano) |
+| `#bot` | encerra E devolve a conversa pro fluxo do bot |
+| `#ajuda` | lista os comandos. Comando com typo (`#fin`) cai aqui, nunca vaza pro cliente |
+
+Peças novas: tabelas `relay_atendimentos`, `relay_mensagens` e
+`mensagens_enviadas`; `repositories/relay.repo.ts` e `conversa.repo.ts`;
+`services/relay.service.ts` e `conversaPainel.service.ts`; rotas
+GET/POST `/api/leads/:id/conversa` e GET `/painel/leads/:id/conversa`.
+Integração: `notificarHandoff` abre o atendimento de relay (cobre IA e script
+guiado); o worker desvia mensagem de número da equipe pro relay e encaminha
+mensagem de cliente já em atendimento; "devolver ao bot" no painel fecha os
+atendimentos de relay do lead (senão vendedor e bot responderiam juntos).
+
+Decisões que valem registro:
+
+- **Um atendimento "selecionado" por vendedor, por construção** (índice parcial
+  único). Handoff novo NÃO rouba o foco de quem já está selecionado — trocar de
+  cliente no meio de uma frase mandaria resposta pra pessoa errada, o pior erro
+  possível da ponte. Com zero ou um atendimento, tudo funciona sem comando.
+- **Encaminhamento cliente→vendedor é texto livre** — só entrega se o vendedor
+  falou com o bot nas últimas 24h (janela da Meta). Na prática o uso do relay
+  mantém a janela aberta sozinho; se fechar, o e-mail de aviso (que já existia)
+  segue como canal confiável e a falha fica em `relay_mensagens.erro`.
+- **Só texto na v1** — o webhook já descartava tipo ≠ text; mídia do vendedor
+  pro cliente fica pra depois (dá pra reenviar por media id da própria Meta).
+- **Falha ao abrir o relay não derruba o handoff** — e-mail e template já
+  saíram; o log registra.
+
+Pra migrar: `railway run --service Postgres sh -c 'DATABASE_URL="$DATABASE_PUBLIC_URL" node scripts/migrate.js'`
+(schema.sql é idempotente, as tabelas novas entram sozinhas). Teste real:
+disparar handoff ("quanto custa?"), responder pelo WhatsApp do vendedor e
+conferir `status="delivered"` + linhas em `relay_mensagens`.
 
 ## Estado dos 9 estágios
 
@@ -9,7 +70,7 @@ cada sessão de trabalho.
 |---|---|---|
 | 1 | Banco de dados | ✅ 8 tabelas, migrado em produção |
 | 2 | Autenticação | ✅ contas individuais, sessão revogável (feito em 30/07) |
-| 3 | Permissões | ❌ **não existe** — todo usuário tem os mesmos poderes |
+| 3 | Permissões | ✅ dois papéis (admin/atendente), `/painel/usuarios` — em produção (05/08) |
 | 4 | Pipeline de vendas | ✅ operável pelo painel |
 | 5 | Histórico de atividades | ⚠️ notas por lead; `raw_messages`/`demand_signals` fora |
 | 6 | API | ✅ escrita de leads e notas |
@@ -17,7 +78,49 @@ cada sessão de trabalho.
 | 8 | Workflows | ✅ prazos, horário, SLA, vendedor por unidade e gatilhos editáveis em `/painel/configuracoes` (31/07, vendedor em 05/08) |
 | 9 | Agentes de IA | ✅ maduro |
 
-O único buraco de código restante é o **estágio 3**. O 5 é parcial por escolha.
+Não sobra buraco de código nos 9 estágios — o 5 é parcial por escolha, não por
+faltar implementar.
+
+## Permissões implementadas e em produção (05/08)
+
+Dois papéis: **admin** (acesso total — configurações, mídia, gestão de
+usuários, todos os leads) e **atendente** (só trabalha leads, e só os da
+unidade dele). Decisões que valem registro:
+
+- **Unidade decide visibilidade, não um vínculo por vendedor** — mesmo eixo
+  que já resolve SLA e vendedor do handoff (`UnidadeRecomendada`). Atendente
+  vinculado a `casarao`/`casa_por_do_sol`, por exemplo, só vê leads dessas
+  duas unidades.
+- **Lead sem unidade decidida ainda é visível a TODO atendente** — de
+  propósito. Escondê-lo de todo mundo até a qualificação chegar lá deixaria
+  o lead sem ninguém trabalhando nele.
+- **Sessão não guarda papel nem unidades** — `identificar()` busca do banco a
+  cada requisição (já buscava o usuário; papel/unidades vieram de graça).
+  Efeito prático: mudar o papel ou a unidade de alguém vale na próxima
+  requisição dele, sem precisar deslogar.
+- **Trava do último admin** — `PATCH /api/usuarios/:id` recusa rebaixar ou
+  desativar o único admin ativo restante. Sem isso seria possível o próprio
+  admin tirar o acesso de todo mundo a configurações/mídia/usuários,
+  incluindo o dele.
+- **`/painel/usuarios` substitui `npm run criar-usuario` como caminho
+  principal** — o script de terminal continua existindo só como bootstrap de
+  emergência (sempre cria admin, sem perguntar papel).
+- **`taragutti@gmail.com` virou admin automaticamente** — a coluna `papel`
+  nasceu com `DEFAULT 'admin'`, então quem já tinha conta antes deste estágio
+  não perdeu acesso a nada.
+- **Editar (nome/e-mail) e excluir usuário** (05/08, mesmo dia) — faltavam na
+  primeira versão da tela; um e-mail digitado errado só dava pra corrigir
+  criando conta nova. `DELETE` é exclusão de verdade, não desativação, mas
+  tem três travas: não deixa excluir a própria conta, não deixa ficar sem
+  nenhum admin ativo, e recusa (com mensagem clara, 409) usuário que já tem
+  nota registrada em algum lead — a constraint em
+  `lead_notes.autor_usuario_id` barra isso sozinha, a rota só traduz o erro.
+
+**Em produção, 05/08:** 4 contas reais além do bootstrap — 2 admins (Thiago,
+Tia Bia) e 2 atendentes (Tamara → Casarão/Casa Pôr do Sol; Cris → Casa da
+Árvore/Park Lagos/Shopping Park Lagos), batendo com o agrupamento dos dois
+vendedores do handoff. Uma conta duplicada da Cris (e-mail com erro de
+digitação) foi criada e removida no mesmo dia.
 
 ## Script guiado ligado em produção (01/08)
 
@@ -44,52 +147,45 @@ Junto com isso, em 01/08 foram fechados os três buracos do pós-aquisição
 
 Estas são o que separa "sistema pronto" de "sistema em uso". Nenhuma é código.
 
-### 1. Criar o primeiro usuário em produção (rápido, alta prioridade)
+### 1. Primeiro usuário em produção — ✅ já existia, verificado em 05/08/2026
 
-Há **0 usuários** em produção, então a credencial compartilhada
-(`casadaarvore`) ainda funciona e **não há rastreabilidade de quem age**. Ela se
-autodesativa no momento em que o primeiro usuário for criado.
+O registro dizia "0 usuários" — estava errado. `taragutti@gmail.com` (Thiago)
+existe desde 31/07/2026, então a credencial compartilhada `casadaarvore` já
+está desativada sozinha (a lógica desativa no instante em que o primeiro
+usuário é criado). Com o estágio 3 em produção, essa conta é `admin`.
 
-```bash
-railway run --service Postgres sh -c 'DATABASE_URL="$DATABASE_PUBLIC_URL" npx tsx scripts/criar-usuario.ts'
-```
+Contas novas (atendente ou outro admin) agora se criam por **`/painel/usuarios`**,
+logado — não precisa mais do script de terminal pra isso. `npm run criar-usuario`
+continua existindo só como bootstrap de emergência.
 
-O script desliga o eco do terminal — a senha não entra no histórico do shell.
+### 2. `media_library` e volume de mídia — ✅ já resolvidos, verificado em 05/08/2026
 
-### 2. `media_library` está vazia (0 itens) — ferramenta pronta em 31/07
+O registro dizia "0 itens" e "volume não criado" — os dois estavam errados.
+Verificado ao vivo: volume `sparkling-forgiveness-volume` montado em `/dados`
+(57 MB/500 MB usados), e **25 itens ativos** já cadastrados. Cobertura real
+por unidade (etapa 1 = foto externa, 2 = vídeo de tour, 3 = fotos de evento,
+4 = catálogo PDF):
 
-O caminho pra popular **existe agora**: tela `/painel/midias` com upload,
-prévia, ativar/desativar, remover e mapa de cobertura por unidade/etapa. Não
-precisa mais de terminal nem de gerar URL na mão.
+| Unidade | Etapa 1 | Etapa 2 | Etapa 3 | Etapa 4 |
+|---|---|---|---|---|
+| Casa da Árvore | ✅ | ❌ | ❌ | ❌ |
+| Shopping Park Lagos | ✅ | ❌ | ❌ | ❌ |
+| Casarão | ✅ | ❌ | ✅ (10) | ❌ |
+| Casa Pôr do Sol | ✅ | ✅ | ✅ (10) | ❌ |
+| Park Lagos | — fora do mapa por decisão sua em 31/07 (commit `d8e155d`): "material não vai ser cadastrado pra ela agora". Continua recebendo leads normalmente. |
 
-**Faltam duas coisas, nesta ordem:**
+**O que falta de verdade**, por `/painel/midias` (JPG/PNG até 5MB pra foto,
+**MP4** até 16MB pro vídeo — `.mov` de iPhone é recusado, PDF pro catálogo):
 
-1. **Criar o volume no Railway** (uma vez, ~2 min) — instruções em
-   `ENVIRONMENT.md`, seção "Volume de mídia". Sem isso o upload funciona mas os
-   arquivos desaparecem no próximo deploy, e aí a biblioteca fica pior que
-   vazia: registro apontando pra URL 404 faz o motor achar que tem mídia e o
-   envio falhar na frente do cliente.
-2. **Subir os arquivos** pela tela. Mínimo por unidade:
-
-| Etapa | O que enviar | Formato |
-|---|---|---|
-| 1 | 1 foto icônica (externa) | JPG/PNG até 5MB |
-| 2 | 1 vídeo de tour, 15–30s | **MP4** até 16MB |
-| 3 | 3–4 fotos de eventos reais | JPG/PNG até 5MB |
-| 4 | 1 catálogo | PDF |
-
-Unidades: `casa_da_arvore`, `park_lagos`, `shopping_park_lagos`, `casarao`,
-`casa_por_do_sol`. Dá pra começar só pelas que têm material — unidade sem mídia
-não gera erro, só não avança a régua (loga aviso).
-
-**Pegadinha de formato:** vídeo de iPhone é `.mov` e a Meta **não aceita** —
-precisa converter pra `.mp4`. A tela recusa com essa explicação em vez de
-deixar passar e falhar no envio.
+- **Casa Pôr do Sol**: só o catálogo (etapa 4) — a mais perto de completa.
+- **Casarão**: vídeo de tour (etapa 2) e catálogo (etapa 4).
+- **Casa da Árvore** e **Shopping Park Lagos**: vídeo, fotos de evento e
+  catálogo (etapas 2, 3 e 4) — só têm a foto externa.
 
 **Nuance importante:** o handoff dispara em `pergunta_valor` ("quanto custa?"),
-que é quase sempre a primeira pergunta do cliente. Ou seja, a maioria dos leads
-vai pro vendedor **antes** da régua de mídia avançar — o que torna esta
-pendência menos crítica do que parece. A etapa 1 é a que mais importa.
+que é quase sempre a primeira pergunta do cliente. A maioria dos leads vai pro
+vendedor **antes** da régua de mídia avançar — o que torna esta pendência
+menos crítica do que parece.
 
 ### 3. Templates da Meta — ✅ resolvido em 01/08/2026
 
@@ -102,29 +198,37 @@ corpo aprovado do `handoff_vendedor` bate com `CORPO_TEMPLATE_HANDOFF`. Na
 prática: a notificação do vendedor e as réguas agora **entregam fora da janela
 de 24h**. O comando pra reconferir está em ENVIRONMENT.md.
 
-Pendência menor: o TTL padrão de template de utilidade é **10 minutos**. Se o
-celular do vendedor estiver offline nesse tempo, a notificação é descartada em
-silêncio. Vale configurar validade maior na tela do `handoff_vendedor`.
+~~Pendência menor: TTL de 10 min~~ — **não existia, corrigido em 05/08/2026.**
+10 minutos é o padrão de Autenticação, não de Utilidade; `handoff_vendedor` é
+Utilidade e o padrão real é 30 dias (confirmado ao vivo pela Graph API, sem
+`message_send_ttl_seconds` customizado). Não há descarte silencioso a
+temer — ver ENVIRONMENT.md, seção "Validade da mensagem (TTL)".
 
-**Ficaram faltando dois, criados em 01/08:** `aniversario_crianca` e
-`convite_15_anos` **ainda não existem na Meta** — precisam ser submetidos como
-Marketing. Corpo exato a submeter está em ENVIRONMENT.md, seção "Templates de
-ciclo de vida ainda por submeter"; tem que bater **letra por letra** com as
-constantes em `jobs/lifecycleFollowUp.cron.ts`, que são o fallback de texto
-livre. Nada a mudar no código depois da aprovação — o envio troca sozinho.
+**Os dois que faltavam foram submetidos em 05/08/2026:** `aniversario_crianca`
+(id `27671533369135699`) e `convite_15_anos` (id `1376744327928347`), categoria
+Marketing, corpo idêntico às constantes em `jobs/lifecycleFollowUp.cron.ts`.
+Status atual: `PENDING` — revisão da Meta costuma sair em algumas horas a um
+dia. Nada a fazer no código quando aprovar, o envio troca sozinho de texto
+livre pra template. Comando pra reconferir status em ENVIRONMENT.md.
 
-Sem eles, essas duas réguas na prática não entregam: disparam meses ou anos
-depois do contato, sempre fora da janela de 24h, onde só template passa.
+Até a aprovação sair, essas duas réguas na prática não entregam: disparam
+meses ou anos depois do contato, sempre fora da janela de 24h, onde só
+template passa.
 
-### 0. 🔴 BLOQUEIO: conta da Meta sem meio de pagamento (01/08/2026)
+### 0. ✅ Billing da Meta — resolvido em 05/08/2026 (tarde)
 
-**Nada que o sistema envie por iniciativa própria está sendo entregue.** Erro
-`131042` ("Business eligibility payment issue") em toda mensagem de template:
+Bloqueava desde 01/08 (erro `131042`, meio de pagamento/moeda da conta).
+Confirmado ao vivo com dois envios de teste reais nesta data:
 
-```
-status="failed" codigoMeta=131042
-detalhe="your WhatsApp Business account currency is not configured"
-```
+- `+5522997249462` (comercial): falhou, mas com erro **diferente** —
+  `131049` "manter engajamento saudável do ecossistema" (throttle da Meta por
+  mandar o mesmo template duas vezes no mesmo dia sem resposta no meio, nada
+  a ver com billing).
+- `+5522974052903` (infantil/recreação): **`status="delivered"`** — entrega
+  completa confirmada pelo webhook.
+
+Nada a fazer no código — os próximos handoffs, follow-ups e réguas de ciclo
+de vida entregam sozinhos. Deixou de ser bloqueio.
 
 Atinge: notificação de handoff do vendedor, follow-ups de 2h/48h/7d/30d,
 réguas de ciclo de vida e prospecção corporativa. Tudo isso é template, e
@@ -273,6 +377,10 @@ Registradas para não serem desfeitas por engano:
   Casarão de graça (roteamento já resolve os dois pra lá). `isNumeroDaEquipe()`
   virou async porque passou a ler a config em vez de comparar com uma env var
   síncrona.
+- **Permissões: papel decide o que você FAZ, unidade decide o que você VÊ**
+  (05/08) — dois eixos independentes, não um só. Admin não é filtrado por
+  unidade mesmo que tenha alguma vinculada (não deveria ter, a rota zera).
+  Detalhes completos na seção "Permissões implementadas e em produção".
 
 ## Escopo deliberadamente não implementado
 

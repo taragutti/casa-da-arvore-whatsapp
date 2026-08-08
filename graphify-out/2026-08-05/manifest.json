@@ -355,8 +355,8 @@
     "semantic_hash": ""
   },
   "src/repositories/usuarios.repo.ts": {
-    "mtime": 1785953598.0390713,
-    "ast_hash": "53a348b0e828edf6103cdef989f4e908",
+    "mtime": 1785950509.6496465,
+    "ast_hash": "e0c8584453b7c3a6af65dd847c93cb27",
     "semantic_hash": ""
   },
   "src/routes/auth.ts": {
@@ -515,28 +515,28 @@
     "semantic_hash": ""
   },
   "src/routes/usuariosApi.schemas.test.ts": {
-    "mtime": 1785953805.115631,
-    "ast_hash": "b8ecb316d74a507ede0ffa2dc7b79bbf",
+    "mtime": 1785951228.8931754,
+    "ast_hash": "9a6203afd999ba72e8cbde6e3e6e298b",
     "semantic_hash": ""
   },
   "src/routes/usuariosApi.schemas.ts": {
-    "mtime": 1785953604.8886092,
-    "ast_hash": "a19a80743ebed99a60e77b613d8e8900",
+    "mtime": 1785951072.8187854,
+    "ast_hash": "117734c94031da6f463d019e708735c0",
     "semantic_hash": ""
   },
   "src/routes/usuariosApi.test.ts": {
-    "mtime": 1785953796.8778012,
-    "ast_hash": "37ef2373e019948714652d32153b73ac",
+    "mtime": 1785951376.8996527,
+    "ast_hash": "0c74aabf8fa993d77a04d9ce402646ee",
     "semantic_hash": ""
   },
   "src/routes/usuariosApi.ts": {
-    "mtime": 1785953643.628022,
-    "ast_hash": "e916e410175e0d2dccbb15f33a2b2d2b",
+    "mtime": 1785951091.2449613,
+    "ast_hash": "b670049912d904da54f590abbd06c570",
     "semantic_hash": ""
   },
   "src/services/usuariosPainel.service.ts": {
-    "mtime": 1785953694.6288397,
-    "ast_hash": "4f45c31cf75a8889897d0123acfc01c7",
+    "mtime": 1785951137.188739,
+    "ast_hash": "906fdae2103f8290c41781d90da01782",
     "semantic_hash": ""
   }
 }

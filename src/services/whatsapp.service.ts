@@ -1,5 +1,6 @@
 import { env } from "../config/env";
 import { logger } from "../config/logger";
+import { registrarMensagemEnviada, OrigemEnvio } from "../repositories/conversa.repo";
 
 /**
  * Registra o que a Meta respondeu num envio aceito.
@@ -41,7 +42,7 @@ async function registrarEnvioAceito(response: Response, destino: string, context
  * Usado só no caminho do número de teste (routes/whatsapp.ts) — a automação
  * de produção existente já cuida das respostas por conta própria.
  */
-export async function sendWhatsAppMessage(to: string, body: string): Promise<void> {
+export async function sendWhatsAppMessage(to: string, body: string, origem: OrigemEnvio = "bot"): Promise<void> {
   if (!env.WHATSAPP_ACCESS_TOKEN || !env.WHATSAPP_PHONE_NUMBER_ID) {
     logger.warn("WHATSAPP_ACCESS_TOKEN/WHATSAPP_PHONE_NUMBER_ID não configurados — pulando envio de resposta.");
     return;
@@ -70,6 +71,9 @@ export async function sendWhatsAppMessage(to: string, body: string): Promise<voi
   }
 
   await registrarEnvioAceito(response, to, { canal: "texto" });
+  // Histórico da conversa (tela do painel): grava o que saiu, com quem falou
+  // pela empresa. Não-fatal — o envio já foi aceito.
+  await registrarMensagemEnviada({ whatsappNumber: to, texto: body, canal: "texto", origem });
 }
 
 type TipoMidiaWhatsApp = "image" | "video" | "document";
@@ -111,6 +115,14 @@ async function sendWhatsAppMedia(
     const detalhe = await response.text();
     throw new Error(`Falha ao enviar ${tipo} via WhatsApp (${response.status}): ${detalhe}`);
   }
+
+  const rotulo = tipo === "image" ? "foto" : tipo === "video" ? "vídeo" : "documento";
+  await registrarMensagemEnviada({
+    whatsappNumber: to,
+    texto: `[${rotulo} enviado]${opts.caption ? ` ${opts.caption}` : ""}`,
+    canal: "midia",
+    origem: "bot",
+  });
 }
 
 export async function sendWhatsAppImage(to: string, url: string, caption?: string): Promise<void> {
@@ -207,6 +219,12 @@ export async function sendWhatsAppTemplate(
   }
 
   await registrarEnvioAceito(response, to, { canal: "template", templateName });
+  await registrarMensagemEnviada({
+    whatsappNumber: to,
+    texto: `[template ${templateName}]`,
+    canal: "template",
+    origem: "bot",
+  });
 }
 
 /**

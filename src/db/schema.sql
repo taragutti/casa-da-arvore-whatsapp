@@ -309,3 +309,78 @@ CREATE TABLE IF NOT EXISTS script_state (
   fallbacks_consecutivos INTEGER NOT NULL DEFAULT 0,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ============================================================================
+-- 12. Relay de atendimento humano pelo WhatsApp do vendedor
+--
+-- Depois do handoff, o vendedor responde o cliente SEM sair do WhatsApp dele:
+-- ele escreve para o número do bot, e o bot repassa ao cliente — que continua
+-- vendo tudo na MESMA conversa em que falava com o bot. Mensagens do cliente
+-- em atendimento humano são encaminhadas ao vendedor pelo mesmo caminho.
+--
+-- `numero_vendedor` é armazenado só com dígitos (sem "+", espaços ou traços)
+-- porque a Meta manda o `from` sem "+" e a config guarda com "+" — normalizar
+-- na escrita evita o mesmo número existir em duas grafias.
+--
+-- Um vendedor pode ter vários atendimentos abertos ao mesmo tempo; exatamente
+-- UM deles fica `selecionado` (é para esse cliente que o texto livre do
+-- vendedor vai). Os índices parciais garantem isso por construção.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS relay_atendimentos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  numero_vendedor TEXT NOT NULL,
+  lead_id UUID NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+  aberto BOOLEAN NOT NULL DEFAULT true,
+  selecionado BOOLEAN NOT NULL DEFAULT false,
+  aberto_em TIMESTAMPTZ NOT NULL DEFAULT now(),
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_relay_vendedor_lead_aberto
+  ON relay_atendimentos(numero_vendedor, lead_id) WHERE aberto;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_relay_vendedor_selecionado
+  ON relay_atendimentos(numero_vendedor) WHERE aberto AND selecionado;
+CREATE INDEX IF NOT EXISTS idx_relay_atendimentos_lead
+  ON relay_atendimentos(lead_id) WHERE aberto;
+
+-- Trilha de auditoria do relay: o que o vendedor mandou pro cliente e o que o
+-- cliente mandou pro vendedor, com o desfecho do envio. É o histórico da
+-- conversa humana — sem isso, o que foi combinado com o cliente só existe no
+-- celular do vendedor.
+CREATE TABLE IF NOT EXISTS relay_mensagens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  lead_id UUID NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+  numero_vendedor TEXT NOT NULL,
+  direcao TEXT NOT NULL CHECK (direcao IN ('vendedor_para_cliente', 'cliente_para_vendedor')),
+  texto TEXT NOT NULL,
+  entregue BOOLEAN NOT NULL DEFAULT true,
+  erro TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_relay_mensagens_lead ON relay_mensagens(lead_id, created_at DESC);
+
+-- ============================================================================
+-- 13. mensagens_enviadas: tudo que a EMPRESA mandou pelo número do bot.
+--
+-- raw_messages guarda só o que o cliente escreveu; o que saiu (respostas do
+-- bot, script, mídia, vendedor via relay, painel) não ficava registrado em
+-- lugar nenhum — e sem os dois lados não existe tela de conversa. Gravado no
+-- momento do envio aceito pela Meta, de forma não-fatal: falha ao registrar
+-- não pode derrubar um envio que já deu certo.
+--
+-- `origem` distingue quem falou pela empresa: 'bot' (automação), 'vendedor'
+-- (relay do handover) ou 'painel' (chat do painel) — é o que permite a tela
+-- mostrar "Tia Bia (bot)" vs "Vendedor".
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS mensagens_enviadas (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  whatsapp_number TEXT NOT NULL,
+  texto TEXT NOT NULL,
+  canal TEXT NOT NULL DEFAULT 'texto' CHECK (canal IN ('texto', 'template', 'midia')),
+  origem TEXT NOT NULL DEFAULT 'bot' CHECK (origem IN ('bot', 'vendedor', 'painel'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_mensagens_enviadas_numero
+  ON mensagens_enviadas(whatsapp_number, created_at DESC);

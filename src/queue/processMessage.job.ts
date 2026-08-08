@@ -2,7 +2,11 @@ import { Worker, Job } from "bullmq";
 import { connection } from "./connection";
 import { logger } from "../config/logger";
 import { MESSAGE_QUEUE_NAME, MessageJobData } from "./messageQueue";
-import { processIncomingMessage } from "../services/messageProcessing.service";
+import { processIncomingMessage, isNumeroDaEquipe } from "../services/messageProcessing.service";
+import {
+  processarMensagemDoVendedor,
+  encaminharMensagemDoClienteParaVendedor,
+} from "../services/relay.service";
 import { sendWhatsAppMessage, montarMensagemConfirmacao } from "../services/whatsapp.service";
 import { processarMidiaProgressiva, enviarMidiaDeEspera } from "../services/mediaEngine.service";
 import { montarSaudacao } from "../services/saudacao.service";
@@ -24,6 +28,16 @@ export function startMessageWorker() {
 
       log.debug("job retirado da fila — iniciando processamento");
 
+      // Mensagem de número da equipe (vendedor) no webhook do WhatsApp não é
+      // lead — é o vendedor operando o relay do handover: comandos (#leads,
+      // #1, #fim...) ou texto pra repassar ao cliente selecionado. Trata aqui
+      // e encerra; o pipeline normal já ignorava esses números de qualquer
+      // forma (isNumeroDaEquipe em processIncomingMessage).
+      if (origem === "whatsapp_teste" && (await isNumeroDaEquipe(whatsappNumber))) {
+        await processarMensagemDoVendedor(whatsappNumber, mensagem, log);
+        return { status: "relay_vendedor" };
+      }
+
       // Com o script guiado ativo o pipeline muda em dois pontos: nenhuma
       // mensagem é descartada por falta de termo relevante (o cliente responde
       // "2" a um menu), e o handoff passa a ser decidido pelos nós do script em
@@ -35,6 +49,25 @@ export function startMessageWorker() {
         payloadBruto,
         scriptAtivo ? { exigirRelevancia: false, detectarHandoffPorIa: false } : {}
       );
+
+      // Lead JÁ em atendimento humano manda mensagem nova: encaminha pro
+      // WhatsApp do vendedor dono do atendimento (relay do handover). No
+      // momento exato do handoff (gatilhoNovo) não: a notificação completa com
+      // resumo já leva a última mensagem do cliente — duplicar seria ruído.
+      if (
+        origem === "whatsapp_teste" &&
+        result.status === "processado" &&
+        result.handoff.emAtendimentoHumano &&
+        !result.handoff.gatilhoNovo
+      ) {
+        await encaminharMensagemDoClienteParaVendedor({
+          leadId: result.leadId,
+          whatsappCliente: whatsappNumber,
+          nomeCliente: result.dadosExtraidos.nome_cliente,
+          mensagem,
+          log,
+        });
+      }
 
       if (scriptAtivo) {
         if (result.status === "processado") {

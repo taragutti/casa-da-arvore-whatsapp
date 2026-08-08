@@ -14,6 +14,7 @@ import { registrarSaudacaoSeNecessario } from "./saudacao.service";
 import { obterConfig } from "./config.service";
 import { sendHandoffNotificationEmail, sendHandoffFollowUpEmail } from "./email.service";
 import { notificarVendedor } from "./whatsapp.service";
+import { abrirAtendimentoRelay } from "./relay.service";
 import { upsertLead, adicionarTag } from "../repositories/leads.repo";
 import { insertDemandSignal } from "../repositories/demandSignals.repo";
 import {
@@ -234,6 +235,12 @@ export async function notificarHandoff(params: {
       "falha ao notificar vendedor no WhatsApp — verifique a janela de 24h da Meta; e-mail segue como canal de registro"
     );
   }
+
+  // Abre o atendimento de relay: a partir daqui o vendedor pode responder o
+  // cliente escrevendo pro número do bot (ver relay.service.ts). Mesmo que a
+  // notificação acima tenha falhado, o atendimento existe — o vendedor foi
+  // avisado pelo e-mail e consegue operar com #leads.
+  await abrirAtendimentoRelay(numeroVendedor, leadId, log);
 
   log.info({ gatilho, paraGerente }, "handoff disparado");
 }

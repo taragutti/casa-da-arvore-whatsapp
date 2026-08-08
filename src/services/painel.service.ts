@@ -123,6 +123,7 @@ function cardLead(lead: LeadPainel): string {
     <label>Unidade confirmada
       <select data-campo="unidade_confirmada">${selectOpcoes(LABEL_UNIDADE, lead.unidade_confirmada, "não confirmada")}</select>
     </label>
+    <a class="conversa" href="/painel/leads/${escapeHtml(lead.id)}/conversa">💬 Conversa</a>
     ${emHandoff ? '<button class="devolver" type="button">Devolver ao bot</button>' : ""}
   </div>
   ${divergenciaUnidade ? '<p class="aviso-linha">A unidade confirmada difere da sugerida pela IA.</p>' : ""}
@@ -183,6 +184,9 @@ export function renderizarPainelHtml(leads: LeadPainel[], autor: Autor): string 
     button:hover { background: #3d6b42; }
     button.devolver { background: #b00020; }
     button.devolver:hover { background: #c62828; }
+    a.conversa { display: inline-block; padding: 8px 14px; border-radius: 6px; background: #fff; color: #2f5233;
+                 border: 1px solid #2f5233; font-size: 14px; text-decoration: none; }
+    a.conversa:hover { background: #eef2ee; }
     .nota-nova { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .nota-nova input[type=text]:first-child { flex: 1; min-width: 200px; }
     .nota-nova .autor { width: 130px; }

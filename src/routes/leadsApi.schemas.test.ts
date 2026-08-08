@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { idParamSchema, atualizacaoSchema, notaSchema } from "./leadsApi.schemas";
+import { idParamSchema, atualizacaoSchema, notaSchema, mensagemConversaSchema } from "./leadsApi.schemas";
 
 const UUID_VALIDO = "9cadaae2-b023-47b5-bb75-69d544d7e01b";
 
@@ -93,5 +93,23 @@ describe("notaSchema", () => {
   it("rejeita texto acima de 2000 caracteres", () => {
     expect(notaSchema.safeParse({ texto: "a".repeat(2001) }).success).toBe(false);
     expect(notaSchema.safeParse({ texto: "a".repeat(2000) }).success).toBe(true);
+  });
+});
+
+describe("mensagemConversaSchema", () => {
+  it("aceita texto normal e apara espaços", () => {
+    const r = mensagemConversaSchema.safeParse({ texto: "  Oi Maria, tudo bem?  " });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.texto).toBe("Oi Maria, tudo bem?");
+  });
+
+  it("recusa vazio e só-espaços", () => {
+    expect(mensagemConversaSchema.safeParse({ texto: "" }).success).toBe(false);
+    expect(mensagemConversaSchema.safeParse({ texto: "   " }).success).toBe(false);
+  });
+
+  it("recusa acima do limite da Cloud API (4096)", () => {
+    expect(mensagemConversaSchema.safeParse({ texto: "a".repeat(4097) }).success).toBe(false);
+    expect(mensagemConversaSchema.safeParse({ texto: "a".repeat(4096) }).success).toBe(true);
   });
 });
