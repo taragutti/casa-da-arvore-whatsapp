@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express";
 import { logger } from "../config/logger";
-import { exigirLogin, autorPodeAcessarUnidade } from "../middleware/auth";
+import { exigirLogin, exigirAdmin, autorPodeAcessarUnidade } from "../middleware/auth";
 import { comErro } from "../middleware/asyncHandler";
-import { atualizarLead, buscarUnidadeEfetivaDoLead } from "../repositories/leads.repo";
+import { atualizarLead, apagarLead, buscarUnidadeEfetivaDoLead } from "../repositories/leads.repo";
 import { devolverAoBot } from "../repositories/conversationState.repo";
 import { fecharAtendimentosDoLead } from "../repositories/relay.repo";
 import { inserirNota, listarNotas } from "../repositories/leadNotes.repo";
@@ -54,9 +54,19 @@ leadsApiRouter.patch("/api/leads/:id", comErro(exigirLogin), comErro(async (req:
 
   if (!(await autorizarAcessoAoLead(req, res, leadId))) return;
 
-  const { status, unidade_confirmada, devolver_ao_bot } = parsed.data;
+  const { status, unidade_confirmada, devolver_ao_bot, nome_cliente, whatsapp_number } = parsed.data;
 
-  await atualizarLead(leadId, { status, unidade_confirmada });
+  try {
+    await atualizarLead(leadId, { status, unidade_confirmada, nome_cliente, whatsapp_number });
+  } catch (err) {
+    // 23505 = unique_violation em leads.whatsapp_number: já existe outro lead
+    // com esse número. Erro do usuário, não do servidor — merece 409 legível.
+    if ((err as { code?: string }).code === "23505") {
+      res.status(409).json({ erro: "Já existe outro lead com esse número de WhatsApp." });
+      return;
+    }
+    throw err;
+  }
 
   let devolvido = false;
   if (devolver_ao_bot) {
@@ -76,6 +86,8 @@ leadsApiRouter.patch("/api/leads/:id", comErro(exigirLogin), comErro(async (req:
       leadId,
       status,
       unidade_confirmada,
+      nome_cliente,
+      whatsapp_number,
       devolvidoAoBot: devolvido,
       // Rastro de quem agiu — antes da autenticação não havia como saber.
       usuarioId: req.autor?.usuarioId,
@@ -83,7 +95,38 @@ leadsApiRouter.patch("/api/leads/:id", comErro(exigirLogin), comErro(async (req:
     },
     "lead atualizado manualmente"
   );
-  res.json({ ok: true, leadId, alterado: { status, unidade_confirmada, devolvido_ao_bot: devolvido } });
+  res.json({
+    ok: true,
+    leadId,
+    alterado: { status, unidade_confirmada, nome_cliente, whatsapp_number, devolvido_ao_bot: devolvido },
+  });
+}));
+
+/**
+ * DELETE /api/leads/:id — apaga o lead e todo o histórico. Só admin: apagar é
+ * irreversível e o uso principal é limpar leads de TESTE pra repetir o fluxo
+ * do zero (o número volta a ser cliente novo). Vendedor não apaga lead real
+ * por engano porque nem vê o botão — e a API confere de novo aqui.
+ */
+leadsApiRouter.delete("/api/leads/:id", comErro(exigirLogin), exigirAdmin, comErro(async (req: Request, res: Response) => {
+  const idResult = idParamSchema.safeParse(req.params.id);
+  if (!idResult.success) {
+    res.status(400).json({ erro: idResult.error.issues[0]?.message });
+    return;
+  }
+  const leadId = idResult.data;
+
+  const apagado = await apagarLead(leadId);
+  if (!apagado) {
+    res.status(404).json({ erro: "lead não encontrado" });
+    return;
+  }
+
+  logger.info(
+    { leadId, usuarioId: req.autor?.usuarioId, autor: req.autor?.nome },
+    "lead apagado pelo painel"
+  );
+  res.json({ ok: true, leadId, apagado: true });
 }));
 
 /** POST /api/leads/:id/notas — registra observação de quem atendeu. */

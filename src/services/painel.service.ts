@@ -78,7 +78,7 @@ function blocoNotas(lead: LeadPainel): string {
     .join("")}</ul>`;
 }
 
-function cardLead(lead: LeadPainel): string {
+function cardLead(lead: LeadPainel, ehAdmin: boolean): string {
   const emHandoff = lead.em_atendimento_humano === true;
 
   // A comparação sugerido vs confirmado é o único sinal disponível de se as
@@ -99,7 +99,16 @@ function cardLead(lead: LeadPainel): string {
   <header>
     <div>
       <h2>${escapeHtml(lead.nome_cliente ?? "Cliente sem nome")}</h2>
-      <p class="contato">${escapeHtml(lead.whatsapp_number)}${lead.email ? " · " + escapeHtml(lead.email) : ""}</p>
+      <p class="contato">${escapeHtml(lead.whatsapp_number)}${lead.email ? " · " + escapeHtml(lead.email) : ""}
+        <button class="editar-contato" type="button" title="Editar nome e telefone">✏️</button></p>
+      <div class="form-contato" hidden>
+        <input type="text" data-edit="nome_cliente" placeholder="Nome do cliente" maxlength="200"
+               value="${escapeHtml(lead.nome_cliente ?? "")}">
+        <input type="text" data-edit="whatsapp_number" placeholder="+5522999999999"
+               value="${escapeHtml(lead.whatsapp_number)}">
+        <button class="salvar-contato" type="button">Salvar</button>
+        <button class="cancelar-contato sec" type="button">Cancelar</button>
+      </div>
     </div>
     <span class="badge ${emHandoff ? "humano" : "bot"}">${emHandoff ? "● atendimento humano" : "bot ativo"}</span>
   </header>
@@ -125,6 +134,7 @@ function cardLead(lead: LeadPainel): string {
     </label>
     <a class="conversa" href="/painel/leads/${escapeHtml(lead.id)}/conversa">💬 Conversa</a>
     ${emHandoff ? '<button class="devolver" type="button">Devolver ao bot</button>' : ""}
+    ${ehAdmin ? `<button class="apagar" type="button" data-nome="${escapeHtml(lead.nome_cliente ?? lead.whatsapp_number)}">🗑 Apagar</button>` : ""}
   </div>
   ${divergenciaUnidade ? '<p class="aviso-linha">A unidade confirmada difere da sugerida pela IA.</p>' : ""}
 
@@ -184,6 +194,14 @@ export function renderizarPainelHtml(leads: LeadPainel[], autor: Autor): string 
     button:hover { background: #3d6b42; }
     button.devolver { background: #b00020; }
     button.devolver:hover { background: #c62828; }
+    button.apagar { background: #fff; color: #b00020; border: 1px solid #b00020; }
+    button.apagar:hover { background: #fdecea; }
+    button.editar-contato { background: none; border: 0; padding: 0 4px; font-size: 13px; cursor: pointer; }
+    button.editar-contato:hover { background: none; }
+    .form-contato { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .form-contato input { font-size: 13px; }
+    button.sec { background: #fff; color: #555; border: 1px solid #ccc; }
+    button.sec:hover { background: #f0f0f0; }
     a.conversa { display: inline-block; padding: 8px 14px; border-radius: 6px; background: #fff; color: #2f5233;
                  border: 1px solid #2f5233; font-size: 14px; text-decoration: none; }
     a.conversa:hover { background: #eef2ee; }
@@ -235,7 +253,7 @@ export function renderizarPainelHtml(leads: LeadPainel[], autor: Autor): string 
          <code>npm run criar-usuario</code> — a partir do primeiro usuário, esta credencial deixa de funcionar.</div>`
       : ""
   }
-  ${leads.map(cardLead).join("\n") || "<p>Nenhum lead encontrado.</p>"}
+  ${leads.map((l) => cardLead(l, autor.papel === "admin")).join("\n") || "<p>Nenhum lead encontrado.</p>"}
 
 <script>
 function feedback(card, texto, ok) {
@@ -295,6 +313,47 @@ document.querySelectorAll(".card").forEach(function (card) {
       } catch (e) {
         btnDevolver.disabled = false;
         feedback(card, "Falha ao devolver ao bot: " + e.message, false);
+      }
+    });
+  }
+
+  var btnEditar = card.querySelector("button.editar-contato");
+  var formContato = card.querySelector(".form-contato");
+  if (btnEditar && formContato) {
+    btnEditar.addEventListener("click", function () { formContato.hidden = !formContato.hidden; });
+    formContato.querySelector("button.cancelar-contato").addEventListener("click", function () {
+      formContato.hidden = true;
+    });
+    formContato.querySelector("button.salvar-contato").addEventListener("click", async function () {
+      var nome = formContato.querySelector('[data-edit="nome_cliente"]').value.trim();
+      var telefone = formContato.querySelector('[data-edit="whatsapp_number"]').value.trim();
+      if (!nome && !telefone) { feedback(card, "Preencha nome ou telefone.", false); return; }
+      var corpo = {};
+      if (nome) corpo.nome_cliente = nome;
+      if (telefone) corpo.whatsapp_number = telefone;
+      try {
+        await patchLead(card, corpo);
+        location.reload();
+      } catch (e) {
+        feedback(card, "Falha ao salvar contato: " + e.message, false);
+      }
+    });
+  }
+
+  var btnApagar = card.querySelector("button.apagar");
+  if (btnApagar) {
+    btnApagar.addEventListener("click", async function () {
+      var nome = btnApagar.dataset.nome;
+      if (!confirm("Apagar o lead \\"" + nome + "\\"?\\n\\nIsso remove TODO o histórico (conversa, notas, atendimentos) e não tem volta. O número volta a ser tratado como cliente novo.")) return;
+      if (!confirm("Tem certeza? Última confirmação antes de apagar \\"" + nome + "\\" de vez.")) return;
+      btnApagar.disabled = true;
+      try {
+        var resp = await fetch(apiUrl("/api/leads/" + card.dataset.lead), { method: "DELETE" });
+        if (!resp.ok) throw new Error("HTTP " + resp.status + " " + (await resp.text()));
+        card.remove();
+      } catch (e) {
+        btnApagar.disabled = false;
+        feedback(card, "Falha ao apagar: " + e.message, false);
       }
     });
   }

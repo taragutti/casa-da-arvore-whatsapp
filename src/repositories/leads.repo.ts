@@ -191,6 +191,10 @@ export type StatusLead = (typeof STATUS_LEAD)[number];
 export interface AtualizacaoLead {
   status?: StatusLead;
   unidade_confirmada?: UnidadeRecomendada;
+  /** Correção manual pelo painel (estágio 7) — nome digitado errado pela IA ou pelo cliente. */
+  nome_cliente?: string;
+  /** Sempre dígitos-only (mesma normalização do webhook); a rota valida/normaliza antes. */
+  whatsapp_number?: string;
 }
 
 /**
@@ -218,11 +222,61 @@ export async function atualizarLead(leadId: string, dados: AtualizacaoLead): Pro
     campos.push(`unidade_confirmada = $${valores.length + 1}`);
     valores.push(dados.unidade_confirmada);
   }
+  if (dados.nome_cliente !== undefined) {
+    campos.push(`nome_cliente = $${valores.length + 1}`);
+    valores.push(dados.nome_cliente);
+  }
+  if (dados.whatsapp_number !== undefined) {
+    campos.push(`whatsapp_number = $${valores.length + 1}`);
+    valores.push(dados.whatsapp_number);
+  }
 
   if (campos.length === 0) return true; // nada a alterar não é erro
 
   const result = await pool.query(`UPDATE leads SET ${campos.join(", ")} WHERE id = $1`, valores);
   return (result.rowCount ?? 0) > 0;
+}
+
+/**
+ * Apaga o lead e TODO o histórico dele — usado pelo painel (admin) sobretudo
+ * pra repetir testes de ponta a ponta: apagado, o número volta a ser tratado
+ * como cliente novo na próxima mensagem.
+ *
+ * As tabelas com FK pra leads(id) (conversation_state, lead_notes,
+ * demand_signals, relay_atendimentos, relay_mensagens) caem pelo ON DELETE
+ * CASCADE do schema. As quatro chaveadas por NÚMERO (raw_messages,
+ * saudacoes_enviadas, script_state, mensagens_enviadas) precisam de DELETE
+ * explícito — sem isso a saudação não seria reenviada e o script continuaria
+ * do meio, e o "cliente novo" do teste não seria novo de verdade.
+ *
+ * Retorna false se o lead não existe (rota responde 404).
+ */
+export async function apagarLead(leadId: string): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const lead = await client.query<{ whatsapp_number: string }>(
+      `SELECT whatsapp_number FROM leads WHERE id = $1 FOR UPDATE`,
+      [leadId]
+    );
+    if (lead.rowCount === 0) {
+      await client.query("ROLLBACK");
+      return false;
+    }
+    const numero = lead.rows[0].whatsapp_number;
+    await client.query(`DELETE FROM raw_messages WHERE whatsapp_number = $1`, [numero]);
+    await client.query(`DELETE FROM saudacoes_enviadas WHERE whatsapp_number = $1`, [numero]);
+    await client.query(`DELETE FROM script_state WHERE whatsapp_number = $1`, [numero]);
+    await client.query(`DELETE FROM mensagens_enviadas WHERE whatsapp_number = $1`, [numero]);
+    await client.query(`DELETE FROM leads WHERE id = $1`, [leadId]);
+    await client.query("COMMIT");
+    return true;
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 export async function leadExiste(leadId: string): Promise<boolean> {

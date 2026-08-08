@@ -42,6 +42,29 @@ describe("atualizacaoSchema", () => {
     expect(atualizacaoSchema.safeParse({}).success).toBe(false);
   });
 
+  it("aceita correção de nome e apara espaços", () => {
+    const r = atualizacaoSchema.safeParse({ nome_cliente: "  Maria Silva  " });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.nome_cliente).toBe("Maria Silva");
+  });
+
+  it("rejeita nome vazio — apagaria o nome do lead sem intenção", () => {
+    expect(atualizacaoSchema.safeParse({ nome_cliente: "   " }).success).toBe(false);
+  });
+
+  it("normaliza telefone pra dígitos-only — mesmo formato que o webhook grava", () => {
+    for (const entrada of ["+5522997546818", "55 (22) 99754-6818", "5522997546818"]) {
+      const r = atualizacaoSchema.safeParse({ whatsapp_number: entrada });
+      expect(r.success).toBe(true);
+      if (r.success) expect(r.data.whatsapp_number).toBe("5522997546818");
+    }
+  });
+
+  it("rejeita telefone sem código do país — quebraria o vínculo com o WhatsApp", () => {
+    expect(atualizacaoSchema.safeParse({ whatsapp_number: "22997546818" }).success).toBe(false);
+    expect(atualizacaoSchema.safeParse({ whatsapp_number: "abc" }).success).toBe(false);
+  });
+
   it("rejeita status fora do enum do banco", () => {
     expect(atualizacaoSchema.safeParse({ status: "em_andamento" }).success).toBe(false);
     expect(atualizacaoSchema.safeParse({ status: "NOVO" }).success).toBe(false);

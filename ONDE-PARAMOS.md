@@ -3,6 +3,28 @@
 Registro de estado para retomar sem reconstruir contexto. Atualizar ao fim de
 cada sessão de trabalho.
 
+## Gestão de leads no painel (08/08, tarde)
+
+Pra permitir testes de ponta a ponta repetíveis e correção de dados:
+
+- **Apagar lead (só admin)** — botão "🗑 Apagar" no card, com confirmação
+  dupla. `DELETE /api/leads/:id` (rota exige `exigirAdmin`) apaga o lead e
+  TODO o histórico numa transação: FKs em cascata (conversation_state, notas,
+  demand_signals, relay_*) + DELETE explícito nas tabelas chaveadas por número
+  (raw_messages, saudacoes_enviadas, script_state, mensagens_enviadas).
+  Apagado, o número volta a ser tratado como cliente NOVO — é o reset de teste.
+- **Editar nome e telefone** — lápis ✏️ ao lado do contato no card abre o
+  formulário. Telefone aceita qualquer formato e é normalizado pra
+  dígitos-only (mesmo formato do webhook); número já usado por outro lead
+  responde 409 legível. `PATCH /api/leads/:id` ganhou `nome_cliente` e
+  `whatsapp_number`.
+- Celular dos vendedores pro handover: JÁ era editável em
+  `/painel/configuracoes` → "Vendedor que recebe o handoff" (por unidade +
+  padrão). Nada mudou aí.
+
+Arquivos: `leads.repo.ts` (apagarLead, atualizarLead), `leadsApi.ts`,
+`leadsApi.schemas.ts` (+testes), `painel.service.ts`. 274 testes verdes.
+
 ## Handover dentro da conversa do bot (08/08) — DOIS caminhos
 
 Depois do handoff, o vendedor não precisa mais chamar o cliente do próprio

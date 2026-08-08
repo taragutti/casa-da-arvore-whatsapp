@@ -17,9 +17,27 @@ export const atualizacaoSchema = z
     unidade_confirmada: z.enum(UNIDADES).optional(),
     /** true devolve a conversa ao bot; false marcaria de volta como humano (não suportado aqui de propósito). */
     devolver_ao_bot: z.literal(true).optional(),
+    nome_cliente: z.string().trim().min(1, "nome não pode ficar vazio").max(200).optional(),
+    /**
+     * Aceita "+5522999999999", "55 (22) 99999-9999" etc. e NORMALIZA pra
+     * dígitos-only — é assim que o webhook grava (wa_id) e que o resto do
+     * sistema (script_state, saudações, relay) chaveia o número. Aceitar um
+     * formato e gravar outro quebraria esses vínculos silenciosamente.
+     */
+    whatsapp_number: z
+      .string()
+      .trim()
+      .transform((v) => v.replace(/\D/g, ""))
+      .pipe(
+        z
+          .string()
+          .min(12, "telefone: use o formato internacional, ex: +5522997546818")
+          .max(13, "telefone: use o formato internacional, ex: +5522997546818")
+      )
+      .optional(),
   })
   .refine((dados) => Object.keys(dados).length > 0, {
-    message: "informe ao menos um campo: status, unidade_confirmada ou devolver_ao_bot",
+    message: "informe ao menos um campo: status, unidade_confirmada, nome_cliente, whatsapp_number ou devolver_ao_bot",
   });
 
 /**
