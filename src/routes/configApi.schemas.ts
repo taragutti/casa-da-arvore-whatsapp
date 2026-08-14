@@ -97,6 +97,7 @@ export const configSchema = z
         .min(1, "Limite de tentativas: mínimo 1")
         .max(10, "Limite de tentativas: máximo 10"),
     }),
+    avisoOciosidadeVendedorMinutos: minutos("Aviso de ociosidade do vendedor"),
   })
   .refine((c) => c.horario.horaFechamento > c.horario.horaAbertura, {
     message: "Horário: o fechamento tem que ser depois da abertura",

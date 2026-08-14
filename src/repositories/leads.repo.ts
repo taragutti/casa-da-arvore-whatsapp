@@ -297,3 +297,44 @@ export async function buscarUnidadeEfetivaDoLead(leadId: string): Promise<{ unid
   );
   return result.rows[0] ?? null;
 }
+
+export interface ContextoLead {
+  nomeCliente: string | null;
+  tipoEvento: string | null;
+  dataEvento: string | null;
+  numeroConvidados: number | null;
+  resumoPedido: string | null;
+  unidade: UnidadeRecomendada | null;
+}
+
+/**
+ * Só os dados do PRÓPRIO pedido do lead, já coletados — nenhum fato do
+ * negócio (preço, endereço, política). É o teto do que o bot pode usar pra
+ * responder uma dúvida sozinho durante a ociosidade do vendedor (Seção 5):
+ * qualquer coisa fora daqui é "sensível" por definição, nunca inventada.
+ */
+export async function buscarContextoLead(leadId: string): Promise<ContextoLead | null> {
+  const result = await pool.query<{
+    nome_cliente: string | null;
+    tipo_evento: string | null;
+    data_evento: string | null;
+    numero_convidados: number | null;
+    resumo_pedido: string | null;
+    unidade: UnidadeRecomendada | null;
+  }>(
+    `SELECT nome_cliente, tipo_evento, data_evento, numero_convidados, resumo_pedido,
+            COALESCE(unidade_confirmada, unidade_recomendada) AS unidade
+       FROM leads WHERE id = $1`,
+    [leadId]
+  );
+  const row = result.rows[0];
+  if (!row) return null;
+  return {
+    nomeCliente: row.nome_cliente,
+    tipoEvento: row.tipo_evento,
+    dataEvento: row.data_evento,
+    numeroConvidados: row.numero_convidados,
+    resumoPedido: row.resumo_pedido,
+    unidade: row.unidade,
+  };
+}

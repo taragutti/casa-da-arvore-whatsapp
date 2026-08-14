@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "src/db/schema.sql": {
-    "mtime": 1786735553.1075833,
-    "ast_hash": "0d0385b4baf3f1486e82e881fa671b94",
+    "mtime": 1785950488.698783,
+    "ast_hash": "e105483aba706cc56800e5cdbf457d80",
     "semantic_hash": ""
   },
   "src/jobs/monthlyBriefing.cron.ts": {
@@ -60,8 +60,8 @@
     "semantic_hash": ""
   },
   "src/queue/processMessage.job.ts": {
-    "mtime": 1786223164.0866826,
-    "ast_hash": "121c3d9428d5fa38f92dbb1d7d64b3e7",
+    "mtime": 1785615225.9888437,
+    "ast_hash": "b26e668e18ec6832cf1b743c4875c869",
     "semantic_hash": ""
   },
   "src/repositories/briefings.repo.ts": {
@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "src/repositories/leads.repo.ts": {
-    "mtime": 1786735520.1570065,
-    "ast_hash": "def5778e145a519ed364cf7d618d59e7",
+    "mtime": 1785950665.6473951,
+    "ast_hash": "ab8e4461d215d5d0c7596d70c4a22c8b",
     "semantic_hash": ""
   },
   "src/routes/ingest.ts": {
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "src/server.ts": {
-    "mtime": 1786734094.199411,
-    "ast_hash": "b60652ac8ee6eea7f7535e15433982cb",
+    "mtime": 1785951146.4324374,
+    "ast_hash": "ce460d270b17d078799d2704bd151433",
     "semantic_hash": ""
   },
   "src/services/anthropic.service.test.ts": {
@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "src/services/anthropic.service.ts": {
-    "mtime": 1786735540.9029248,
-    "ast_hash": "e554d2168363d35ddf275fa6909ff226",
+    "mtime": 1785004884.3223743,
+    "ast_hash": "18be175a0b37624b6529d9de2e6ecb69",
     "semantic_hash": ""
   },
   "src/services/briefing.service.ts": {
@@ -115,13 +115,13 @@
     "semantic_hash": ""
   },
   "src/services/messageProcessing.service.ts": {
-    "mtime": 1786223163.5760157,
-    "ast_hash": "e47aa67bd286db5b193d6de6b884b96c",
+    "mtime": 1785945514.2969499,
+    "ast_hash": "b8975c24580dac1c3dd851968e2a97e5",
     "semantic_hash": ""
   },
   "src/services/whatsapp.service.ts": {
-    "mtime": 1786223685.5074835,
-    "ast_hash": "bec4eba99b54c6b4de7620c9227bd67e",
+    "mtime": 1785945532.0076287,
+    "ast_hash": "d624294b1b90291ee65d9cc54f1cabef",
     "semantic_hash": ""
   },
   "src/utils/json.ts": {
@@ -285,13 +285,13 @@
     "semantic_hash": ""
   },
   "src/routes/painel.ts": {
-    "mtime": 1786223688.053796,
-    "ast_hash": "0ad595b7b3b2d094b467d5989e95c21d",
+    "mtime": 1785950631.3407536,
+    "ast_hash": "09ca7963e8ad36524dc4303851655458",
     "semantic_hash": ""
   },
   "src/services/painel.service.ts": {
-    "mtime": 1786226431.1717026,
-    "ast_hash": "0ffb9521aaf268d5a49fde8aba3ef5fe",
+    "mtime": 1785951154.8953352,
+    "ast_hash": "c3817df0535f0af978f72b44d24fd216",
     "semantic_hash": ""
   },
   "src/utils/html.ts": {
@@ -315,18 +315,18 @@
     "semantic_hash": ""
   },
   "src/routes/leadsApi.schemas.test.ts": {
-    "mtime": 1786226430.6780915,
-    "ast_hash": "9e61b5e1a14ca4658bf8bfe0fac7db22",
+    "mtime": 1785462486.323602,
+    "ast_hash": "fee133d304e25e4d8195091c7572bd02",
     "semantic_hash": ""
   },
   "src/routes/leadsApi.schemas.ts": {
-    "mtime": 1786226430.2548804,
-    "ast_hash": "e4d8faa1edd029e27d2fd84a6eb12c70",
+    "mtime": 1785462337.472233,
+    "ast_hash": "898ca0690572c7eded9ff6f73f89cba7",
     "semantic_hash": ""
   },
   "src/routes/leadsApi.ts": {
-    "mtime": 1786226429.8368907,
-    "ast_hash": "efa5a41eb94a0cbab66e54c80f1d9e1f",
+    "mtime": 1785951050.969684,
+    "ast_hash": "2a0b0b9aa60445de7da304805b4cdb08",
     "semantic_hash": ""
   },
   ".claude/launch.json": {
@@ -430,23 +430,23 @@
     "semantic_hash": ""
   },
   "ONDE-PARAMOS.md": {
-    "mtime": 1786226431.6848528,
-    "ast_hash": "207774957f046202315f942168343e70",
+    "mtime": 1785951829.5232582,
+    "ast_hash": "ba6680f041d284a360b03a8dad97e743",
     "semantic_hash": ""
   },
   "src/repositories/configuracoes.repo.ts": {
-    "mtime": 1786733878.8547308,
-    "ast_hash": "77a671b6ec78f387c58944a2bcb14744",
+    "mtime": 1785945421.8928955,
+    "ast_hash": "637ba72f9fc6730f58ef2b4fa5f3e589",
     "semantic_hash": ""
   },
   "src/routes/configApi.schemas.test.ts": {
-    "mtime": 1786734140.1929386,
-    "ast_hash": "82654eebbc18cca6682ab34a88794c44",
+    "mtime": 1785945594.904962,
+    "ast_hash": "9fa7678562e839dce011b089b7012823",
     "semantic_hash": ""
   },
   "src/routes/configApi.schemas.ts": {
-    "mtime": 1786733889.812751,
-    "ast_hash": "26912a0efd4284c576fbbe1ebd82998d",
+    "mtime": 1785945454.531567,
+    "ast_hash": "a1fbc49ca659660095ee1f63ad2069d7",
     "semantic_hash": ""
   },
   "src/routes/configApi.ts": {
@@ -465,8 +465,8 @@
     "semantic_hash": ""
   },
   "src/services/configPainel.service.ts": {
-    "mtime": 1786734114.7408814,
-    "ast_hash": "0286d00c5e335942471ab9f3a1fcab48",
+    "mtime": 1785951165.4297764,
+    "ast_hash": "44b08b73ca5b2a888bb69815dcb17291",
     "semantic_hash": ""
   },
   "src/services/handoffConfig.service.test.ts": {
@@ -537,41 +537,6 @@
   "src/services/usuariosPainel.service.ts": {
     "mtime": 1785953694.6288397,
     "ast_hash": "4f45c31cf75a8889897d0123acfc01c7",
-    "semantic_hash": ""
-  },
-  "src/queue/vendorIdle.job.ts": {
-    "mtime": 1786733922.454293,
-    "ast_hash": "ba0fd5a2aa3a65c8fd8f7c4af78cddb7",
-    "semantic_hash": ""
-  },
-  "src/queue/vendorIdleQueue.ts": {
-    "mtime": 1786733908.9910376,
-    "ast_hash": "9158b0e704b2053c7aeb76a4656f0978",
-    "semantic_hash": ""
-  },
-  "src/repositories/conversa.repo.ts": {
-    "mtime": 1786223684.2927938,
-    "ast_hash": "86740d6743fc8f1bfcd40c40378336ed",
-    "semantic_hash": ""
-  },
-  "src/repositories/relay.repo.ts": {
-    "mtime": 1786735577.075666,
-    "ast_hash": "1520c501e9f574e6dbf4878361b1e7f3",
-    "semantic_hash": ""
-  },
-  "src/services/conversaPainel.service.ts": {
-    "mtime": 1786223684.9293244,
-    "ast_hash": "e8b171cee3447d8c16c9d6cd0d334d40",
-    "semantic_hash": ""
-  },
-  "src/services/relay.service.test.ts": {
-    "mtime": 1786223162.4826372,
-    "ast_hash": "782b80fdc743c0b57efec8dfc4fc55b4",
-    "semantic_hash": ""
-  },
-  "src/services/relay.service.ts": {
-    "mtime": 1786735650.8666298,
-    "ast_hash": "767228d67017526f40b9ac23004bdcd1",
     "semantic_hash": ""
   }
 }

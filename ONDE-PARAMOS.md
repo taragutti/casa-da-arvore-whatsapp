@@ -1,7 +1,74 @@
-# Onde paramos — 08/08/2026
+# Onde paramos — 14/08/2026
 
 Registro de estado para retomar sem reconstruir contexto. Atualizar ao fim de
 cada sessão de trabalho.
+
+## Aviso de ociosidade do vendedor + bot responde até 3 dúvidas (14/08)
+
+Motivado por um caso real: lead (Matheus e Bia, casamento, Casa Pôr do Sol)
+mandou "quanto custa?" no domingo 09/08, o handoff disparou certinho (template
+aceito pela Meta, relay aberto), e o vendedor comercial (`+5522997249462`)
+simplesmente não respondeu por 5 dias — sem nenhum alerta, porque o SLA por
+unidade (15/20/30/10 min) é só texto informativo no e-mail, nunca foi
+fiscalizado por código. Investigação completa disponível no histórico da
+sessão; resumo do que foi implementado:
+
+**Aviso de ociosidade (config nova, editável em `/painel/configuracoes`):**
+Se ninguém (vendedor) responder o cliente dentro de um prazo configurável
+(padrão **5 min**), o bot manda uma mensagem de espera — honesta, sem fingir
+ser o vendedor: *"Só um instante 🙏 nosso consultor está ocupado no momento e
+já te retorna. Se quiser já ir adiantando alguma dúvida, fico por aqui pra
+ajudar!"*. O relógio começa na abertura do handoff e a cada mensagem nova do
+cliente; cancela sozinho se o vendedor responder a tempo. Implementado com o
+mesmo mecanismo (BullMQ + tabela) da régua de follow-up, mas é um sistema
+**separado** dela — nova fila `vendor-idle-check`
+(`src/queue/vendorIdleQueue.ts` + `vendorIdle.job.ts`), nova coluna
+`relay_atendimentos.aviso_espera_enviado_em` (controla pra não avisar 2x na
+mesma janela de silêncio, mesmo se o cliente mandar várias mensagens seguidas).
+
+**Bot responde até 3 dúvidas, só depois do aviso já ter disparado:** depois
+que o aviso de ociosidade sai, se o cliente perguntar algo, o bot tenta
+responder — mas **só com dados que o próprio lead já informou** (nome, tipo de
+evento, data, convidados, unidade, resumo do pedido). Preço, desconto, forma
+de pagamento, endereço, disponibilidade de agenda, política ou contrato são
+sempre "sensível": o bot nunca inventa esse tipo de fato (não existe fonte
+confiável centralizada no código pra isso hoje), só desvia com *"Essa parte
+específica meu consultor confirma certinho com você..."* — e isso **não**
+gasta uma das 3 tentativas, só pergunta respondida de verdade conta. Na 3ª
+resposta, o bot se despede ("vou aguardar meu consultor...") e para de
+responder sozinho até o vendedor aparecer. Classificação segura/sensível via
+nova função `responderDuvidaEmEspera` em `anthropic.service.ts` (Claude,
+prompt à parte do de extração); contador `perguntas_bot_respondidas` em
+`relay_atendimentos`, zera junto com o aviso quando o vendedor responde de
+verdade (mesmo evento, mesma janela).
+
+Mensagem de forwarding pro vendedor continua acontecendo em paralelo, sempre
+— o bot é só um paliativo pro cliente não ficar no vácuo, o vendedor vê tudo
+quando aparecer.
+
+**Fora do escopo por decisão consciente:** não existe hoje um lugar
+centralizado com fatos institucionais verificados (endereço, políticas, forma
+de pagamento) que a IA pudesse usar com segurança — por isso o "seguro" ficou
+restrito aos dados do próprio pedido do lead. Se quiser abrir mais o escopo
+depois, o caminho natural é um campo configurável no painel (mesmo padrão do
+SLA/vendedor) que o admin preenche com texto real, não a IA inferindo.
+
+Arquivos principais: `relay.service.ts` (`agendarChecagemOciosidade`,
+`processarOciosidadeVendedor`, `tentarResponderDuvidaEmEspera`),
+`relay.repo.ts` (`buscarAtendimento`, `vendedorRespondeuDesde`,
+`marcarAvisoEsperaEnviado`, `resetarAvisoEspera`,
+`incrementarPerguntaBotRespondida`), `leads.repo.ts`
+(`buscarContextoLead`), `anthropic.service.ts` (`responderDuvidaEmEspera`),
+`configuracoes.repo.ts` / `configApi.schemas.ts` / `configPainel.service.ts`
+(campo `avisoOciosidadeVendedorMinutos`). 274 testes verdes, sem teste
+dedicado pro fluxo novo (mesmo padrão de `followUp.service.ts`, que também não
+tem — a régua de follow-up nunca teve testes de integração com fila/banco).
+
+**Deploy:** migração (aditiva, só `ADD COLUMN IF NOT EXISTS`) e `railway up`
+já rodados em produção nesta data — worker novo confirmado no log
+("worker de aviso de ociosidade do vendedor iniciado"), `/health` ok.
+Código ainda **não commitado** no momento deste registro (só rodou em
+produção via `railway up`, que sobe o diretório direto — não depende de git).
 
 ## Gestão de leads no painel (08/08, tarde)
 

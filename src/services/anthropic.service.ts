@@ -239,6 +239,81 @@ function sanitize(raw: any): ExtractedLeadData {
   };
 }
 
+export interface ContextoDuvidaEmEspera {
+  nomeCliente: string | null;
+  tipoEvento: string | null;
+  dataEvento: string | null;
+  numeroConvidados: number | null;
+  resumoPedido: string | null;
+  unidade: string | null;
+}
+
+export interface RespostaDuvidaEmEspera {
+  escopo: "segura" | "sensivel";
+  resposta: string | null;
+}
+
+/**
+ * Prompt do aviso de ociosidade (Seção 5 — ver ONDE-PARAMOS.md): o bot pode
+ * responder no MÁXIMO 3 dúvidas por janela de silêncio enquanto o vendedor
+ * não aparece, mas só usando os dados que o próprio lead já informou — nunca
+ * fato de negócio (preço, endereço, política, forma de pagamento,
+ * disponibilidade de agenda). Fora isso é sempre "sensivel", mesmo que a IA
+ * "soubesse" a resposta — o risco de inventar um preço errado é pior que
+ * deixar a pergunta esperar o vendedor de verdade.
+ */
+const SYSTEM_PROMPT_DUVIDA_EM_ESPERA = `Você decide se pode responder a dúvida de um cliente enquanto o consultor humano está temporariamente ocupado, usando SOMENTE os dados fornecidos sobre o próprio pedido dele. Retorne APENAS um JSON válido, sem markdown, sem texto adicional.
+
+Formato exato de saída:
+{
+  "escopo": "segura" ou "sensivel",
+  "resposta": "string com a resposta, só quando escopo for segura; caso contrário null"
+}
+
+Regras:
+- "segura": a pergunta é respondível SOMENTE com os dados fornecidos sobre o pedido do cliente (nome, tipo de evento, data, número de convidados, unidade, resumo do pedido) — ex.: confirmar se a mensagem chegou, repetir a data/unidade/tipo de evento já informados, tranquilizar que o consultor já viu o assunto.
+- "sensivel": QUALQUER coisa envolvendo preço, valor, desconto, forma de pagamento, disponibilidade de data/agenda, endereço, o que está incluso, políticas do espaço, contrato, ou qualquer fato do negócio que não esteja nos dados fornecidos. Na dúvida, classifique como sensivel — nunca invente um fato que não foi dado.
+- resposta: preencha apenas quando escopo for "segura", usando SOMENTE os dados fornecidos (nunca um dado null). Tom acolhedor e direto, sem inventar nada, no máximo um emoji 🌳 no final.`;
+
+/**
+ * Classifica e, se seguro, responde uma dúvida do cliente durante a
+ * ociosidade do vendedor — nunca usa fato fora de `contexto` (ver
+ * SYSTEM_PROMPT_DUVIDA_EM_ESPERA). Qualquer falha (rede, parse, resposta
+ * malformada) volta como "sensivel": o chamador trata isso desviando pro
+ * vendedor, nunca deixando uma resposta duvidosa vazar pro cliente.
+ */
+export async function responderDuvidaEmEspera(
+  mensagem: string,
+  contexto: ContextoDuvidaEmEspera
+): Promise<RespostaDuvidaEmEspera> {
+  const anthropic = getClient();
+
+  const response = await anthropic.messages.create({
+    model: env.ANTHROPIC_MODEL,
+    max_tokens: 512,
+    system: SYSTEM_PROMPT_DUVIDA_EM_ESPERA,
+    messages: [
+      {
+        role: "user",
+        content: `Dados já conhecidos do pedido deste cliente (JSON): ${JSON.stringify(contexto)}\n\nMensagem do cliente: ${mensagem}`,
+      },
+    ],
+  });
+
+  const textBlock = response.content.find((block) => block.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    throw new Error("Resposta da IA não contém bloco de texto.");
+  }
+
+  const parsed = JSON.parse(extractJsonPayload(textBlock.text));
+  const escopo: "segura" | "sensivel" = parsed?.escopo === "segura" ? "segura" : "sensivel";
+  const resposta = escopo === "segura" && typeof parsed?.resposta === "string" && parsed.resposta.trim() ? parsed.resposta.trim() : null;
+
+  // resposta ausente com escopo "segura" seria um contrato quebrado — mais
+  // seguro tratar como sensível do que mandar mensagem vazia ao cliente.
+  return resposta ? { escopo: "segura", resposta } : { escopo: "sensivel", resposta: null };
+}
+
 /** Extrai dados estruturados de uma mensagem de cliente, com retry (máx. 2 tentativas). */
 export async function extractFromMessage(mensagem: string): Promise<ExtractedLeadData> {
   const anthropic = getClient();

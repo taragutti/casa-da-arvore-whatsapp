@@ -1,19 +1,28 @@
 import type { Logger } from "pino";
+import { logger } from "../config/logger";
 import { sendWhatsAppMessage } from "./whatsapp.service";
 import { determinarNumeroVendedor } from "./handoff.service";
 import { obterConfig } from "./config.service";
 import { devolverAoBot } from "../repositories/conversationState.repo";
-import { buscarUnidadeEfetivaDoLead } from "../repositories/leads.repo";
+import { buscarContextoLead, buscarUnidadeEfetivaDoLead } from "../repositories/leads.repo";
+import { responderDuvidaEmEspera } from "./anthropic.service";
 import {
   abrirAtendimento,
+  buscarAtendimento,
   fecharAtendimento,
   getVendedorDoLead,
+  incrementarPerguntaBotRespondida,
   listarAtendimentosAbertos,
+  marcarAvisoEsperaEnviado,
   normalizarNumero,
   registrarMensagemRelay,
+  resetarAvisoEspera,
   selecionarAtendimento,
+  vendedorRespondeuDesde,
+  AtendimentoComAviso,
   AtendimentoRelay,
 } from "../repositories/relay.repo";
+import { vendorIdleQueue } from "../queue/vendorIdleQueue";
 
 /**
  * Relay de atendimento humano (handover): depois do handoff, o vendedor
@@ -87,6 +96,83 @@ function montarLista(atendimentos: AtendimentoRelay[]): string {
   return ["📋 *Seus atendimentos abertos:*", "", ...linhas, "", "✱ = selecionado. Responda *#N* pra trocar."].join(
     "\n"
   );
+}
+
+/**
+ * Aviso de ociosidade do vendedor: quebra o silêncio pro CLIENTE, sem mentir
+ * e sem o bot fingir que é o consultor — só reduz a ansiedade de quem está
+ * esperando e reabre uma porta pra tirar dúvida simples nesse meio-tempo.
+ * Texto e prazo definidos com o usuário em sessão — ver ONDE-PARAMOS.md.
+ */
+const TEXTO_ESPERA_VENDEDOR =
+  "Só um instante 🙏 nosso consultor está ocupado no momento e já te retorna. Se quiser já ir adiantando alguma dúvida, fico por aqui pra ajudar!";
+
+/**
+ * Dúvida fora do escopo seguro (preço, endereço, política, disponibilidade —
+ * qualquer fato de negócio que o bot não tem confirmado): nunca inventa,
+ * sempre desvia. Não conta como uma das 3 tentativas — só "segura" conta.
+ */
+const TEXTO_DUVIDA_SENSIVEL =
+  "Essa parte específica meu consultor confirma certinho com você — já deixei anotado aqui pra ele responder assim que puder! 🙏";
+
+/** Mandada uma vez, junto da 3ª resposta segura — fecha o ciclo sem deixar o cliente esperando resposta que não vai vir. */
+const TEXTO_ENCERRAMENTO_DUVIDAS =
+  "Vou aguardar meu consultor confirmar os detalhes com você a partir daqui, ele já te chama! 🙏";
+
+/**
+ * Agenda a checagem de ociosidade: se o vendedor não responder o cliente
+ * dentro do prazo configurável (padrão 5 min), o bot manda a mensagem de
+ * espera. Chamada tanto na abertura do handoff quanto a cada mensagem nova
+ * do cliente — cada chamada tem seu próprio relógio, mas o aviso em si só sai
+ * uma vez por janela de silêncio (ver `processarOciosidadeVendedor`).
+ */
+export async function agendarChecagemOciosidade(leadId: string, numeroVendedor: string): Promise<void> {
+  const config = await obterConfig();
+  await vendorIdleQueue.add(
+    "vendor-idle",
+    { leadId, numeroVendedor, esperandoDesde: new Date().toISOString() },
+    { delay: config.avisoOciosidadeVendedorMinutos * 60 * 1000 }
+  );
+}
+
+/**
+ * Processa uma checagem agendada. Cancela silenciosamente (sem reagendar) se
+ * o atendimento já fechou, se o vendedor respondeu desde `esperandoDesde`, ou
+ * se o aviso já saiu nesta janela de silêncio — este último evita duplicar
+ * quando o cliente manda várias mensagens antes do prazo estourar (cada uma
+ * agenda sua própria checagem, mas só a primeira que chega a disparar avisa).
+ */
+export async function processarOciosidadeVendedor(
+  leadId: string,
+  numeroVendedor: string,
+  esperandoDesde: string
+): Promise<void> {
+  const log = logger.child({ leadId, numeroVendedor });
+
+  const atendimento = await buscarAtendimento(numeroVendedor, leadId);
+  if (!atendimento) {
+    log.debug("atendimento não está mais aberto — aviso de ociosidade cancelado");
+    return;
+  }
+
+  if (atendimento.avisoEsperaEnviadoEm) {
+    log.debug("aviso de ociosidade já enviado nesta janela de silêncio — cancelado");
+    return;
+  }
+
+  const respondeu = await vendedorRespondeuDesde(leadId, numeroVendedor, new Date(esperandoDesde));
+  if (respondeu) {
+    log.debug("vendedor já respondeu — aviso de ociosidade cancelado");
+    return;
+  }
+
+  try {
+    await sendWhatsAppMessage(atendimento.whatsappCliente, TEXTO_ESPERA_VENDEDOR);
+    await marcarAvisoEsperaEnviado(leadId, numeroVendedor);
+    log.info("aviso de ociosidade do vendedor enviado ao cliente");
+  } catch (error) {
+    log.error({ err: error }, "falha ao enviar aviso de ociosidade do vendedor");
+  }
 }
 
 async function responderVendedor(numeroVendedor: string, texto: string, log: Logger): Promise<void> {
@@ -196,6 +282,8 @@ export async function processarMensagemDoVendedor(
           texto: comando.texto,
           entregue: true,
         });
+        // Vendedor respondeu: a próxima ociosidade merece um aviso novo.
+        await resetarAvisoEspera(selecionado.leadId, numeroVendedor);
         log.info({ leadId: selecionado.leadId }, "mensagem do vendedor repassada ao cliente via relay");
       } catch (error) {
         log.error({ err: error, leadId: selecionado.leadId }, "falha ao repassar mensagem do vendedor ao cliente");
@@ -231,6 +319,57 @@ export async function abrirAtendimentoRelay(numeroVendedor: string, leadId: stri
     log.info({ leadId, numeroVendedor: normalizarNumero(numeroVendedor) }, "atendimento de relay aberto");
   } catch (error) {
     log.error({ err: error, leadId }, "falha ao abrir atendimento de relay no handoff");
+    return;
+  }
+
+  try {
+    await agendarChecagemOciosidade(leadId, numeroVendedor);
+  } catch (error) {
+    log.error({ err: error, leadId }, "falha ao agendar checagem de ociosidade do vendedor");
+  }
+}
+
+/**
+ * Se o aviso de ociosidade já disparou nesta janela de silêncio e ainda sobra
+ * tentativa (máx. 3), tenta responder a dúvida do cliente sozinho — só com
+ * dados que o próprio lead já informou (ver anthropic.service.ts). Qualquer
+ * falha aqui é silenciosa: o encaminhamento pro vendedor abaixo acontece de
+ * qualquer forma, então o cliente nunca fica sem nenhum caminho de resposta.
+ */
+async function tentarResponderDuvidaEmEspera(
+  leadId: string,
+  whatsappCliente: string,
+  nomeCliente: string | null,
+  mensagem: string,
+  atendimento: AtendimentoComAviso,
+  log: Logger
+): Promise<void> {
+  if (!atendimento.avisoEsperaEnviadoEm || atendimento.perguntasBotRespondidas >= 3) return;
+
+  try {
+    const contextoLead = await buscarContextoLead(leadId);
+    const resultado = await responderDuvidaEmEspera(mensagem, {
+      nomeCliente: contextoLead?.nomeCliente ?? nomeCliente,
+      tipoEvento: contextoLead?.tipoEvento ?? null,
+      dataEvento: contextoLead?.dataEvento ?? null,
+      numeroConvidados: contextoLead?.numeroConvidados ?? null,
+      resumoPedido: contextoLead?.resumoPedido ?? null,
+      unidade: contextoLead?.unidade ?? null,
+    });
+
+    if (resultado.escopo === "segura" && resultado.resposta) {
+      await sendWhatsAppMessage(whatsappCliente, resultado.resposta);
+      const novoTotal = await incrementarPerguntaBotRespondida(leadId, atendimento.numeroVendedor);
+      if (novoTotal >= 3) {
+        await sendWhatsAppMessage(whatsappCliente, TEXTO_ENCERRAMENTO_DUVIDAS);
+      }
+      log.info({ leadId, novoTotal }, "bot respondeu dúvida segura durante ociosidade do vendedor");
+    } else {
+      await sendWhatsAppMessage(whatsappCliente, TEXTO_DUVIDA_SENSIVEL);
+      log.info({ leadId }, "dúvida sensível durante ociosidade — bot desviou pro vendedor, sem gastar tentativa");
+    }
+  } catch (error) {
+    log.error({ err: error, leadId }, "falha ao tentar responder dúvida durante ociosidade do vendedor");
   }
 }
 
@@ -262,6 +401,23 @@ export async function encaminharMensagemDoClienteParaVendedor(params: {
       const unidade = (await buscarUnidadeEfetivaDoLead(leadId))?.unidade ?? null;
       numeroVendedor = determinarNumeroVendedor(unidade, config.vendedor);
       await abrirAtendimento(numeroVendedor, leadId);
+    }
+
+    // Cliente escreveu de novo enquanto esperava: relógio de ociosidade
+    // reinicia a partir desta mensagem, independente do encaminhamento abaixo
+    // dar certo ou não (o cliente está esperando de qualquer forma).
+    try {
+      await agendarChecagemOciosidade(leadId, numeroVendedor);
+    } catch (error) {
+      log.error({ err: error, leadId }, "falha ao agendar checagem de ociosidade do vendedor");
+    }
+
+    // Se o vendedor já está ocioso o bastante pra ter disparado o aviso, dá
+    // pra tentar quebrar mais esse galho sozinho (até 3x) antes do vendedor
+    // aparecer — sempre com o encaminhamento abaixo acontecendo do mesmo jeito.
+    const atendimentoAtual = await buscarAtendimento(numeroVendedor, leadId);
+    if (atendimentoAtual) {
+      await tentarResponderDuvidaEmEspera(leadId, whatsappCliente, nomeCliente, mensagem, atendimentoAtual, log);
     }
 
     const atendimentos = await listarAtendimentosAbertos(numeroVendedor);

@@ -20,6 +20,7 @@ export interface Configuracoes {
   sla: RegrasSla;
   vendedor: RegrasVendedor;
   handoff: RegrasHandoff;
+  avisoOciosidadeVendedorMinutos: number;
   atualizadoEm: Date | null;
   atualizadoPorNome: string | null;
 }
@@ -32,6 +33,7 @@ export const CONFIGURACOES_PADRAO: Configuracoes = {
   sla: REGRAS_SLA_PADRAO,
   vendedor: REGRAS_VENDEDOR_PADRAO,
   handoff: REGRAS_HANDOFF_PADRAO,
+  avisoOciosidadeVendedorMinutos: 5,
   atualizadoEm: null,
   atualizadoPorNome: null,
 };
@@ -55,6 +57,7 @@ interface LinhaConfig {
   palavras_pedido_humano: string[];
   palavras_pedido_contrato: string[];
   tentativas_sem_classificacao_limite: number;
+  aviso_ociosidade_vendedor_minutos: number;
   atualizado_em: Date | null;
   atualizado_por_nome: string | null;
 }
@@ -94,6 +97,7 @@ function daLinha(l: LinhaConfig): Configuracoes {
       palavrasPedidoContrato: l.palavras_pedido_contrato,
       tentativasSemClassificacaoLimite: l.tentativas_sem_classificacao_limite,
     },
+    avisoOciosidadeVendedorMinutos: l.aviso_ociosidade_vendedor_minutos,
     atualizadoEm: l.atualizado_em,
     atualizadoPorNome: l.atualizado_por_nome,
   };
@@ -116,6 +120,7 @@ export interface AtualizacaoConfig {
   sla: RegrasSla;
   vendedor: RegrasVendedor;
   handoff: RegrasHandoff;
+  avisoOciosidadeVendedorMinutos: number;
 }
 
 export async function salvarConfiguracoes(dados: AtualizacaoConfig, usuarioId: string | null): Promise<Configuracoes> {
@@ -128,9 +133,9 @@ export async function salvarConfiguracoes(dados: AtualizacaoConfig, usuarioId: s
        sla_minutos, sla_corporativo_minutos, sla_sem_unidade_minutos,
        vendedor_whatsapp_por_unidade, vendedor_whatsapp_padrao,
        palavras_reclamacao, palavras_pedido_humano, palavras_pedido_contrato,
-       tentativas_sem_classificacao_limite, atualizado_em, atualizado_por
+       tentativas_sem_classificacao_limite, aviso_ociosidade_vendedor_minutos, atualizado_em, atualizado_por
      ) VALUES (
-       true, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13::jsonb, $14, $15, $16, $17, $18, now(), $19
+       true, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13::jsonb, $14, $15, $16, $17, $18, $19, now(), $20
      )
      ON CONFLICT (id) DO UPDATE SET
        followup_2h_minutos = EXCLUDED.followup_2h_minutos,
@@ -151,6 +156,7 @@ export async function salvarConfiguracoes(dados: AtualizacaoConfig, usuarioId: s
        palavras_pedido_humano = EXCLUDED.palavras_pedido_humano,
        palavras_pedido_contrato = EXCLUDED.palavras_pedido_contrato,
        tentativas_sem_classificacao_limite = EXCLUDED.tentativas_sem_classificacao_limite,
+       aviso_ociosidade_vendedor_minutos = EXCLUDED.aviso_ociosidade_vendedor_minutos,
        atualizado_em = now(),
        atualizado_por = EXCLUDED.atualizado_por
      RETURNING *, NULL::text AS atualizado_por_nome`,
@@ -173,6 +179,7 @@ export async function salvarConfiguracoes(dados: AtualizacaoConfig, usuarioId: s
       dados.handoff.palavrasPedidoHumano,
       dados.handoff.palavrasPedidoContrato,
       dados.handoff.tentativasSemClassificacaoLimite,
+      dados.avisoOciosidadeVendedorMinutos,
       usuarioId,
     ]
   );

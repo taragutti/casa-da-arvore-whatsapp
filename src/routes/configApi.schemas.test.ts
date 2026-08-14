@@ -26,6 +26,7 @@ const valido = {
     palavrasPedidoContrato: ["quero fechar"],
     tentativasSemClassificacaoLimite: 2,
   },
+  avisoOciosidadeVendedorMinutos: 5,
 };
 
 const erro = (corpo: unknown) => {

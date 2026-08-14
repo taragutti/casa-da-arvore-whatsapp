@@ -214,6 +214,91 @@ export async function getVendedorDoLead(leadId: string): Promise<string | null> 
   return result.rows[0]?.numero_vendedor ?? null;
 }
 
+export interface AtendimentoComAviso extends AtendimentoRelay {
+  avisoEsperaEnviadoEm: Date | null;
+  perguntasBotRespondidas: number;
+}
+
+/** Um atendimento específico (vendedor + lead), com os campos de controle do aviso de ociosidade. */
+export async function buscarAtendimento(numeroVendedor: string, leadId: string): Promise<AtendimentoComAviso | null> {
+  const result = await pool.query<{
+    lead_id: string;
+    numero_vendedor: string;
+    selecionado: boolean;
+    aberto_em: Date;
+    aviso_espera_enviado_em: Date | null;
+    perguntas_bot_respondidas: number;
+    nome_cliente: string | null;
+    whatsapp_number: string;
+  }>(
+    `SELECT r.lead_id, r.numero_vendedor, r.selecionado, r.aberto_em, r.aviso_espera_enviado_em,
+            r.perguntas_bot_respondidas, l.nome_cliente, l.whatsapp_number
+     FROM relay_atendimentos r
+     JOIN leads l ON l.id = r.lead_id
+     WHERE r.numero_vendedor = $1 AND r.lead_id = $2 AND r.aberto`,
+    [normalizarNumero(numeroVendedor), leadId]
+  );
+
+  const row = result.rows[0];
+  if (!row) return null;
+
+  return {
+    leadId: row.lead_id,
+    numeroVendedor: row.numero_vendedor,
+    selecionado: row.selecionado,
+    abertoEm: row.aberto_em,
+    nomeCliente: row.nome_cliente,
+    whatsappCliente: row.whatsapp_number,
+    avisoEsperaEnviadoEm: row.aviso_espera_enviado_em,
+    perguntasBotRespondidas: row.perguntas_bot_respondidas,
+  };
+}
+
+/** Incrementa o contador de dúvidas respondidas pelo bot nesta janela e devolve o novo total. */
+export async function incrementarPerguntaBotRespondida(leadId: string, numeroVendedor: string): Promise<number> {
+  const result = await pool.query<{ perguntas_bot_respondidas: number }>(
+    `UPDATE relay_atendimentos SET perguntas_bot_respondidas = perguntas_bot_respondidas + 1, atualizado_em = now()
+     WHERE lead_id = $1 AND numero_vendedor = $2 AND aberto
+     RETURNING perguntas_bot_respondidas`,
+    [leadId, normalizarNumero(numeroVendedor)]
+  );
+  return result.rows[0]?.perguntas_bot_respondidas ?? 0;
+}
+
+/** O vendedor mandou pelo menos uma mensagem pro cliente depois de `desde`? Usado pra cancelar o aviso de ociosidade quando ele já respondeu a tempo. */
+export async function vendedorRespondeuDesde(leadId: string, numeroVendedor: string, desde: Date): Promise<boolean> {
+  const result = await pool.query(
+    `SELECT 1 FROM relay_mensagens
+     WHERE lead_id = $1 AND numero_vendedor = $2 AND direcao = 'vendedor_para_cliente' AND created_at > $3
+     LIMIT 1`,
+    [leadId, normalizarNumero(numeroVendedor), desde]
+  );
+  return (result.rowCount ?? 0) > 0;
+}
+
+/** Marca que o bot já avisou o cliente da ociosidade nesta janela de silêncio — evita aviso repetido. */
+export async function marcarAvisoEsperaEnviado(leadId: string, numeroVendedor: string): Promise<void> {
+  await pool.query(
+    `UPDATE relay_atendimentos SET aviso_espera_enviado_em = now(), atualizado_em = now()
+     WHERE lead_id = $1 AND numero_vendedor = $2 AND aberto`,
+    [leadId, normalizarNumero(numeroVendedor)]
+  );
+}
+
+/**
+ * Reabre a janela de silêncio: chamado quando o vendedor responde de
+ * verdade, pra uma ociosidade futura merecer aviso novo E outras 3 perguntas
+ * — os dois contadores andam juntos porque descrevem o mesmo período de
+ * silêncio.
+ */
+export async function resetarAvisoEspera(leadId: string, numeroVendedor: string): Promise<void> {
+  await pool.query(
+    `UPDATE relay_atendimentos SET aviso_espera_enviado_em = NULL, perguntas_bot_respondidas = 0, atualizado_em = now()
+     WHERE lead_id = $1 AND numero_vendedor = $2 AND aberto`,
+    [leadId, normalizarNumero(numeroVendedor)]
+  );
+}
+
 /** Trilha de auditoria: toda mensagem que passa pela ponte fica registrada, inclusive as que falharam. */
 export async function registrarMensagemRelay(params: {
   leadId: string;

@@ -272,6 +272,12 @@ ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS vendedor_whatsapp_por_unidade
 -- recebe casarão/casa pôr do sol.
 ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS vendedor_whatsapp_padrao TEXT NOT NULL DEFAULT '+5522997249462';
 
+-- Ociosidade do vendedor pós-handoff: se ninguém responder o cliente dentro
+-- deste prazo, o bot quebra o silêncio com uma mensagem de espera (não é o
+-- SLA informativo acima — este é fiscalizado por código, ver followUp.job.ts
+-- e vendorIdle.job.ts).
+ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS aviso_ociosidade_vendedor_minutos INT NOT NULL DEFAULT 5;
+
 -- Garante a linha única na primeira migração, sem sobrescrever ajuste já feito.
 INSERT INTO configuracoes (id) VALUES (true) ON CONFLICT (id) DO NOTHING;
 
@@ -342,6 +348,17 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_relay_vendedor_selecionado
   ON relay_atendimentos(numero_vendedor) WHERE aberto AND selecionado;
 CREATE INDEX IF NOT EXISTS idx_relay_atendimentos_lead
   ON relay_atendimentos(lead_id) WHERE aberto;
+
+-- Marca quando o bot já avisou o CLIENTE que o vendedor está ocupado, nesta
+-- janela de silêncio. NULL = ainda não avisou (ou o vendedor respondeu desde
+-- o último aviso, o que reabre uma janela nova) — sem isso, cada mensagem
+-- nova do cliente antes do vendedor responder agendaria um aviso repetido.
+ALTER TABLE relay_atendimentos ADD COLUMN IF NOT EXISTS aviso_espera_enviado_em TIMESTAMPTZ;
+
+-- Quantas dúvidas o bot já respondeu sozinho nesta janela de silêncio (Seção
+-- 5) — teto de 3, só com dados que o próprio lead já informou. Zera junto com
+-- aviso_espera_enviado_em quando o vendedor responde de verdade.
+ALTER TABLE relay_atendimentos ADD COLUMN IF NOT EXISTS perguntas_bot_respondidas INT NOT NULL DEFAULT 0;
 
 -- Trilha de auditoria do relay: o que o vendedor mandou pro cliente e o que o
 -- cliente mandou pro vendedor, com o desfecho do envio. É o histórico da

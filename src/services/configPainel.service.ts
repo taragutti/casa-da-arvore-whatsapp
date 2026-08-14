@@ -200,6 +200,21 @@ export function renderizarConfigHtml(config: Configuracoes, autor: Autor): strin
     </div>
 
     <div class="bloco">
+      <h2>Aviso de ociosidade do vendedor</h2>
+      <p class="desc">Se o vendedor não responder o cliente dentro deste prazo, o bot manda uma mensagem
+        avisando que o consultor está ocupado e já retorna — diferente do SLA acima, este prazo é
+        <b>fiscalizado por código</b> e dispara ação de verdade.</p>
+      <div class="grade">
+        ${campoMinutos(
+          "aviso_ociosidade",
+          "Avisar o cliente após",
+          config.avisoOciosidadeVendedorMinutos,
+          "Contado a partir do handoff ou da última mensagem do cliente sem resposta do vendedor."
+        )}
+      </div>
+    </div>
+
+    <div class="bloco">
       <h2>Vendedor que recebe o handoff</h2>
       <p class="desc">Número de WhatsApp que recebe a notificação de cada lead passado para humano, por unidade.
         Formato internacional, com "+" e código do país (ex: <code>+5522997546818</code>).</p>
@@ -322,7 +337,8 @@ ${(Object.keys(LABEL_UNIDADE) as UnidadeRecomendada[])
         palavrasPedidoHumano: linhas("p_humano"),
         palavrasPedidoContrato: linhas("p_contrato"),
         tentativasSemClassificacaoLimite: num("tentativas")
-      }
+      },
+      avisoOciosidadeVendedorMinutos: num("aviso_ociosidade")
     };
 
     botao.disabled = true;

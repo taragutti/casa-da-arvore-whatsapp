@@ -5,6 +5,7 @@ import { checkDbConnection } from "./db/client";
 import { connection as redisConnection } from "./queue/connection";
 import { startMessageWorker } from "./queue/processMessage.job";
 import { startFollowUpWorker } from "./queue/followUp.job";
+import { startVendorIdleWorker } from "./queue/vendorIdle.job";
 import { scheduleMonthlyBriefingJob } from "./jobs/monthlyBriefing.cron";
 import { scheduleLifecycleFollowUpJob } from "./jobs/lifecycleFollowUp.cron";
 import { ingestRouter } from "./routes/ingest";
@@ -121,6 +122,9 @@ async function start() {
 
   startFollowUpWorker();
   logger.info("worker da fila de follow-up iniciado");
+
+  startVendorIdleWorker();
+  logger.info("worker de aviso de ociosidade do vendedor iniciado");
 
   scheduleMonthlyBriefingJob();
   scheduleLifecycleFollowUpJob();
