@@ -160,6 +160,12 @@ END $$;
 
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS papel papel_usuario_enum NOT NULL DEFAULT 'admin';
 
+-- Celular pessoal de quem atende (estágio 9) — distinto do WhatsApp
+-- compartilhado por unidade em vendedor_whatsapp_por_unidade: aquele recebe o
+-- handoff de QUALQUER lead da unidade; este é o número PESSOAL usado para
+-- mandar o resumo diário de leads ativos a cada vendedor individualmente.
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS telefone TEXT;
+
 -- Unidades que um atendente representa — só tem sentido pra papel
 -- 'atendente' (admin vê tudo, independente do que estiver aqui). Lead sem
 -- unidade decidida ainda (unidade_recomendada e unidade_confirmada nulos)
@@ -277,6 +283,13 @@ ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS vendedor_whatsapp_padrao TEXT
 -- SLA informativo acima — este é fiscalizado por código, ver followUp.job.ts
 -- e vendorIdle.job.ts).
 ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS aviso_ociosidade_vendedor_minutos INT NOT NULL DEFAULT 5;
+
+-- Resumo diário de leads ativos por vendedor (estágio 9): liga/desliga e
+-- horário de disparo, editáveis no painel — o job roda de hora em hora e só
+-- dispara de verdade na hora configurada aqui (ver vendorDailyDigest.cron.ts).
+ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS resumo_diario_vendedor_ativo BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS resumo_diario_vendedor_hora INT NOT NULL DEFAULT 7
+  CHECK (resumo_diario_vendedor_hora BETWEEN 0 AND 23);
 
 -- Garante a linha única na primeira migração, sem sobrescrever ajuste já feito.
 INSERT INTO configuracoes (id) VALUES (true) ON CONFLICT (id) DO NOTHING;

@@ -40,7 +40,7 @@ usuariosApiRouter.post(
       res.status(400).json({ erro: parsed.error.issues[0]?.message });
       return;
     }
-    const { email, nome, senha, papel } = parsed.data;
+    const { email, nome, senha, papel, telefone } = parsed.data;
 
     if (await buscarPorEmailComHash(email)) {
       res.status(409).json({ erro: `Já existe usuário com o e-mail ${email}.` });
@@ -48,7 +48,7 @@ usuariosApiRouter.post(
     }
 
     const hash = await hashSenha(senha);
-    const usuario = await criarUsuario(email, nome, hash, papel);
+    const usuario = await criarUsuario(email, nome, hash, papel, telefone ?? null);
 
     // Unidade só é gravada pra atendente — zera de propósito pra admin, senão
     // uma unidade enviada por engano ficaria órfã sem efeito nenhum até o dia
@@ -96,7 +96,7 @@ usuariosApiRouter.patch(
       return;
     }
 
-    const { nome, email, papel, unidades, ativo } = parsed.data;
+    const { nome, email, papel, unidades, ativo, telefone } = parsed.data;
     const papelFinal = papel ?? alvo.papel;
     const ativoFinal = ativo ?? alvo.ativo;
     const continuaAdminAtivo = papelFinal === "admin" && ativoFinal;
@@ -117,7 +117,9 @@ usuariosApiRouter.patch(
       }
     }
 
-    if (nome !== undefined || email !== undefined) await atualizarPerfil(usuarioId, { nome, email });
+    if (nome !== undefined || email !== undefined || telefone !== undefined) {
+      await atualizarPerfil(usuarioId, { nome, email, telefone });
+    }
     if (papel !== undefined) await atualizarPapel(usuarioId, papel);
     if (ativo !== undefined) await atualizarAtivo(usuarioId, ativo);
 

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { UNIDADES } from "./leadsApi.schemas";
 import { REGRAS_SLA_PADRAO, REGRAS_VENDEDOR_PADRAO } from "../services/handoff.service";
+import { telefoneWhatsapp } from "../utils/telefone";
 
 /**
  * Limites de sanidade, não burocracia: cada um evita uma configuração que
@@ -22,18 +23,6 @@ const minutos = (rotulo: string) =>
  * com maiúscula ou espaço sobrando simplesmente nunca casaria, e a tela não
  * teria como avisar que a palavra "não funciona".
  */
-/**
- * Formato internacional que o resto do código já assume em toda parte que
- * lida com WhatsApp (ex.: `+5522997546818`) — código do país + DDD + número,
- * sem espaço, parêntese ou hífen. Recusar aqui evita salvar um número que o
- * envio à Meta rejeitaria só na hora do handoff real.
- */
-const telefoneWhatsapp = (rotulo: string) =>
-  z
-    .string({ message: `${rotulo}: informe um número de WhatsApp` })
-    .trim()
-    .regex(/^\+\d{12,13}$/, `${rotulo}: use o formato internacional, ex: +5522997546818`);
-
 const palavras = (rotulo: string) =>
   z
     .array(z.string())
@@ -98,6 +87,10 @@ export const configSchema = z
         .max(10, "Limite de tentativas: máximo 10"),
     }),
     avisoOciosidadeVendedorMinutos: minutos("Aviso de ociosidade do vendedor"),
+    resumoDiarioVendedor: z.object({
+      ativo: z.boolean(),
+      hora: z.number().int().min(0, "Horário do resumo: mínimo 0h").max(23, "Horário do resumo: máximo 23h"),
+    }),
   })
   .refine((c) => c.horario.horaFechamento > c.horario.horaAbertura, {
     message: "Horário: o fechamento tem que ser depois da abertura",

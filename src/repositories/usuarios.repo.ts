@@ -9,6 +9,7 @@ export interface Usuario {
   nome: string;
   ativo: boolean;
   papel: PapelUsuario;
+  telefone: string | null;
 }
 
 interface UsuarioComHash extends Usuario {
@@ -18,14 +19,17 @@ interface UsuarioComHash extends Usuario {
 /** Busca por e-mail para o login. Case-insensitive: ninguém deve falhar o login por causa de maiúscula. */
 export async function buscarPorEmailComHash(email: string): Promise<UsuarioComHash | null> {
   const result = await pool.query<UsuarioComHash>(
-    `SELECT id, email, nome, ativo, papel, senha_hash FROM usuarios WHERE lower(email) = lower($1)`,
+    `SELECT id, email, nome, ativo, papel, telefone, senha_hash FROM usuarios WHERE lower(email) = lower($1)`,
     [email]
   );
   return result.rows[0] ?? null;
 }
 
 export async function buscarPorId(id: string): Promise<Usuario | null> {
-  const result = await pool.query<Usuario>(`SELECT id, email, nome, ativo, papel FROM usuarios WHERE id = $1`, [id]);
+  const result = await pool.query<Usuario>(
+    `SELECT id, email, nome, ativo, papel, telefone FROM usuarios WHERE id = $1`,
+    [id]
+  );
   return result.rows[0] ?? null;
 }
 
@@ -33,12 +37,13 @@ export async function criarUsuario(
   email: string,
   nome: string,
   senhaHash: string,
-  papel: PapelUsuario
+  papel: PapelUsuario,
+  telefone: string | null = null
 ): Promise<Usuario> {
   const result = await pool.query<Usuario>(
-    `INSERT INTO usuarios (email, nome, senha_hash, papel) VALUES ($1, $2, $3, $4)
-     RETURNING id, email, nome, ativo, papel`,
-    [email, nome, senhaHash, papel]
+    `INSERT INTO usuarios (email, nome, senha_hash, papel, telefone) VALUES ($1, $2, $3, $4, $5)
+     RETURNING id, email, nome, ativo, papel, telefone`,
+    [email, nome, senhaHash, papel, telefone]
   );
   return result.rows[0];
 }
@@ -70,7 +75,7 @@ export interface UsuarioComUnidades extends Usuario {
  */
 export async function listarUsuariosComUnidades(): Promise<UsuarioComUnidades[]> {
   const usuarios = await pool.query<Omit<UsuarioComUnidades, "unidades">>(
-    `SELECT id, email, nome, ativo, papel, created_at, ultimo_login_em FROM usuarios ORDER BY nome`
+    `SELECT id, email, nome, ativo, papel, telefone, created_at, ultimo_login_em FROM usuarios ORDER BY nome`
   );
   if (usuarios.rows.length === 0) return [];
 
@@ -117,7 +122,10 @@ export async function atualizarAtivo(usuarioId: string, ativo: boolean): Promise
   await pool.query(`UPDATE usuarios SET ativo = $2 WHERE id = $1`, [usuarioId, ativo]);
 }
 
-export async function atualizarPerfil(usuarioId: string, dados: { nome?: string; email?: string }): Promise<void> {
+export async function atualizarPerfil(
+  usuarioId: string,
+  dados: { nome?: string; email?: string; telefone?: string | null }
+): Promise<void> {
   const campos: string[] = [];
   const valores: unknown[] = [usuarioId];
   if (dados.nome !== undefined) {
@@ -127,6 +135,10 @@ export async function atualizarPerfil(usuarioId: string, dados: { nome?: string;
   if (dados.email !== undefined) {
     campos.push(`email = $${valores.length + 1}`);
     valores.push(dados.email);
+  }
+  if (dados.telefone !== undefined) {
+    campos.push(`telefone = $${valores.length + 1}`);
+    valores.push(dados.telefone);
   }
   if (campos.length === 0) return;
 
@@ -159,6 +171,8 @@ export async function contarAdminsAtivos(excluirUsuarioId?: string): Promise<num
 }
 
 export async function listarUsuarios(): Promise<Usuario[]> {
-  const result = await pool.query<Usuario>(`SELECT id, email, nome, ativo, papel FROM usuarios ORDER BY nome`);
+  const result = await pool.query<Usuario>(
+    `SELECT id, email, nome, ativo, papel, telefone FROM usuarios ORDER BY nome`
+  );
   return result.rows;
 }

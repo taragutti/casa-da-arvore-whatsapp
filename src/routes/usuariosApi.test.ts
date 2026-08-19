@@ -15,6 +15,7 @@ interface LinhaUsuario {
   senha_hash: string;
   ativo: boolean;
   papel: "admin" | "atendente";
+  telefone: string | null;
   created_at: string;
   ultimo_login_em: string | null;
 }
@@ -34,23 +35,24 @@ vi.mock("../db/client", () => ({
     query: vi.fn(async (sql: string, params?: unknown[]) => {
       const p = params ?? [];
 
-      if (sql.includes("SELECT id, email, nome, ativo, papel, senha_hash FROM usuarios WHERE lower(email)")) {
+      if (sql.includes("SELECT id, email, nome, ativo, papel, telefone, senha_hash FROM usuarios WHERE lower(email)")) {
         const email = String(p[0]).toLowerCase();
         const u = usuarios.find((u) => u.email.toLowerCase() === email);
         return { rows: u ? [u] : [], rowCount: u ? 1 : 0 };
       }
-      if (sql.includes("SELECT id, email, nome, ativo, papel FROM usuarios WHERE id")) {
+      if (sql.includes("SELECT id, email, nome, ativo, papel, telefone FROM usuarios WHERE id")) {
         const u = usuarios.find((u) => u.id === p[0]);
         return { rows: u ? [u] : [], rowCount: u ? 1 : 0 };
       }
       if (sql.includes("INSERT INTO usuarios")) {
-        const [email, nome, senha_hash, papel] = p as string[];
+        const [email, nome, senha_hash, papel, telefone] = p as [string, string, string, string, string | null];
         const linha: LinhaUsuario = {
           id: crypto.randomUUID(),
           email,
           nome,
           senha_hash,
           papel: papel as "admin" | "atendente",
+          telefone: telefone ?? null,
           ativo: true,
           created_at: new Date().toISOString(),
           ultimo_login_em: null,
@@ -60,7 +62,7 @@ vi.mock("../db/client", () => ({
         const { senha_hash: _senha_hash, ...semHash } = linha;
         return { rows: [semHash], rowCount: 1 };
       }
-      if (sql.includes("SELECT id, email, nome, ativo, papel, created_at, ultimo_login_em FROM usuarios")) {
+      if (sql.includes("SELECT id, email, nome, ativo, papel, telefone, created_at, ultimo_login_em FROM usuarios")) {
         return { rows: usuarios, rowCount: usuarios.length };
       }
       if (sql.includes("SELECT usuario_id, unidade FROM usuario_unidades WHERE usuario_id = ANY")) {

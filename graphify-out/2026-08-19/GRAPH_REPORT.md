@@ -1,7 +1,7 @@
 # Graph Report - CASA DA ARVORE FLUXO CRM  (2026-08-19)
 
 ## Corpus Check
-- 117 files · ~86,526 words
+- 117 files · ~86,486 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary

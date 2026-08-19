@@ -215,6 +215,29 @@ export function renderizarConfigHtml(config: Configuracoes, autor: Autor): strin
     </div>
 
     <div class="bloco">
+      <h2>Resumo diário de leads para vendedores</h2>
+      <p class="desc">Todo dia, no horário abaixo (exceto domingo), cada vendedor com celular pessoal
+        cadastrado (em <a href="/painel/usuarios">Usuários</a>) recebe no WhatsApp dele um resumo dos
+        leads ativos da(s) unidade(s) que atende. Vendedor sem lead ativo não recebe mensagem.</p>
+      <div class="grade">
+        <div class="campo">
+          <label>Enviar resumo diário</label>
+          <div class="check">
+            <input type="checkbox" id="resumo_ativo" ${config.resumoDiarioVendedor.ativo ? "checked" : ""}>
+            <label for="resumo_ativo" style="font-weight:400;margin:0">Ativado</label>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="resumo_hora">Horário de envio</label>
+          <div class="linha-campo">
+            <input type="number" id="resumo_hora" value="${config.resumoDiarioVendedor.hora}" min="0" max="23">
+            <span class="unid">h</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bloco">
       <h2>Vendedor que recebe o handoff</h2>
       <p class="desc">Número de WhatsApp que recebe a notificação de cada lead passado para humano, por unidade.
         Formato internacional, com "+" e código do país (ex: <code>+5522997546818</code>).</p>
@@ -338,7 +361,11 @@ ${(Object.keys(LABEL_UNIDADE) as UnidadeRecomendada[])
         palavrasPedidoContrato: linhas("p_contrato"),
         tentativasSemClassificacaoLimite: num("tentativas")
       },
-      avisoOciosidadeVendedorMinutos: num("aviso_ociosidade")
+      avisoOciosidadeVendedorMinutos: num("aviso_ociosidade"),
+      resumoDiarioVendedor: {
+        ativo: document.getElementById("resumo_ativo").checked,
+        hora: num("resumo_hora")
+      }
     };
 
     botao.disabled = true;

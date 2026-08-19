@@ -298,6 +298,42 @@ export async function buscarUnidadeEfetivaDoLead(leadId: string): Promise<{ unid
   return result.rows[0] ?? null;
 }
 
+export interface LeadResumoDiario {
+  id: string;
+  nome_cliente: string | null;
+  whatsapp_number: string;
+  email: string | null;
+  tipo_evento: string | null;
+  data_evento: string | null;
+  status: StatusLead;
+  unidade: UnidadeRecomendada | null;
+}
+
+/**
+ * Leads ainda em aberto (fora de 'fechado'/'perdido') roteados para alguma
+ * das unidades informadas — base do resumo diário de leads por vendedor
+ * (vendorDailyDigest.cron.ts). Usa a mesma unidade EFETIVA (confirmada,
+ * senão recomendada) que o resto do sistema já usa pra decidir quem vê o quê.
+ */
+export async function buscarLeadsAtivosPorUnidades(unidades: UnidadeRecomendada[]): Promise<LeadResumoDiario[]> {
+  if (unidades.length === 0) return [];
+
+  const result = await pool.query<LeadResumoDiario>(
+    `SELECT id, nome_cliente, whatsapp_number, email, tipo_evento, status,
+            -- to_char em vez de deixar o driver devolver Date: o pg converte
+            -- DATE pra objeto Date por padrão, e um Date.toString() cru no
+            -- texto da mensagem sai como "Tue Dec 01 2026 00:00:00 GMT-0300...".
+            to_char(data_evento, 'DD/MM/YYYY') AS data_evento,
+            COALESCE(unidade_confirmada, unidade_recomendada) AS unidade
+     FROM leads
+     WHERE status NOT IN ('fechado', 'perdido')
+       AND COALESCE(unidade_confirmada, unidade_recomendada) = ANY($1)
+     ORDER BY ultima_interacao DESC`,
+    [unidades]
+  );
+  return result.rows;
+}
+
 export interface ContextoLead {
   nomeCliente: string | null;
   tipoEvento: string | null;

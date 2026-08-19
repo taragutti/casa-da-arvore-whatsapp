@@ -38,6 +38,9 @@ function linhaUsuario(u: UsuarioComUnidades, autor: Autor): string {
       <input type="email" class="email" value="${escapeHtml(u.email)}">
     </td>
     <td>
+      <input type="text" class="telefone" value="${escapeHtml(u.telefone ?? "")}" placeholder="+5522900000000">
+    </td>
+    <td>
       <select class="papel" ${travarPermissao}>
         <option value="admin" ${u.papel === "admin" ? "selected" : ""}>Admin</option>
         <option value="atendente" ${u.papel === "atendente" ? "selected" : ""}>Atendente</option>
@@ -139,7 +142,9 @@ export function renderizarUsuariosHtml(usuarios: UsuarioComUnidades[], autor: Au
     <div class="aviso">
       <b>Admin</b> tem acesso total (configurações, mídia, usuários) e vê todos os leads. <b>Atendente</b> só vê
       leads da(s) unidade(s) marcada(s) abaixo — lead sem unidade decidida ainda continua aparecendo pra todo
-      atendente, até a qualificação chegar lá.
+      atendente, até a qualificação chegar lá. O <b>telefone</b> é o celular pessoal de quem atende — se
+      preenchido e a conta tiver ao menos uma unidade, ela passa a receber no WhatsApp o
+      <a href="/painel/configuracoes">resumo diário de leads ativos</a> daquela(s) unidade(s).
     </div>
 
     <div class="bloco">
@@ -147,6 +152,7 @@ export function renderizarUsuariosHtml(usuarios: UsuarioComUnidades[], autor: Au
       <div class="grade-form">
         <div class="campo"><label for="novo_nome">Nome</label><input type="text" id="novo_nome"></div>
         <div class="campo"><label for="novo_email">E-mail</label><input type="email" id="novo_email"></div>
+        <div class="campo"><label for="novo_telefone">Telefone (opcional)</label><input type="text" id="novo_telefone" placeholder="+5522900000000"></div>
         <div class="campo"><label for="novo_senha">Senha (mín. 10 caracteres)</label><input type="password" id="novo_senha"></div>
         <div class="campo">
           <label for="novo_papel">Papel</label>
@@ -168,7 +174,7 @@ export function renderizarUsuariosHtml(usuarios: UsuarioComUnidades[], autor: Au
       <h2>Contas existentes</h2>
       <table>
         <thead>
-          <tr><th>Nome</th><th>Papel</th><th>Unidades (se atendente)</th><th>Status</th><th></th></tr>
+          <tr><th>Nome</th><th>Telefone</th><th>Papel</th><th>Unidades (se atendente)</th><th>Status</th><th></th></tr>
         </thead>
         <tbody id="corpo_usuarios">
           ${usuarios.map((u) => linhaUsuario(u, autor)).join("")}
@@ -201,12 +207,14 @@ export function renderizarUsuariosHtml(usuarios: UsuarioComUnidades[], autor: Au
 
   document.getElementById("criar").addEventListener("click", async function () {
     var status = document.getElementById("status_criar");
+    var telefoneNovo = document.getElementById("novo_telefone").value.trim();
     var corpo = {
       nome: document.getElementById("novo_nome").value.trim(),
       email: document.getElementById("novo_email").value.trim(),
       senha: document.getElementById("novo_senha").value,
       papel: document.getElementById("novo_papel").value,
-      unidades: unidadesMarcadas(document, "nova_unidade")
+      unidades: unidadesMarcadas(document, "nova_unidade"),
+      telefone: telefoneNovo || null
     };
     status.textContent = "Criando...";
     status.className = "status-linha";
@@ -237,12 +245,14 @@ export function renderizarUsuariosHtml(usuarios: UsuarioComUnidades[], autor: Au
     var status = linha.querySelector(".status-linha");
 
     salvar.addEventListener("click", async function () {
+      var telefoneLinha = linha.querySelector(".telefone").value.trim();
       var corpo = {
         nome: linha.querySelector(".nome").value.trim(),
         email: linha.querySelector(".email").value.trim(),
         papel: linha.querySelector(".papel").value,
         ativo: linha.querySelector(".ativo").checked,
-        unidades: unidadesMarcadas(linha, "unidade")
+        unidades: unidadesMarcadas(linha, "unidade"),
+        telefone: telefoneLinha || null
       };
 
       salvar.disabled = true;

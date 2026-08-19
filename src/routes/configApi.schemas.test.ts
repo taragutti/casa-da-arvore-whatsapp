@@ -27,6 +27,7 @@ const valido = {
     tentativasSemClassificacaoLimite: 2,
   },
   avisoOciosidadeVendedorMinutos: 5,
+  resumoDiarioVendedor: { ativo: false, hora: 7 },
 };
 
 const erro = (corpo: unknown) => {

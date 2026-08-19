@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { UNIDADES } from "./leadsApi.schemas";
 import { validarForcaSenha } from "../services/password.service";
+import { telefoneWhatsappOpcional } from "../utils/telefone";
 
 export const idParamSchema = z.string().uuid("id do usuário deve ser um UUID");
 
@@ -20,6 +21,9 @@ export const criarUsuarioSchema = z.object({
   // 'admin', então aceitar aqui sem exigir é mais simples que recusar payload
   // que só teria efeito nenhum.
   unidades: z.array(z.enum(UNIDADES)).max(UNIDADES.length).default([]),
+  // Celular pessoal — usado pelo resumo diário de leads (opcional: nem todo
+  // usuário precisa receber esse resumo).
+  telefone: telefoneWhatsappOpcional("Telefone"),
 });
 
 export const atualizarUsuarioSchema = z
@@ -29,6 +33,7 @@ export const atualizarUsuarioSchema = z
     papel: z.enum(PAPEIS).optional(),
     unidades: z.array(z.enum(UNIDADES)).max(UNIDADES.length).optional(),
     ativo: z.boolean().optional(),
+    telefone: telefoneWhatsappOpcional("Telefone"),
   })
   .refine((dados) => Object.keys(dados).length > 0, {
     message: "informe ao menos um campo: nome, email, papel, unidades ou ativo",

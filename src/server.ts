@@ -8,6 +8,7 @@ import { startFollowUpWorker } from "./queue/followUp.job";
 import { startVendorIdleWorker } from "./queue/vendorIdle.job";
 import { scheduleMonthlyBriefingJob } from "./jobs/monthlyBriefing.cron";
 import { scheduleLifecycleFollowUpJob } from "./jobs/lifecycleFollowUp.cron";
+import { scheduleVendorDailyDigestJob } from "./jobs/vendorDailyDigest.cron";
 import { ingestRouter } from "./routes/ingest";
 import { whatsappRouter } from "./routes/whatsapp";
 import { painelRouter } from "./routes/painel";
@@ -128,6 +129,7 @@ async function start() {
 
   scheduleMonthlyBriefingJob();
   scheduleLifecycleFollowUpJob();
+  scheduleVendorDailyDigestJob();
 
   app.listen(env.PORT, () => {
     logger.info({ port: env.PORT }, `servidor rodando em http://localhost:${env.PORT}`);
