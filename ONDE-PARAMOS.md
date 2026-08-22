@@ -1,7 +1,54 @@
-# Onde paramos — 14/08/2026
+# Onde paramos — 22/08/2026
 
 Registro de estado para retomar sem reconstruir contexto. Atualizar ao fim de
 cada sessão de trabalho.
+
+## Métricas no topo do painel de leads (22/08)
+
+`/painel` ganhou um bloco de métricas acima da lista de cards: total de leads
+mostrados, taxa de fechamento e nº de fechados, mais duas barras (por etapa do
+funil e por unidade, incluindo "sem unidade decidida"). Calculado em cima do
+mesmo array de leads que a rota já carrega — sem query nova no banco, então
+herda a mesma janela (200 mais recentes por unidade visível ao autor), não é
+um relatório histórico completo. Código em
+`services/painel.service.ts` (`blocoMetricas`, `barraItem`). 274 testes
+verdes, sem teste dedicado (é HTML server-rendered puro, mesmo padrão do resto
+do arquivo).
+
+## Resumo diário de leads por vendedor (19/08)
+
+Novo job (`vendorDailyDigest.cron.ts` + `vendorDailyDigest.service.ts`) manda,
+uma vez por dia, pro **celular pessoal** de cada vendedor (novo campo
+`telefone` em `usuarios`, distinto do WhatsApp compartilhado por unidade do
+handoff) a lista de leads ativos das unidades que ele atende — agrupada por
+unidade, um bloco por lead (nome, celular, e-mail, evento, data, status).
+
+Cron roda de hora em hora (`0 * * * *`, fuso America/Sao_Paulo) e o próprio job
+decide se é a hora certa de disparar, comparando com
+`resumoDiarioVendedor.hora` (config nova em `/painel/configuracoes`, editável
+sem deploy, igual ao padrão de SLA/vendedor). Não dispara domingo. Vendedor
+sem `telefone` cadastrado ou sem unidade vinculada é ignorado; unidade sem
+lead ativo não entra na mensagem; se nenhuma unidade do vendedor tiver lead
+nenhum, não manda mensagem vazia.
+
+**Estado real em produção: implementado e deployado, mas DESLIGADO por
+padrão** (`resumoDiarioVendedor: { ativo: false, hora: 7 }`). Deploy e
+migração (`ADD COLUMN` em `usuarios` e `configuracoes`) já rodaram em
+19/08 — worker confirmado no log ("job de resumo diário de leads por vendedor
+agendado"), sem nenhum erro de coluna/SQL nos ticks horários desde então, mas
+ninguém ligou o botão nem cadastrou telefone pessoal ainda. Falta, pra
+funcionar de verdade:
+
+1. Cadastrar o celular pessoal de cada vendedor em `/painel/usuarios` (campo
+   `telefone`, diferente do WhatsApp de handoff que já existia).
+2. Ligar em `/painel/configuracoes` (checkbox + horário) e escolher a hora.
+
+Arquivos: `jobs/vendorDailyDigest.cron.ts`, `services/vendorDailyDigest.service.ts`,
+`repositories/leads.repo.ts` (`buscarLeadsAtivosPorUnidades`, tipo
+`LeadResumoDiario`), `repositories/usuarios.repo.ts` (`listarUsuariosComUnidades`,
+campo `telefone`), `utils/telefone.ts` (validação compartilhada), config em
+`configuracoes.repo.ts`/`configApi.schemas.ts`/`configPainel.service.ts`. 274
+testes verdes.
 
 ## Aviso de ociosidade do vendedor + bot responde até 3 dúvidas (14/08)
 
