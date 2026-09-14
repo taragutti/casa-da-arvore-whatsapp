@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cinematic Scrollytelling"
+  short_description: "Cria páginas narrativas com movimento e rolagem"
+  default_prompt: "Use $cinematic-scrollytelling para criar uma experiência narrativa cinematográfica controlada pela rolagem."

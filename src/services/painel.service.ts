@@ -68,6 +68,63 @@ function blocoDadosColetados(dados: Record<string, unknown> | null): string {
     .join("")}</div>`;
 }
 
+function barraItem(label: string, contagem: number, total: number): string {
+  const pct = total ? Math.round((contagem / total) * 100) : 0;
+  return `<div class="barra-item">
+    <span class="barra-label">${escapeHtml(label)}</span>
+    <div class="barra-trilha"><div class="barra-preenchida" style="width:${pct}%"></div></div>
+    <span class="barra-valor">${contagem}</span>
+  </div>`;
+}
+
+/**
+ * Métricas calculadas em cima dos mesmos leads já carregados pro painel — sem
+ * query extra. Por isso herdam a mesma janela deles: só os 200 mais recentes,
+ * não o histórico completo. Suficiente pra um raio-x rápido do funil, não
+ * substitui um relatório de verdade se o volume crescer além disso.
+ */
+function blocoMetricas(leads: LeadPainel[]): string {
+  const total = leads.length;
+  if (total === 0) return "";
+
+  const porStatus: Record<string, number> = {};
+  for (const key of Object.keys(LABEL_STATUS)) porStatus[key] = 0;
+  const porUnidade: Record<string, number> = { sem_unidade: 0 };
+  for (const key of Object.keys(LABEL_UNIDADE)) porUnidade[key] = 0;
+
+  for (const lead of leads) {
+    porStatus[lead.status] = (porStatus[lead.status] ?? 0) + 1;
+    const unidade = lead.unidade_confirmada ?? lead.unidade_recomendada;
+    const chave = unidade ?? "sem_unidade";
+    porUnidade[chave] = (porUnidade[chave] ?? 0) + 1;
+  }
+
+  const fechados = porStatus.fechado ?? 0;
+  const taxaFechamento = Math.round((fechados / total) * 100);
+
+  return `<div class="metricas">
+    <div class="metricas-linha">
+      <div class="stat"><span class="stat-valor">${total}</span><span class="stat-label">leads mostrados</span></div>
+      <div class="stat"><span class="stat-valor">${taxaFechamento}%</span><span class="stat-label">taxa de fechamento</span></div>
+      <div class="stat"><span class="stat-valor">${fechados}</span><span class="stat-label">fechados</span></div>
+    </div>
+    <div class="metricas-grupos">
+      <div class="metricas-grupo">
+        <h3>Por etapa do funil</h3>
+        <div class="barra-lista">${Object.entries(LABEL_STATUS)
+          .map(([chave, label]) => barraItem(label, porStatus[chave] ?? 0, total))
+          .join("")}</div>
+      </div>
+      <div class="metricas-grupo">
+        <h3>Por unidade</h3>
+        <div class="barra-lista">${[...Object.entries(LABEL_UNIDADE), ["sem_unidade", "Sem unidade decidida"]]
+          .map(([chave, label]) => barraItem(label, porUnidade[chave] ?? 0, total))
+          .join("")}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
 function blocoNotas(lead: LeadPainel): string {
   if (lead.notas.length === 0) return '<p class="vazio">Nenhuma observação registrada.</p>';
   return `<ul class="notas">${lead.notas
@@ -226,6 +283,22 @@ export function renderizarPainelHtml(leads: LeadPainel[], autor: Autor): string 
     button.sair:hover, a.sair:hover { background: #eef2ee; }
     .aviso-bootstrap { background: #fff8e1; color: #8a6d00; border: 1px solid #ffe69c; padding: 12px;
                        border-radius: 8px; font-size: 13px; max-width: 900px; margin-bottom: 16px; line-height: 1.5; }
+    .metricas { background: #fff; border: 1px solid #e0e4e0; border-radius: 10px; padding: 16px 20px;
+                margin-bottom: 20px; max-width: 900px; }
+    .metricas-linha { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 18px; }
+    .stat { display: flex; flex-direction: column; }
+    .stat-valor { font-size: 24px; font-weight: bold; color: #2f5233; line-height: 1.2; }
+    .stat-label { font-size: 12px; color: #666; }
+    .metricas-grupos { display: flex; gap: 32px; flex-wrap: wrap; }
+    .metricas-grupo { flex: 1; min-width: 260px; }
+    .metricas-grupo h3 { font-size: 12px; color: #666; margin: 0 0 8px; text-transform: uppercase;
+                          letter-spacing: 0.03em; }
+    .barra-lista { display: flex; flex-direction: column; gap: 7px; }
+    .barra-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .barra-label { width: 130px; flex-shrink: 0; color: #333; }
+    .barra-trilha { flex: 1; height: 8px; background: #eef2ee; border-radius: 4px; overflow: hidden; }
+    .barra-preenchida { height: 100%; background: #2f5233; border-radius: 4px; }
+    .barra-valor { width: 26px; text-align: right; color: #666; }
   </style>
 </head>
 <body>
@@ -253,6 +326,7 @@ export function renderizarPainelHtml(leads: LeadPainel[], autor: Autor): string 
          <code>npm run criar-usuario</code> — a partir do primeiro usuário, esta credencial deixa de funcionar.</div>`
       : ""
   }
+  ${blocoMetricas(leads)}
   ${leads.map((l) => cardLead(l, autor.papel === "admin")).join("\n") || "<p>Nenhum lead encontrado.</p>"}
 
 <script>
